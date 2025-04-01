@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { DashboardLayout } from "@/components/layouts/dashboard-layout";
+import { CandidateLayout } from "@/components/layouts/candidate-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -136,17 +136,17 @@ export default function FillBlanksAssessment() {
 
   if (isLoading) {
     return (
-      <DashboardLayout title="Fill-in-the-Blanks Assessment">
+      <CandidateLayout title="Fill-in-the-Blanks Assessment">
         <div className="flex justify-center items-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      </DashboardLayout>
+      </CandidateLayout>
     );
   }
 
   if (error || !assessmentData) {
     return (
-      <DashboardLayout title="Fill-in-the-Blanks Assessment">
+      <CandidateLayout title="Fill-in-the-Blanks Assessment">
         <div className="flex flex-col items-center justify-center h-64">
           <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
           <h3 className="text-lg font-medium">Error Loading Assessment</h3>
@@ -157,7 +157,7 @@ export default function FillBlanksAssessment() {
             Return to Dashboard
           </Button>
         </div>
-      </DashboardLayout>
+      </CandidateLayout>
     );
   }
 
@@ -245,8 +245,8 @@ export default function FillBlanksAssessment() {
   };
 
   return (
-    <DashboardLayout title={assessmentData.assessment.title}>
-      <div className="max-w-3xl mx-auto">
+    <CandidateLayout title={assessmentData.assessment.title}>
+      <div>
         <Card className="mb-6">
           <CardContent className="p-6">
             <div className="flex justify-between items-center mb-6">
@@ -351,6 +351,6 @@ export default function FillBlanksAssessment() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </CandidateLayout>
   );
 }

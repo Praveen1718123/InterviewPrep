@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { DashboardLayout } from "@/components/layouts/dashboard-layout";
+import { CandidateLayout } from "@/components/layouts/candidate-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Loader2, CheckCircle, Clock, Calendar, FileText, PenSquare, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -107,8 +107,8 @@ export default function CandidateDashboard() {
   const upcomingAssessment = getUpcomingAssessment();
 
   return (
-    <DashboardLayout title="Dashboard">
-      <div className="max-w-7xl mx-auto">
+    <CandidateLayout title="Dashboard">
+      <div>
         {isLoading ? (
           <div className="flex justify-center p-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -458,6 +458,6 @@ export default function CandidateDashboard() {
           </>
         )}
       </div>
-    </DashboardLayout>
+    </CandidateLayout>
   );
 }

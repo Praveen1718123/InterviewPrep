@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { DashboardLayout } from "@/components/layouts/dashboard-layout";
+import { CandidateLayout } from "@/components/layouts/candidate-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   LineChart, Line, BarChart, Bar, RadarChart, Radar, PolarGrid, 
@@ -198,17 +198,17 @@ export default function SkillAnalysis() {
   
   if (isLoading) {
     return (
-      <DashboardLayout title="Skill Gap Analysis">
+      <CandidateLayout title="Skill Gap Analysis">
         <div className="flex justify-center items-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      </DashboardLayout>
+      </CandidateLayout>
     );
   }
   
   if (error || !assessments || assessments.length === 0) {
     return (
-      <DashboardLayout title="Skill Gap Analysis">
+      <CandidateLayout title="Skill Gap Analysis">
         <div className="flex flex-col items-center justify-center h-64">
           <AlertCircle className="h-12 w-12 text-yellow-500 mb-4" />
           <h3 className="text-lg font-medium">No Assessment Data Available</h3>
@@ -216,12 +216,12 @@ export default function SkillAnalysis() {
             Complete some assessments to see your skill analysis.
           </p>
         </div>
-      </DashboardLayout>
+      </CandidateLayout>
     );
   }
   
   return (
-    <DashboardLayout title="Skill Gap Analysis">
+    <CandidateLayout title="Skill Gap Analysis">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Interactive Skill Analysis</h1>
@@ -517,6 +517,6 @@ export default function SkillAnalysis() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </CandidateLayout>
   );
 }

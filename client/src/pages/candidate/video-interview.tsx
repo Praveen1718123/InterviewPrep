@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { DashboardLayout } from "@/components/layouts/dashboard-layout";
+import { CandidateLayout } from "@/components/layouts/candidate-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRecorder } from "@/lib/use-recorder";
@@ -180,17 +180,17 @@ export default function VideoInterview() {
 
   if (isLoading) {
     return (
-      <DashboardLayout title="Video Interview">
+      <CandidateLayout title="Video Interview">
         <div className="flex justify-center items-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      </DashboardLayout>
+      </CandidateLayout>
     );
   }
 
   if (error || !assessmentData) {
     return (
-      <DashboardLayout title="Video Interview">
+      <CandidateLayout title="Video Interview">
         <div className="flex flex-col items-center justify-center h-64">
           <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
           <h3 className="text-lg font-medium">Error Loading Assessment</h3>
@@ -201,7 +201,7 @@ export default function VideoInterview() {
             Return to Dashboard
           </Button>
         </div>
-      </DashboardLayout>
+      </CandidateLayout>
     );
   }
 
@@ -259,8 +259,8 @@ export default function VideoInterview() {
   const allQuestionsAnswered = responses.every(r => r.videoUrl);
 
   return (
-    <DashboardLayout title={assessmentData.assessment.title}>
-      <div className="max-w-3xl mx-auto">
+    <CandidateLayout title={assessmentData.assessment.title}>
+      <div>
         <Card className="mb-6">
           <CardContent className="p-6">
             <div className="mb-6">
@@ -423,6 +423,6 @@ export default function VideoInterview() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </CandidateLayout>
   );
 }
