@@ -1,16 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
-import { apiRequest } from "@/lib/queryClient";
-import { toast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
 
-// Simple Auth Page that doesn't use useAuth hook
 export default function AuthPage() {
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [isRegistering, setIsRegistering] = useState(false);
   const [, setLocation] = useLocation();
+  const { user, loginMutation, registerMutation, isLoading } = useAuth();
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      setLocation(user.role === "admin" ? "/admin" : "/candidate");
+    }
+  }, [user, setLocation]);
 
   // Login form state
   const [loginData, setLoginData] = useState({
@@ -24,59 +28,17 @@ export default function AuthPage() {
     email: "",
     fullName: "",
     password: "",
-    role: "candidate",
+    role: "candidate" as "admin" | "candidate", // Type assertion to match schema
   });
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoggingIn(true);
-    
-    try {
-      const res = await apiRequest("POST", "/api/login", loginData);
-      const user = await res.json();
-      
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${user.fullName}!`,
-      });
-      
-      // Redirect based on role
-      setLocation(user.role === "admin" ? "/admin" : "/candidate");
-    } catch (error) {
-      toast({
-        title: "Login failed",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoggingIn(false);
-    }
+    loginMutation.mutate(loginData);
   };
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsRegistering(true);
-    
-    try {
-      const res = await apiRequest("POST", "/api/register", registerData);
-      const user = await res.json();
-      
-      toast({
-        title: "Registration successful",
-        description: `Welcome, ${user.fullName}!`,
-      });
-      
-      // Redirect based on role
-      setLocation(user.role === "admin" ? "/admin" : "/candidate");
-    } catch (error) {
-      toast({
-        title: "Registration failed",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsRegistering(false);
-    }
+    registerMutation.mutate(registerData);
   };
 
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,7 +48,15 @@ export default function AuthPage() {
 
   const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setRegisterData(prev => ({ ...prev, [name]: value }));
+    if (name === 'role') {
+      // Make sure role values are correct type
+      setRegisterData(prev => ({ 
+        ...prev, 
+        [name]: value as "admin" | "candidate" 
+      }));
+    } else {
+      setRegisterData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   return (
@@ -135,9 +105,9 @@ export default function AuthPage() {
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={isLoggingIn}
+                  disabled={loginMutation.isPending}
                 >
-                  {isLoggingIn ? "Logging in..." : "Login"}
+                  {loginMutation.isPending ? "Logging in..." : "Login"}
                 </Button>
               </form>
             </TabsContent>
@@ -208,9 +178,9 @@ export default function AuthPage() {
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={isRegistering}
+                  disabled={registerMutation.isPending}
                 >
-                  {isRegistering ? "Creating account..." : "Create Account"}
+                  {registerMutation.isPending ? "Creating account..." : "Create Account"}
                 </Button>
               </form>
             </TabsContent>

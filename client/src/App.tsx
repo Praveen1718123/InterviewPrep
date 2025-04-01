@@ -3,6 +3,7 @@ import { AuthProvider } from "./hooks/use-auth";
 import NotFound from "@/pages/not-found";
 import { Suspense, lazy } from "react";
 import { Loader2 } from "lucide-react";
+import { ProtectedRoute } from "./lib/protected-route";
 
 // Lazy load components to reduce initial bundle size
 const AuthPage = lazy(() => import("@/pages/auth-page"));
@@ -55,15 +56,17 @@ function App() {
           <Route path="/auth" component={AuthPage} />
           <Route path="/" component={WelcomePage} />
           
-          {/* We'll restore the protected routes later, after confirming basic routing works */}
-          <Route path="/admin" component={AdminDashboard} />
-          <Route path="/admin/candidates" component={AdminCandidates} />
-          <Route path="/admin/assessments" component={AdminAssessments} />
-          <Route path="/admin/assessments/create" component={CreateAssessment} />
-          <Route path="/candidate" component={CandidateDashboard} />
-          <Route path="/assessment/mcq/:id" component={MCQAssessment} />
-          <Route path="/assessment/fill-blanks/:id" component={FillBlanksAssessment} />
-          <Route path="/assessment/video/:id" component={VideoInterview} />
+          {/* Protected Admin Routes */}
+          <ProtectedRoute path="/admin" component={AdminDashboard} />
+          <ProtectedRoute path="/admin/candidates" component={AdminCandidates} />
+          <ProtectedRoute path="/admin/assessments" component={AdminAssessments} />
+          <ProtectedRoute path="/admin/assessments/create" component={CreateAssessment} />
+          
+          {/* Protected Candidate Routes */}
+          <ProtectedRoute path="/candidate" component={CandidateDashboard} />
+          <ProtectedRoute path="/assessment/mcq/:id" component={MCQAssessment} />
+          <ProtectedRoute path="/assessment/fill-blanks/:id" component={FillBlanksAssessment} />
+          <ProtectedRoute path="/assessment/video/:id" component={VideoInterview} />
           
           {/* Fallback to 404 */}
           <Route component={NotFound} />

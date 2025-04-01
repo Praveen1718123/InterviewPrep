@@ -102,18 +102,15 @@ export function Sidebar({ className }: SidebarProps) {
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
+              className={cn(
+                "flex items-center px-6 py-3 text-gray-700",
+                location === item.href
+                  ? "bg-gray-100 border-l-4 border-primary"
+                  : "hover:bg-gray-100"
+              )}
             >
-              <a
-                className={cn(
-                  "flex items-center px-6 py-3 text-gray-700",
-                  location === item.href
-                    ? "bg-gray-100 border-l-4 border-primary"
-                    : "hover:bg-gray-100"
-                )}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </a>
+              {item.icon}
+              <span>{item.label}</span>
             </Link>
           ))}
           <div className="px-4 py-2 mt-6 text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -124,18 +121,15 @@ export function Sidebar({ className }: SidebarProps) {
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
+              className={cn(
+                "flex items-center px-6 py-3 text-gray-700",
+                location === item.href
+                  ? "bg-gray-100 border-l-4 border-primary"
+                  : "hover:bg-gray-100"
+              )}
             >
-              <a
-                className={cn(
-                  "flex items-center px-6 py-3 text-gray-700",
-                  location === item.href
-                    ? "bg-gray-100 border-l-4 border-primary"
-                    : "hover:bg-gray-100"
-                )}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </a>
+              {item.icon}
+              <span>{item.label}</span>
             </Link>
           ))}
           <a

@@ -7,7 +7,7 @@ export function ProtectedRoute({
   component: Component,
 }: {
   path: string;
-  component: () => React.JSX.Element;
+  component: React.ComponentType<any>;
 }) {
   try {
     const { user, isLoading } = useAuth();
@@ -51,7 +51,12 @@ export function ProtectedRoute({
       );
     }
 
-    return <Route path={path} component={Component} />;
+    // Explicitly rendering the component to ensure proper typing
+    return (
+      <Route path={path}>
+        <Component />
+      </Route>
+    );
   } catch (error) {
     // Fallback for when the auth context is not available
     console.error("Auth context error:", error);
