@@ -61,13 +61,22 @@ export class MemStorage implements IStorage {
     this.assessmentIdCounter = 1;
     this.candidateAssessmentIdCounter = 1;
     
-    // Create an admin user for testing
+    // Create test users
     this.createUser({
       username: "admin",
       password: "admin123", // This will be hashed in auth.ts
       email: "admin@example.com",
       fullName: "Admin User",
       role: "admin"
+    });
+    
+    // Create a candidate user for testing
+    this.createUser({
+      username: "candidate",
+      password: "candidate123", // This will be hashed in auth.ts
+      email: "candidate@example.com",
+      fullName: "Test Candidate",
+      role: "candidate"
     });
   }
 
