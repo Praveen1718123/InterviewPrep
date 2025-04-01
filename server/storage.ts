@@ -9,6 +9,7 @@ import session from "express-session";
 import createMemoryStore from "memorystore";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
+import { hashPassword } from "./auth";
 
 const { Pool } = pg;
 import connectPg from "connect-pg-simple";
@@ -71,23 +72,39 @@ export class MemStorage implements IStorage {
     this.assessmentIdCounter = 1;
     this.candidateAssessmentIdCounter = 1;
     
-    // Create test users
-    this.createUser({
-      username: "admin",
-      password: "admin123", // This will be hashed in auth.ts
-      email: "admin@example.com",
-      fullName: "Admin User",
-      role: "admin"
-    });
-    
-    // Create a candidate user for testing
-    this.createUser({
-      username: "candidate",
-      password: "candidate123", // This will be hashed in auth.ts
-      email: "candidate@example.com",
-      fullName: "Test Candidate",
-      role: "candidate"
-    });
+    // Initialize will handle creating test users
+    this.initializeStorage();
+  }
+  
+  // Added for interface compatibility
+  async initializeStorage(): Promise<void> {
+    try {
+      // Create admin user for testing if they don't exist yet
+      const existingAdmin = await this.getUserByUsername("admin");
+      if (!existingAdmin) {
+        await this.createUser({
+          username: "admin",
+          password: await hashPassword("admin123"),
+          email: "admin@example.com",
+          fullName: "Admin User",
+          role: "admin"
+        });
+      }
+      
+      // Create a candidate user for testing if they don't exist yet
+      const existingCandidate = await this.getUserByUsername("candidate");
+      if (!existingCandidate) {
+        await this.createUser({
+          username: "candidate",
+          password: await hashPassword("candidate123"),
+          email: "candidate@example.com",
+          fullName: "Test Candidate",
+          role: "candidate"
+        });
+      }
+    } catch (error) {
+      console.error("Error initializing in-memory storage:", error);
+    }
   }
 
   // User operations
@@ -348,11 +365,7 @@ export class MemStorage implements IStorage {
     return updatedAssignment;
   }
   
-  // Added for interface compatibility
-  async initializeStorage(): Promise<void> {
-    // Nothing to do for in-memory storage
-    return Promise.resolve();
-  }
+
 }
 
 // PostgreSQL Storage Implementation
@@ -384,7 +397,7 @@ export class PostgresStorage implements IStorage {
       if (!existingAdmin) {
         await this.createUser({
           username: "admin",
-          password: "admin123", // This will be hashed in auth.ts
+          password: await hashPassword("admin123"), // Manually hash password
           email: "admin@example.com",
           fullName: "Admin User",
           role: "admin"
@@ -397,7 +410,7 @@ export class PostgresStorage implements IStorage {
       if (!existingCandidate) {
         await this.createUser({
           username: "candidate", 
-          password: "candidate123", // This will be hashed in auth.ts
+          password: await hashPassword("candidate123"), // Manually hash password
           email: "candidate@example.com",
           fullName: "Test Candidate",
           role: "candidate"
