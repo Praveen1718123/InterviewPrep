@@ -184,28 +184,54 @@ export default function CandidateDashboard() {
                 </CardContent>
               </Card>
               
-              {/* Average Score */}
+              {/* Your Assessments Overview */}
               <Card className="col-span-1 md:col-span-2">
                 <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-2">Average Score</h2>
-                  <div className="flex items-center">
-                    <div className={`text-3xl font-bold ${
-                      getAssessmentStats().averageScore >= 80 ? 'text-green-500' : 
-                      getAssessmentStats().averageScore >= 60 ? 'text-blue-500' : 
-                      'text-yellow-500'
-                    }`}>
-                      {getAssessmentStats().averageScore}%
-                    </div>
+                  <h2 className="text-lg font-semibold mb-2">Your Assessments</h2>
+                  <div className="space-y-4">
+                    {candidateAssessments?.slice(0, 3).map((assessment: any) => (
+                      <div key={assessment.id} className="flex items-center">
+                        <div className={`h-6 w-6 rounded-full flex items-center justify-center mr-3 ${
+                          assessment.status === "completed" || assessment.status === "reviewed"
+                            ? "bg-green-100"
+                            : assessment.status === "in-progress"
+                            ? "bg-blue-100"
+                            : "bg-yellow-100"
+                        }`}>
+                          {assessment.status === "completed" || assessment.status === "reviewed" ? (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          ) : assessment.status === "in-progress" ? (
+                            <Clock className="h-4 w-4 text-blue-500" />
+                          ) : (
+                            <Calendar className="h-4 w-4 text-yellow-500" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{assessment.assessment.title}</p>
+                          <p className="text-xs text-gray-500">
+                            {assessment.status === "completed" || assessment.status === "reviewed" 
+                              ? `Completed on: ${formatDate(assessment.completedAt)}`
+                              : assessment.status === "in-progress"
+                              ? "In Progress"
+                              : "Scheduled"}
+                          </p>
+                        </div>
+                        {assessment.score !== undefined && (
+                          <div className="text-sm font-medium">
+                            Score: {assessment.score}/100
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-gray-600 text-sm mt-2">Based on your completed assessments</p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Assessment List */}
+            {/* Detailed Assessment List */}
             <Card className="mb-6">
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Your Assessments</h2>
+                <h2 className="text-xl font-semibold mb-4">All Assessment Results</h2>
                 <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
                   <div 
                     className="bg-primary h-2.5 rounded-full" 
