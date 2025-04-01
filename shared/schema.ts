@@ -26,6 +26,7 @@ export const assessments = pgTable("assessments", {
   type: text("type", { enum: ["mcq", "fill-in-blanks", "video"] }).notNull(),
   createdBy: integer("created_by").notNull(), // Admin user ID
   questions: json("questions").notNull(), // Array of questions
+  timeLimit: integer("time_limit"), // Total time limit in minutes for the whole assessment
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -61,6 +62,7 @@ export const mcqQuestionSchema = z.object({
     text: z.string(),
   })),
   correctOptionId: z.string(),
+  timeLimit: z.number().int().optional(), // Time limit in seconds
 });
 
 export const fillInBlanksQuestionSchema = z.object({
@@ -70,6 +72,7 @@ export const fillInBlanksQuestionSchema = z.object({
     id: z.string(),
     correctAnswer: z.string(),
   })),
+  timeLimit: z.number().int().optional(), // Time limit in seconds
 });
 
 export const videoQuestionSchema = z.object({

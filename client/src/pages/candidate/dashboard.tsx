@@ -26,6 +26,45 @@ export default function CandidateDashboard() {
       ? Math.round((completed / candidateAssessments.length) * 100)
       : 0;
   };
+  
+  // Calculate assessment statistics
+  const getAssessmentStats = () => {
+    if (!candidateAssessments || candidateAssessments.length === 0) {
+      return {
+        total: 0,
+        completed: 0,
+        inProgress: 0,
+        pending: 0,
+        averageScore: 0
+      };
+    }
+    
+    const completed = candidateAssessments.filter(
+      (assessment: any) => assessment.status === "completed" || assessment.status === "reviewed"
+    );
+    
+    const inProgress = candidateAssessments.filter(
+      (assessment: any) => assessment.status === "in-progress"
+    );
+    
+    const pending = candidateAssessments.filter(
+      (assessment: any) => assessment.status === "pending"
+    );
+    
+    // Calculate average score from completed assessments with scores
+    const assessmentsWithScores = completed.filter(a => a.score !== undefined && a.score !== null);
+    const averageScore = assessmentsWithScores.length > 0 
+      ? Math.round(assessmentsWithScores.reduce((sum, a) => sum + a.score, 0) / assessmentsWithScores.length) 
+      : 0;
+    
+    return {
+      total: candidateAssessments.length,
+      completed: completed.length,
+      inProgress: inProgress.length,
+      pending: pending.length,
+      averageScore
+    };
+  };
 
   // Find upcoming assessment
   const getUpcomingAssessment = () => {
@@ -76,10 +115,101 @@ export default function CandidateDashboard() {
           </div>
         ) : (
           <>
-            {/* Progress Overview */}
+            {/* Progress Statistics */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              {/* Overall Progress */}
+              <Card className="col-span-1 md:col-span-2">
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold mb-4">Overall Progress</h2>
+                  <div className="flex items-center gap-6">
+                    <div className="relative h-32 w-32">
+                      <svg className="h-full w-full" viewBox="0 0 100 100">
+                        {/* Background circle */}
+                        <circle
+                          className="text-gray-200"
+                          strokeWidth="10"
+                          stroke="currentColor"
+                          fill="transparent"
+                          r="40"
+                          cx="50"
+                          cy="50"
+                        />
+                        {/* Progress circle */}
+                        <circle
+                          className="text-primary"
+                          strokeWidth="10"
+                          strokeDasharray={calculateProgress() * 2.51}
+                          strokeDashoffset={0}
+                          strokeLinecap="round"
+                          stroke="currentColor"
+                          fill="transparent"
+                          r="40"
+                          cx="50"
+                          cy="50"
+                          style={{
+                            transformOrigin: "center",
+                            transform: "rotate(-90deg)",
+                            transition: "stroke-dasharray 0.5s",
+                          }}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-2xl font-bold">{calculateProgress()}%</span>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-medium mb-2">Your Progress</h3>
+                      <p className="text-gray-600 mb-1">
+                        {getAssessmentStats().completed} of {getAssessmentStats().total} assessments completed
+                      </p>
+                      {getAssessmentStats().inProgress > 0 && (
+                        <p className="text-blue-600">
+                          {getAssessmentStats().inProgress} in progress
+                        </p>
+                      )}
+                      {getAssessmentStats().pending > 0 && (
+                        <p className="text-yellow-600">
+                          {getAssessmentStats().pending} pending
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Average Score */}
+              <Card className="col-span-1">
+                <CardContent className="p-6">
+                  <h2 className="text-lg font-semibold mb-2">Average Score</h2>
+                  <div className="flex items-center">
+                    <div className={`text-3xl font-bold ${
+                      getAssessmentStats().averageScore >= 80 ? 'text-green-500' : 
+                      getAssessmentStats().averageScore >= 60 ? 'text-blue-500' : 
+                      'text-yellow-500'
+                    }`}>
+                      {getAssessmentStats().averageScore}%
+                    </div>
+                  </div>
+                  <p className="text-gray-600 text-sm mt-2">Based on your completed assessments</p>
+                </CardContent>
+              </Card>
+              
+              {/* Time Investment */}
+              <Card className="col-span-1">
+                <CardContent className="p-6">
+                  <h2 className="text-lg font-semibold mb-2">Time Invested</h2>
+                  <div className="text-3xl font-bold text-primary">
+                    {getAssessmentStats().completed * 45}min
+                  </div>
+                  <p className="text-gray-600 text-sm mt-2">Total time spent on assessments</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Assessment List */}
             <Card className="mb-6">
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Your Assessment Progress</h2>
+                <h2 className="text-xl font-semibold mb-4">Your Assessments</h2>
                 <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
                   <div 
                     className="bg-primary h-2.5 rounded-full" 

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { AssessmentTimer } from "@/components/ui/assessment-timer";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,17 +22,50 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+interface MCQOption {
+  id: string;
+  text: string;
+}
+
+interface MCQQuestion {
+  id: string;
+  text: string;
+  options: MCQOption[];
+  correctOptionId: string;
+  timeLimit?: number;
+}
+
+interface Assessment {
+  id: number;
+  title: string;
+  description: string;
+  timeLimit?: number;
+  questions: MCQQuestion[];
+}
+
+interface MCQResponse {
+  questionId: string;
+  selectedOptionId: string;
+}
+
+interface AssessmentData {
+  id: number;
+  status: 'pending' | 'in-progress' | 'completed' | 'reviewed';
+  startedAt: string;
+  responses?: MCQResponse[];
+  assessment: Assessment;
+}
+
 export default function MCQAssessment() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [responses, setResponses] = useState<any[]>([]);
-  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const [responses, setResponses] = useState<MCQResponse[]>([]);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
   // Fetch assessment details
-  const { data: assessmentData, isLoading, error } = useQuery({
+  const { data: assessmentData, isLoading, error } = useQuery<AssessmentData>({
     queryKey: [`/api/candidate/assessment/${id}`],
     enabled: !!id,
   });
@@ -39,6 +73,8 @@ export default function MCQAssessment() {
   // Start assessment mutation
   const startAssessmentMutation = useMutation({
     mutationFn: async () => {
+      if (!assessmentData) return null;
+      
       const res = await apiRequest("POST", "/api/candidate/start-assessment", {
         candidateAssessmentId: assessmentData.id,
       });
@@ -59,6 +95,8 @@ export default function MCQAssessment() {
   // Submit assessment mutation
   const submitAssessmentMutation = useMutation({
     mutationFn: async () => {
+      if (!assessmentData) return null;
+      
       const res = await apiRequest("POST", "/api/candidate/submit-mcq", {
         candidateAssessmentId: assessmentData.id,
         responses,
@@ -90,7 +128,7 @@ export default function MCQAssessment() {
     ) {
       startAssessmentMutation.mutate();
     }
-  }, [assessmentData]);
+  }, [assessmentData, startAssessmentMutation]);
 
   // Initialize responses
   useEffect(() => {
@@ -102,38 +140,21 @@ export default function MCQAssessment() {
         // Initialize empty responses for each question
         const questions = assessmentData.assessment.questions;
         setResponses(
-          questions.map((q: any) => ({
+          questions.map((q) => ({
             questionId: q.id,
             selectedOptionId: "",
           }))
         );
       }
-
-      // Set up timer if needed
-      if (assessmentData.assessment.timeLimit) {
-        const startTime = new Date(assessmentData.startedAt).getTime();
-        const timeLimit = assessmentData.assessment.timeLimit * 60 * 1000; // convert to ms
-        const endTime = startTime + timeLimit;
-        const now = Date.now();
-        const remaining = Math.max(0, endTime - now);
-        
-        setTimeRemaining(Math.floor(remaining / 1000));
-        
-        const timer = setInterval(() => {
-          setTimeRemaining((prev) => {
-            if (prev === null || prev <= 1) {
-              clearInterval(timer);
-              submitAssessmentMutation.mutate();
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-        
-        return () => clearInterval(timer);
-      }
     }
   }, [assessmentData]);
+
+  // Handle auto-submission when time is up
+  const handleTimeEnd = () => {
+    if (assessmentData?.status === "in-progress") {
+      submitAssessmentMutation.mutate();
+    }
+  };
 
   if (isLoading) {
     return (
@@ -164,14 +185,6 @@ export default function MCQAssessment() {
 
   const questions = assessmentData.assessment.questions;
   const currentQuestion = questions[currentQuestionIndex];
-
-  // Format time remaining
-  const formatTimeRemaining = () => {
-    if (timeRemaining === null) return "";
-    const minutes = Math.floor(timeRemaining / 60);
-    const seconds = timeRemaining % 60;
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
 
   // Handle response selection
   const handleResponseChange = (optionId: string) => {
@@ -215,6 +228,12 @@ export default function MCQAssessment() {
   const handleSubmit = () => {
     submitAssessmentMutation.mutate();
   };
+  
+  // Calculate assessment completion percentage
+  const getCompletionPercentage = () => {
+    const answeredCount = responses.filter(r => r.selectedOptionId).length;
+    return Math.round((answeredCount / questions.length) * 100);
+  };
 
   return (
     <DashboardLayout title={assessmentData.assessment.title}>
@@ -227,10 +246,13 @@ export default function MCQAssessment() {
                 <p className="text-gray-500 text-sm mt-1">Complete all questions before submitting</p>
               </div>
               <div className="flex items-center">
-                {timeRemaining !== null && (
-                  <div className="text-sm text-gray-600 mr-4">
-                    Time remaining: <span className="font-medium">{formatTimeRemaining()}</span>
-                  </div>
+                {assessmentData.status === "in-progress" && assessmentData.assessment.timeLimit && (
+                  <AssessmentTimer
+                    durationInSeconds={assessmentData.assessment.timeLimit * 60}
+                    startTime={assessmentData.startedAt}
+                    onTimeEnd={handleTimeEnd}
+                    className="mr-4"
+                  />
                 )}
                 <div className="bg-primary text-white text-sm py-1 px-3 rounded-full">
                   Question {currentQuestionIndex + 1} of {questions.length}
@@ -241,12 +263,22 @@ export default function MCQAssessment() {
             <div className="border-b border-gray-200 pb-6 mb-6">
               <h3 className="text-lg font-medium mb-4">{currentQuestion.text}</h3>
               
+              {/* Per question time limit */}
+              {currentQuestion.timeLimit && (
+                <div className="mb-4">
+                  <AssessmentTimer
+                    durationInSeconds={currentQuestion.timeLimit}
+                    showProgress={false}
+                  />
+                </div>
+              )}
+              
               <RadioGroup
                 value={responses[currentQuestionIndex]?.selectedOptionId || ""}
                 onValueChange={handleResponseChange}
                 className="space-y-3"
               >
-                {currentQuestion.options.map((option: any) => (
+                {currentQuestion.options.map((option) => (
                   <div key={option.id} className="flex items-center">
                     <RadioGroupItem id={option.id} value={option.id} />
                     <Label htmlFor={option.id} className="ml-3">
@@ -277,7 +309,7 @@ export default function MCQAssessment() {
               <div className="bg-gray-50 p-3 rounded-md">
                 <div className="flex items-center justify-between">
                   <div className="flex flex-wrap gap-2">
-                    {questions.map((_, index) => (
+                    {questions.map((_q, index) => (
                       <button
                         key={index}
                         className={`h-8 w-8 rounded-full flex items-center justify-center text-sm ${getQuestionStatusClass(
@@ -291,7 +323,7 @@ export default function MCQAssessment() {
                   </div>
                   <AlertDialog open={submitDialogOpen} onOpenChange={setSubmitDialogOpen}>
                     <AlertDialogTrigger asChild>
-                      <Button variant="success" disabled={submitAssessmentMutation.isPending}>
+                      <Button variant="secondary" disabled={submitAssessmentMutation.isPending}>
                         {submitAssessmentMutation.isPending ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -314,6 +346,16 @@ export default function MCQAssessment() {
                               Warning: You have unanswered questions. Please check all questions before submitting.
                             </p>
                           )}
+                          
+                          <div className="mt-4">
+                            <p className="mb-1 text-sm">Assessment completion: {getCompletionPercentage()}%</p>
+                            <div className="w-full h-2 bg-gray-200 rounded-full">
+                              <div 
+                                className="h-2 bg-primary rounded-full"
+                                style={{ width: `${getCompletionPercentage()}%`}}
+                              ></div>
+                            </div>
+                          </div>
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
