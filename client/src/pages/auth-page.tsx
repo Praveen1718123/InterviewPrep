@@ -1,84 +1,92 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useAuth } from "@/hooks/use-auth";
-import { Redirect, useLocation } from "wouter";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { apiRequest } from "@/lib/queryClient";
+import { toast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
-const loginSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-const registerSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  fullName: z.string().min(2, "Full name must be at least 2 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  role: z.enum(["admin", "candidate"]).default("candidate"),
-});
-
+// Simple Auth Page that doesn't use useAuth hook
 export default function AuthPage() {
-  const { user, loginMutation, registerMutation } = useAuth();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
   const [, setLocation] = useLocation();
 
-  // If user is already logged in, redirect to dashboard
-  if (user) {
-    return <Redirect to={user.role === "admin" ? "/admin" : "/"} />;
-  }
-
-  const loginForm = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      username: "",
-      password: "",
-    },
+  // Login form state
+  const [loginData, setLoginData] = useState({
+    username: "",
+    password: "",
   });
 
-  const registerForm = useForm<z.infer<typeof registerSchema>>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      username: "",
-      email: "",
-      fullName: "",
-      password: "",
-      role: "candidate",
-    },
+  // Register form state
+  const [registerData, setRegisterData] = useState({
+    username: "",
+    email: "",
+    fullName: "",
+    password: "",
+    role: "candidate",
   });
 
-  const onLoginSubmit = (values: z.infer<typeof loginSchema>) => {
-    loginMutation.mutate(values, {
-      onSuccess: (user) => {
-        setLocation(user.role === "admin" ? "/admin" : "/");
-      },
-    });
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    
+    try {
+      const res = await apiRequest("POST", "/api/login", loginData);
+      const user = await res.json();
+      
+      toast({
+        title: "Login successful",
+        description: `Welcome back, ${user.fullName}!`,
+      });
+      
+      // Redirect based on role
+      setLocation(user.role === "admin" ? "/admin" : "/candidate");
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
-  const onRegisterSubmit = (values: z.infer<typeof registerSchema>) => {
-    registerMutation.mutate(values, {
-      onSuccess: (user) => {
-        setLocation(user.role === "admin" ? "/admin" : "/");
-      },
-    });
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsRegistering(true);
+    
+    try {
+      const res = await apiRequest("POST", "/api/register", registerData);
+      const user = await res.json();
+      
+      toast({
+        title: "Registration successful",
+        description: `Welcome, ${user.fullName}!`,
+      });
+      
+      // Redirect based on role
+      setLocation(user.role === "admin" ? "/admin" : "/candidate");
+    } catch (error) {
+      toast({
+        title: "Registration failed",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
+  const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setLoginData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setRegisterData(prev => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -92,123 +100,119 @@ export default function AuthPage() {
             </TabsList>
             
             <TabsContent value="login">
-              <Form {...loginForm}>
-                <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                  <FormField
-                    control={loginForm.control}
+              <form onSubmit={handleLoginSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="username" className="text-sm font-medium">
+                    Username
+                  </label>
+                  <Input
+                    id="username"
                     name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Username</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter your username" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    value={loginData.username}
+                    onChange={handleLoginChange}
+                    placeholder="Enter your username"
+                    required
+                    minLength={3}
                   />
-                  <FormField
-                    control={loginForm.control}
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="password" className="text-sm font-medium">
+                    Password
+                  </label>
+                  <Input
+                    id="password"
                     name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="Enter your password" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    type="password"
+                    value={loginData.password}
+                    onChange={handleLoginChange}
+                    placeholder="Enter your password"
+                    required
+                    minLength={6}
                   />
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={loginMutation.isPending}
-                  >
-                    {loginMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Logging in...
-                      </>
-                    ) : (
-                      "Login"
-                    )}
-                  </Button>
-                </form>
-              </Form>
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isLoggingIn}
+                >
+                  {isLoggingIn ? "Logging in..." : "Login"}
+                </Button>
+              </form>
             </TabsContent>
             
             <TabsContent value="register">
-              <Form {...registerForm}>
-                <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
-                  <FormField
-                    control={registerForm.control}
+              <form onSubmit={handleRegisterSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="reg-username" className="text-sm font-medium">
+                    Username
+                  </label>
+                  <Input
+                    id="reg-username"
                     name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Username</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Choose a username" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    value={registerData.username}
+                    onChange={handleRegisterChange}
+                    placeholder="Choose a username"
+                    required
+                    minLength={3}
                   />
-                  <FormField
-                    control={registerForm.control}
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="email" className="text-sm font-medium">
+                    Email
+                  </label>
+                  <Input
+                    id="email"
                     name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="Your email address" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    type="email"
+                    value={registerData.email}
+                    onChange={handleRegisterChange}
+                    placeholder="Your email address"
+                    required
                   />
-                  <FormField
-                    control={registerForm.control}
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="fullName" className="text-sm font-medium">
+                    Full Name
+                  </label>
+                  <Input
+                    id="fullName"
                     name="fullName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Your full name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    value={registerData.fullName}
+                    onChange={handleRegisterChange}
+                    placeholder="Your full name"
+                    required
+                    minLength={2}
                   />
-                  <FormField
-                    control={registerForm.control}
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="reg-password" className="text-sm font-medium">
+                    Password
+                  </label>
+                  <Input
+                    id="reg-password"
                     name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="Create a password" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    type="password"
+                    value={registerData.password}
+                    onChange={handleRegisterChange}
+                    placeholder="Create a password"
+                    required
+                    minLength={6}
                   />
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={registerMutation.isPending}
-                  >
-                    {registerMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating account...
-                      </>
-                    ) : (
-                      "Create Account"
-                    )}
-                  </Button>
-                </form>
-              </Form>
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isRegistering}
+                >
+                  {isRegistering ? "Creating account..." : "Create Account"}
+                </Button>
+              </form>
             </TabsContent>
           </Tabs>
         </div>
