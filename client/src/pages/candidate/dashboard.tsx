@@ -187,7 +187,21 @@ export default function CandidateDashboard() {
               {/* Your Assessments Overview */}
               <Card className="col-span-1 md:col-span-2">
                 <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-2">Your Assessments</h2>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-semibold">Your Assessments</h2>
+                    <Link href="/skill-analysis" className="text-primary text-sm hover:underline">
+                      View all
+                    </Link>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                    <div 
+                      className="bg-primary h-2.5 rounded-full" 
+                      style={{ width: `${calculateProgress()}%` }}
+                    ></div>
+                  </div>
+                  
                   <div className="space-y-4">
                     {candidateAssessments?.slice(0, 3).map((assessment: any) => (
                       <div key={assessment.id} className="flex items-center">
@@ -227,75 +241,6 @@ export default function CandidateDashboard() {
                 </CardContent>
               </Card>
             </div>
-
-            {/* Detailed Assessment List */}
-            <Card className="mb-6">
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">All Assessment Results</h2>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
-                  <div 
-                    className="bg-primary h-2.5 rounded-full" 
-                    style={{ width: `${calculateProgress()}%` }}
-                  ></div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {candidateAssessments?.map((assessment: any) => (
-                    <div key={assessment.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                      <div className="flex items-center mb-2">
-                        <div className={`h-8 w-8 rounded-full flex items-center justify-center mr-3 ${
-                          assessment.status === "completed" || assessment.status === "reviewed"
-                            ? "bg-green-100"
-                            : assessment.status === "in-progress"
-                            ? "bg-blue-100"
-                            : "bg-yellow-100"
-                        }`}>
-                          {assessment.status === "completed" || assessment.status === "reviewed" ? (
-                            <CheckCircle className="h-5 w-5 text-green-500" />
-                          ) : assessment.status === "in-progress" ? (
-                            <Clock className="h-5 w-5 text-blue-500" />
-                          ) : (
-                            <Calendar className="h-5 w-5 text-yellow-500" />
-                          )}
-                        </div>
-                        <h3 className="font-medium">{assessment.assessment.title}</h3>
-                      </div>
-                      <div className="ml-11">
-                        {assessment.status === "completed" || assessment.status === "reviewed" ? (
-                          <>
-                            <p className="text-sm text-gray-600">
-                              Completed on: <span className="font-medium">
-                                {formatDate(assessment.completedAt)}
-                              </span>
-                            </p>
-                            {assessment.score !== undefined && (
-                              <p className="text-sm text-gray-600">
-                                Score: <span className="font-medium">{assessment.score}/100</span>
-                              </p>
-                            )}
-                          </>
-                        ) : assessment.status === "in-progress" ? (
-                          <p className="text-sm text-gray-600">
-                            Status: <span className="font-medium text-blue-500">In Progress</span>
-                          </p>
-                        ) : (
-                          <>
-                            <p className="text-sm text-gray-600">
-                              Status: <span className="font-medium text-yellow-500">Scheduled</span>
-                            </p>
-                            {assessment.scheduledFor && (
-                              <p className="text-sm text-gray-600">
-                                Date: <span className="font-medium">{formatDate(assessment.scheduledFor)}</span>
-                              </p>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
             
             {/* Time Investment */}
             <Card className="mb-6">
