@@ -242,17 +242,6 @@ export default function CandidateDashboard() {
               </Card>
             </div>
             
-            {/* Time Investment */}
-            <Card className="mb-6">
-              <CardContent className="p-6">
-                <h2 className="text-lg font-semibold mb-2">Time Invested</h2>
-                <div className="text-3xl font-bold text-primary">
-                  {getAssessmentStats().completed * 45}min
-                </div>
-                <p className="text-gray-600 text-sm mt-2">Total time spent on assessments</p>
-              </CardContent>
-            </Card>
-
             {/* Mock Interview Rounds */}
             <Card className="mb-6">
               <CardHeader>
