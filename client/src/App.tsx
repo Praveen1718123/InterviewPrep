@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Link } from "wouter";
 import { AuthProvider } from "./hooks/use-auth";
 import NotFound from "@/pages/not-found";
 import { Suspense, lazy } from "react";
@@ -30,17 +30,17 @@ const WelcomePage = () => {
         <h1 className="text-2xl font-bold text-primary mb-4">Interview Preparation Platform</h1>
         <p className="text-gray-600 mb-6">
           Welcome to the interview preparation platform. Please
-          <a href="/auth" className="text-primary mx-1 hover:underline">
+          <Link href="/auth" className="text-primary mx-1 hover:underline">
             login or register
-          </a>
+          </Link>
           to continue.
         </p>
-        <a
+        <Link 
           href="/auth"
           className="block w-full text-center bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded-md transition duration-200"
         >
           Get Started
-        </a>
+        </Link>
       </div>
     </div>
   );
