@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Response as ExpressResponse } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
@@ -13,11 +13,14 @@ import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize storage (create tables and seed data if needed)
+  await storage.initializeStorage();
+  
   // Sets up /api/register, /api/login, /api/logout, /api/user
   const { isAdmin } = setupAuth(app);
 
   // Error handler for zod validation
-  const handleZodError = (error: unknown, res: Express.Response) => {
+  const handleZodError = (error: unknown, res: ExpressResponse) => {
     if (error instanceof ZodError) {
       const validationError = fromZodError(error);
       return res.status(400).json({ message: validationError.message });
@@ -46,9 +49,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/assessments", isAdmin, async (req, res) => {
     try {
+      // If we're here, isAdmin middleware has already confirmed req.user exists
       const assessmentData = insertAssessmentSchema.parse({
         ...req.body,
-        createdBy: req.user.id
+        createdBy: req.user!.id
       });
       const assessment = await storage.createAssessment(assessmentData);
       res.status(201).json(assessment);
@@ -94,7 +98,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/candidate/assessments", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
-      const candidateId = req.user.id;
+      const candidateId = req.user!.id;
       const assessments = await storage.getCandidateAssessments(candidateId);
       res.json(assessments);
     } catch (error) {
@@ -106,7 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
       const assessmentId = parseInt(req.params.id);
-      const candidateId = req.user.id;
+      const candidateId = req.user!.id;
       const assignment = await storage.getCandidateAssignment(candidateId, assessmentId);
       if (!assignment) {
         return res.status(404).json({ message: "Assessment not found or not assigned" });
@@ -121,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
       const { candidateAssessmentId } = req.body;
-      const candidateId = req.user.id;
+      const candidateId = req.user!.id;
       const updated = await storage.startAssessment(candidateAssessmentId, candidateId);
       res.json(updated);
     } catch (error) {
@@ -133,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
       const { candidateAssessmentId, responses } = req.body;
-      const candidateId = req.user.id;
+      const candidateId = req.user!.id;
       
       // Validate responses
       for (const response of responses) {
@@ -151,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
       const { candidateAssessmentId, responses } = req.body;
-      const candidateId = req.user.id;
+      const candidateId = req.user!.id;
       
       // Validate responses
       for (const response of responses) {
@@ -169,7 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
       const { candidateAssessmentId, responses } = req.body;
-      const candidateId = req.user.id;
+      const candidateId = req.user!.id;
       
       // Validate responses
       for (const response of responses) {
