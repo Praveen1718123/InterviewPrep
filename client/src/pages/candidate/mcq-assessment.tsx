@@ -246,17 +246,16 @@ export default function MCQAssessment() {
                 <p className="text-gray-500 text-sm mt-1">Complete all questions before submitting</p>
               </div>
               <div className="flex items-center">
+                <div className="bg-primary text-white text-sm py-1 px-3 rounded-full mr-4">
+                  Question {currentQuestionIndex + 1} of {questions.length}
+                </div>
                 {assessmentData.status === "in-progress" && assessmentData.assessment.timeLimit && (
                   <AssessmentTimer
                     durationInSeconds={assessmentData.assessment.timeLimit * 60}
                     startTime={assessmentData.startedAt}
                     onTimeEnd={handleTimeEnd}
-                    className="mr-4"
                   />
                 )}
-                <div className="bg-primary text-white text-sm py-1 px-3 rounded-full">
-                  Question {currentQuestionIndex + 1} of {questions.length}
-                </div>
               </div>
             </div>
             

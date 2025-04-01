@@ -270,9 +270,13 @@ export default function VideoInterview() {
             
             <div className="border-b border-gray-200 pb-6 mb-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">Question {currentQuestionIndex + 1} of {questions.length}</h3>
-                <div className="text-sm text-gray-600">
-                  Time limit: <span className="font-medium">{currentQuestion.timeLimit} seconds</span>
+                <div className="flex items-center">
+                  <div className="bg-primary text-white text-sm py-1 px-3 rounded-full mr-4">
+                    Question {currentQuestionIndex + 1} of {questions.length}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Time limit: <span className="font-medium">{currentQuestion.timeLimit} seconds</span>
+                  </div>
                 </div>
               </div>
               
