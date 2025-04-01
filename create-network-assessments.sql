@@ -8,7 +8,7 @@ VALUES (
     {
       "id": "net-mcq-1",
       "text": "Which layer of the OSI model is responsible for routing and forwarding data packets?",
-      "timeLimit": 45,
+      "timeLimit": 300,
       "options": [
         {"id": "opt1", "text": "Physical Layer"},
         {"id": "opt2", "text": "Data Link Layer"},
@@ -20,7 +20,7 @@ VALUES (
     {
       "id": "net-mcq-2",
       "text": "Which protocol is used to convert IP addresses to MAC addresses?",
-      "timeLimit": 30,
+      "timeLimit": 300,
       "options": [
         {"id": "opt1", "text": "DHCP"},
         {"id": "opt2", "text": "ARP"},
@@ -32,7 +32,7 @@ VALUES (
     {
       "id": "net-mcq-3",
       "text": "Which of the following is NOT a private IP address range?",
-      "timeLimit": 30,
+      "timeLimit": 300,
       "options": [
         {"id": "opt1", "text": "10.0.0.0/8"},
         {"id": "opt2", "text": "172.16.0.0/12"},
@@ -44,7 +44,7 @@ VALUES (
     {
       "id": "net-mcq-4",
       "text": "Which protocol operates at the Transport Layer and provides reliable, connection-oriented communication?",
-      "timeLimit": 40,
+      "timeLimit": 300,
       "options": [
         {"id": "opt1", "text": "UDP"},
         {"id": "opt2", "text": "IP"},
@@ -56,7 +56,7 @@ VALUES (
     {
       "id": "net-mcq-5",
       "text": "What is the primary purpose of a firewall in a network?",
-      "timeLimit": 40,
+      "timeLimit": 300,
       "options": [
         {"id": "opt1", "text": "To increase network speed"},
         {"id": "opt2", "text": "To filter network traffic based on security rules"},
@@ -80,7 +80,7 @@ VALUES (
     {
       "id": "net-fib-1",
       "text": "In a TCP socket program, the server uses the _____ function to wait for incoming client connections.",
-      "timeLimit": 60,
+      "timeLimit": 300,
       "blanks": [
         {"id": "blank1", "correctAnswer": "listen"}
       ]
@@ -88,7 +88,7 @@ VALUES (
     {
       "id": "net-fib-2",
       "text": "To create a UDP socket in Python, you would use socket.socket(socket.AF_INET, _____)",
-      "timeLimit": 45,
+      "timeLimit": 300,
       "blanks": [
         {"id": "blank1", "correctAnswer": "socket.SOCK_DGRAM"}
       ]
@@ -96,7 +96,7 @@ VALUES (
     {
       "id": "net-fib-3",
       "text": "The HTTP response code _____ indicates a successful request.",
-      "timeLimit": 30,
+      "timeLimit": 300,
       "blanks": [
         {"id": "blank1", "correctAnswer": "200"}
       ]
@@ -104,7 +104,7 @@ VALUES (
     {
       "id": "net-fib-4",
       "text": "In web development, _____ is a standard that allows servers to accept cross-origin requests from web browsers.",
-      "timeLimit": 45,
+      "timeLimit": 300,
       "blanks": [
         {"id": "blank1", "correctAnswer": "CORS"}
       ]
@@ -112,7 +112,7 @@ VALUES (
     {
       "id": "net-fib-5",
       "text": "The ping command uses the _____ protocol to test connectivity between hosts.",
-      "timeLimit": 30,
+      "timeLimit": 300,
       "blanks": [
         {"id": "blank1", "correctAnswer": "ICMP"}
       ]
@@ -132,31 +132,31 @@ VALUES (
     {
       "id": "net-vid-1",
       "text": "Explain the difference between TCP and UDP protocols and provide examples of when each would be the best choice.",
-      "timeLimit": 120,
+      "timeLimit": 300,
       "preparationTime": 60
     },
     {
       "id": "net-vid-2",
       "text": "Describe the process that happens when you type a URL into your browser and press Enter. Include as much detail as possible about networking concepts involved.",
-      "timeLimit": 180,
+      "timeLimit": 300,
       "preparationTime": 90
     },
     {
       "id": "net-vid-3",
       "text": "Explain how a VPN works and the security benefits it provides.",
-      "timeLimit": 120,
+      "timeLimit": 300,
       "preparationTime": 60
     },
     {
       "id": "net-vid-4",
       "text": "Describe how you would troubleshoot a network connectivity issue where a user cannot access a specific website.",
-      "timeLimit": 150,
+      "timeLimit": 300,
       "preparationTime": 60
     },
     {
       "id": "net-vid-5",
       "text": "Explain the concept of subnetting and why it's important in network design.",
-      "timeLimit": 120,
+      "timeLimit": 300,
       "preparationTime": 60
     }
   ]'::jsonb,
