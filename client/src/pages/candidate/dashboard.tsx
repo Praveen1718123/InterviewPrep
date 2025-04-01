@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
-import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, CheckCircle, Clock, Calendar } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Loader2, CheckCircle, Clock, Calendar, FileText, PenSquare, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 export default function CandidateDashboard() {
   const { user } = useAuth();
 
-  const { data: candidateAssessments, isLoading } = useQuery({
+  const { data: candidateAssessments = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/candidate/assessments"],
     enabled: !!user,
   });
@@ -145,6 +145,80 @@ export default function CandidateDashboard() {
               </CardContent>
             </Card>
 
+            {/* Mock Interview Rounds */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-xl">Attend 3 mock interview rounds</CardTitle>
+                <CardDescription>Complete each round to improve your interview skills</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* MCQ Round */}
+                  <Card className="border-2 border-primary/20 h-full">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-3 mx-auto">
+                        <FileText className="h-6 w-6 text-primary" />
+                      </div>
+                      <CardTitle className="text-center">MCQs</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-sm text-gray-600">
+                      Test your knowledge with multiple-choice questions covering key technical concepts.
+                    </CardContent>
+                    <CardFooter className="pt-0 flex justify-center">
+                      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                        <CheckCircle className="mr-1 h-3 w-3" />
+                        Completed
+                      </span>
+                    </CardFooter>
+                  </Card>
+
+                  {/* Fill-in-the-Blanks Round */}
+                  <Card className="border-2 border-primary/20 h-full">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-3 mx-auto">
+                        <PenSquare className="h-6 w-6 text-primary" />
+                      </div>
+                      <CardTitle className="text-center">Fill-in-the-Blanks</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-sm text-gray-600">
+                      Practice your applied knowledge by filling in missing code segments and technical terms.
+                    </CardContent>
+                    <CardFooter className="pt-0 flex justify-center">
+                      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                        <CheckCircle className="mr-1 h-3 w-3" />
+                        Completed
+                      </span>
+                    </CardFooter>
+                  </Card>
+
+                  {/* Video Interview Round */}
+                  <Card className="border-2 border-primary/20 h-full">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-3 mx-auto">
+                        <Video className="h-6 w-6 text-primary" />
+                      </div>
+                      <CardTitle className="text-center">Video Interview</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-sm text-gray-600">
+                      Record video responses to common behavioral and technical questions asked in interviews.
+                    </CardContent>
+                    <CardFooter className="pt-0 flex justify-center">
+                      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                        <CheckCircle className="mr-1 h-3 w-3" />
+                        Completed
+                      </span>
+                    </CardFooter>
+                  </Card>
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-center border-t pt-6">
+                <div className="text-center max-w-md">
+                  <h3 className="text-base font-semibold mb-2">Get feedback and track your progress</h3>
+                  <p className="text-sm text-gray-600">Complete all three rounds to receive comprehensive feedback from our experts and track your improvement over time.</p>
+                </div>
+              </CardFooter>
+            </Card>
+            
             {/* Upcoming Assessment */}
             {upcomingAssessment && (
               <Card className="mb-6">
