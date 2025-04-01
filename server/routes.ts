@@ -16,6 +16,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize storage (create tables and seed data if needed)
   await storage.initializeStorage();
   
+  // Add test route to verify server is responding
+  app.get('/api/test', (req, res) => {
+    res.json({ status: 'ok', message: 'API is working' });
+  });
+  
   // Sets up /api/register, /api/login, /api/logout, /api/user
   const { isAdmin } = setupAuth(app);
 
