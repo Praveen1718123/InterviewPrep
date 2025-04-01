@@ -191,6 +191,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       handleZodError(error, res);
     }
   });
+  
+  // Get completed assessments for skill analysis
+  app.get("/api/candidate/assessments/completed", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    try {
+      const candidateId = req.user!.id;
+      const assessments = await storage.getCandidateAssessments(candidateId);
+      
+      // Filter to include only completed or reviewed assessments
+      const completedAssessments = assessments.filter(
+        (assessment) => assessment.status === "completed" || assessment.status === "reviewed"
+      );
+      
+      res.json(completedAssessments);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching completed assessments" });
+    }
+  });
 
   const httpServer = createServer(app);
 

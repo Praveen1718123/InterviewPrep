@@ -11,6 +11,7 @@ const CandidateDashboard = lazy(() => import("@/pages/candidate/dashboard"));
 const MCQAssessment = lazy(() => import("@/pages/candidate/mcq-assessment"));
 const FillBlanksAssessment = lazy(() => import("@/pages/candidate/fill-blanks-assessment"));
 const VideoInterview = lazy(() => import("@/pages/candidate/video-interview"));
+const SkillAnalysis = lazy(() => import("@/pages/candidate/skill-analysis"));
 const AdminDashboard = lazy(() => import("@/pages/admin/dashboard"));
 const AdminCandidates = lazy(() => import("@/pages/admin/candidates"));
 const AdminAssessments = lazy(() => import("@/pages/admin/assessments"));
@@ -67,6 +68,7 @@ function App() {
           <ProtectedRoute path="/assessment/mcq/:id" component={MCQAssessment} />
           <ProtectedRoute path="/assessment/fill-blanks/:id" component={FillBlanksAssessment} />
           <ProtectedRoute path="/assessment/video/:id" component={VideoInterview} />
+          <ProtectedRoute path="/skill-analysis" component={SkillAnalysis} />
           
           {/* Fallback to 404 */}
           <Route component={NotFound} />

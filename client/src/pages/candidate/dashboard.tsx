@@ -120,7 +120,14 @@ export default function CandidateDashboard() {
               {/* Overall Progress */}
               <Card className="col-span-1 md:col-span-2">
                 <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold mb-4">Overall Progress</h2>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold">Overall Progress</h2>
+                    <Button variant="outline" asChild size="sm">
+                      <Link href="/skill-analysis">
+                        View Skill Analysis
+                      </Link>
+                    </Button>
+                  </div>
                   <div className="flex items-center gap-6">
                     <div className="relative h-32 w-32">
                       <svg className="h-full w-full" viewBox="0 0 100 100">
