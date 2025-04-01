@@ -164,7 +164,10 @@ export default function CandidateDashboard() {
                     <CardContent className="text-center text-sm text-gray-600">
                       Test your knowledge with multiple-choice questions covering key technical concepts.
                     </CardContent>
-                    <CardFooter className="pt-0 flex justify-center">
+                    <CardFooter className="pt-0 flex flex-col gap-2 items-center">
+                      <Button asChild variant="outline" size="sm" className="w-full">
+                        <Link href="/assessment/mcq/1">Start Round</Link>
+                      </Button>
                       <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
                         <CheckCircle className="mr-1 h-3 w-3" />
                         Completed
@@ -183,7 +186,10 @@ export default function CandidateDashboard() {
                     <CardContent className="text-center text-sm text-gray-600">
                       Practice your applied knowledge by filling in missing code segments and technical terms.
                     </CardContent>
-                    <CardFooter className="pt-0 flex justify-center">
+                    <CardFooter className="pt-0 flex flex-col gap-2 items-center">
+                      <Button asChild variant="outline" size="sm" className="w-full">
+                        <Link href="/assessment/fill-blanks/2">Start Round</Link>
+                      </Button>
                       <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
                         <CheckCircle className="mr-1 h-3 w-3" />
                         Completed
@@ -202,7 +208,10 @@ export default function CandidateDashboard() {
                     <CardContent className="text-center text-sm text-gray-600">
                       Record video responses to common behavioral and technical questions asked in interviews.
                     </CardContent>
-                    <CardFooter className="pt-0 flex justify-center">
+                    <CardFooter className="pt-0 flex flex-col gap-2 items-center">
+                      <Button asChild variant="outline" size="sm" className="w-full">
+                        <Link href="/assessment/video/3">Start Round</Link>
+                      </Button>
                       <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
                         <CheckCircle className="mr-1 h-3 w-3" />
                         Completed
@@ -225,8 +234,8 @@ export default function CandidateDashboard() {
                 <CardContent className="p-6">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold">Upcoming Assessment</h2>
-                    <Link href="/assessments">
-                      <a className="text-primary hover:text-primary-dark font-medium">View all</a>
+                    <Link href="/assessments" className="text-primary hover:text-primary-dark font-medium">
+                      View all
                     </Link>
                   </div>
                   
@@ -245,11 +254,11 @@ export default function CandidateDashboard() {
                         </div>
                       </div>
                       <div className="mt-4 md:mt-0">
-                        <Link href={getAssessmentRoute(upcomingAssessment)}>
-                          <Button>
+                        <Button asChild>
+                          <Link href={getAssessmentRoute(upcomingAssessment)}>
                             {upcomingAssessment.status === "in-progress" ? "Continue" : "Start"} Assessment
-                          </Button>
-                        </Link>
+                          </Link>
+                        </Button>
                       </div>
                     </div>
                   </div>
