@@ -104,11 +104,52 @@ export default function AuthPage() {
                 
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className="w-full mb-4" 
                   disabled={loginMutation.isPending}
                 >
                   {loginMutation.isPending ? "Logging in..." : "Login"}
                 </Button>
+                
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">Quick Access</span>
+                  </div>
+                </div>
+                
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => {
+                      setLoginData({
+                        username: "admin",
+                        password: "admin123"
+                      });
+                      loginMutation.mutate({ username: "admin", password: "admin123" });
+                    }}
+                  >
+                    Admin Flow
+                  </Button>
+                  
+                  <Button 
+                    type="button" 
+                    variant="secondary" 
+                    className="w-full"
+                    onClick={() => {
+                      setLoginData({
+                        username: "candidate",
+                        password: "candidate123"
+                      });
+                      loginMutation.mutate({ username: "candidate", password: "candidate123" });
+                    }}
+                  >
+                    Candidate Flow
+                  </Button>
+                </div>
               </form>
             </TabsContent>
             
