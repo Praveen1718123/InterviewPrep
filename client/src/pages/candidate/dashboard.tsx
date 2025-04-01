@@ -260,6 +260,10 @@ export default function CandidateDashboard() {
                     </CardHeader>
                     <CardContent className="text-center text-sm text-gray-600">
                       Test your knowledge with multiple-choice questions covering key technical concepts.
+                      <div className="mt-2 text-xs flex items-center justify-center text-gray-500">
+                        <Clock className="w-3 h-3 mr-1" />
+                        <span>5 min timer per question</span>
+                      </div>
                     </CardContent>
                     <CardFooter className="pt-0 flex flex-col gap-2 items-center">
                       <Button asChild variant="outline" size="sm" className="w-full">
@@ -282,6 +286,10 @@ export default function CandidateDashboard() {
                     </CardHeader>
                     <CardContent className="text-center text-sm text-gray-600">
                       Practice your applied knowledge by filling in missing code segments and technical terms.
+                      <div className="mt-2 text-xs flex items-center justify-center text-gray-500">
+                        <Clock className="w-3 h-3 mr-1" />
+                        <span>5 min timer per question</span>
+                      </div>
                     </CardContent>
                     <CardFooter className="pt-0 flex flex-col gap-2 items-center">
                       <Button asChild variant="outline" size="sm" className="w-full">
@@ -304,6 +312,10 @@ export default function CandidateDashboard() {
                     </CardHeader>
                     <CardContent className="text-center text-sm text-gray-600">
                       Record video responses to common behavioral and technical questions asked in interviews.
+                      <div className="mt-2 text-xs flex items-center justify-center text-gray-500">
+                        <Clock className="w-3 h-3 mr-1" />
+                        <span>5 min timer per question</span>
+                      </div>
                     </CardContent>
                     <CardFooter className="pt-0 flex flex-col gap-2 items-center">
                       <Button asChild variant="outline" size="sm" className="w-full">
