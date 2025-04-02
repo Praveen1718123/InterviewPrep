@@ -25,6 +25,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, userData: Partial<User>): Promise<User>;
   getCandidates(): Promise<User[]>;
   
   // Assessment operations
@@ -137,6 +138,20 @@ export class MemStorage implements IStorage {
     return user;
   }
 
+  async updateUser(id: number, userData: Partial<User>): Promise<User> {
+    const existingUser = await this.getUser(id);
+    if (!existingUser) {
+      throw new Error("User not found");
+    }
+
+    const updatedUser = {
+      ...existingUser,
+      ...userData,
+    };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
   async getCandidates(): Promise<User[]> {
     return Array.from(this.users.values()).filter(
       (user) => user.role === "candidate",
@@ -151,7 +166,8 @@ export class MemStorage implements IStorage {
       ...assessment, 
       id, 
       createdAt,
-      description: assessment.description || null
+      description: assessment.description || null,
+      timeLimit: assessment.timeLimit || null
     };
     this.assessments.set(id, newAssessment);
     return newAssessment;
@@ -448,6 +464,20 @@ export class PostgresStorage implements IStorage {
     return result[0];
   }
   
+  async updateUser(id: number, userData: Partial<User>): Promise<User> {
+    const existingUser = await this.getUser(id);
+    if (!existingUser) {
+      throw new Error("User not found");
+    }
+    
+    const result = await this.db.update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    
+    return result[0];
+  }
+  
   async getCandidates(): Promise<User[]> {
     return await this.db.select().from(users).where(eq(users.role, "candidate"));
   }
@@ -457,6 +487,7 @@ export class PostgresStorage implements IStorage {
     const result = await this.db.insert(assessments).values({
       ...assessment,
       description: assessment.description || null,
+      timeLimit: assessment.timeLimit || null,
       createdAt: new Date()
     }).returning();
     return result[0];
