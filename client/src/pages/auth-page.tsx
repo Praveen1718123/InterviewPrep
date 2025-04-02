@@ -133,15 +133,13 @@ export default function AuthPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="p-6 md:p-8">
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-10">
             <img 
               src="/assets/switchbee-logo.svg" 
               alt="Switchbee Solutions LLP Logo" 
-              className="h-24" 
+              className="h-28" 
             />
           </div>
-          
-          <h1 className="text-2xl font-bold text-center mb-8 text-[#0E2D4A]">Switchbee Solutions LLP</h1>
           
           <form onSubmit={handleLoginSubmit} className="space-y-6">
             <div className="space-y-2">

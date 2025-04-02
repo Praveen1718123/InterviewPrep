@@ -10,9 +10,8 @@ export default function LandingPage() {
           <img 
             src="/assets/switchbee-logo.svg" 
             alt="Switchbee Solutions LLP Logo" 
-            className="h-12 mr-2" 
+            className="h-16" 
           />
-          <span className="text-xl font-semibold text-[#0E2D4A]">Switchbee Solutions LLP</span>
         </div>
         <nav className="hidden md:flex space-x-8">
           <a href="#" className="text-gray-700 hover:text-gray-900">Home</a>
