@@ -312,49 +312,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[#0E2D4A] text-white py-16">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            {/* Logo and Description */}
-            <div>
-              <img 
-                src="/assets/switchbee-logo.svg" 
-                alt="Switchbee Solutions LLP" 
-                className="h-8 mb-4"
-              />
-              <p className="text-gray-300 max-w-md">
-                Your trusted partner in manpower supply, vendorship, and payroll solutions. Empowering businesses with comprehensive HR solutions and exceptional service quality.
-              </p>
-              <div className="flex space-x-6 mt-6">
-                <a href="/" className="text-gray-300 hover:text-white">Home</a>
-                <a href="#features" className="text-gray-300 hover:text-white">Features</a>
-                <a href="#about" className="text-gray-300 hover:text-white">About</a>
-                <a href="#contact" className="text-gray-300 hover:text-white">Contact</a>
-              </div>
-            </div>
-
-            {/* Contact Info */}
-            <div>
-              <h3 className="text-[#F8B932] font-medium mb-4">Contact Info</h3>
-              <div className="space-y-3">
-                <p className="text-gray-300">Email: info@switchbeesolution.com</p>
-                <p className="text-gray-300">Phone: +91 XXXXX XXXXX</p>
-                <p className="text-gray-300">Hours: Mon-Fri 9:00 AM - 6:00 PM</p>
-                <p className="text-gray-300">Saturday: 9:00 AM - 1:00 PM</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Copyright */}
-          <div className="border-t border-gray-700 pt-8">
-            <p className="text-gray-400 text-sm">
-              © 2025 Switchbee Solutions LLP. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
-
       {/* Contact Section */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4 md:px-6">
@@ -492,6 +449,49 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-[#0E2D4A] text-white py-16">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            {/* Logo and Description */}
+            <div>
+              <img 
+                src="/assets/switchbee-logo.svg" 
+                alt="Switchbee Solutions LLP" 
+                className="h-8 mb-4"
+              />
+              <p className="text-gray-300 max-w-md">
+                Your trusted partner in manpower supply, vendorship, and payroll solutions. Empowering businesses with comprehensive HR solutions and exceptional service quality.
+              </p>
+              <div className="flex space-x-6 mt-6">
+                <a href="/" className="text-gray-300 hover:text-white">Home</a>
+                <a href="#features" className="text-gray-300 hover:text-white">Features</a>
+                <a href="#about" className="text-gray-300 hover:text-white">About</a>
+                <a href="#contact" className="text-gray-300 hover:text-white">Contact</a>
+              </div>
+            </div>
+
+            {/* Contact Info */}
+            <div>
+              <h3 className="text-[#F8B932] font-medium mb-4">Contact Info</h3>
+              <div className="space-y-3">
+                <p className="text-gray-300">Email: info@switchbeesolution.com</p>
+                <p className="text-gray-300">Phone: +91 XXXXX XXXXX</p>
+                <p className="text-gray-300">Hours: Mon-Fri 9:00 AM - 6:00 PM</p>
+                <p className="text-gray-300">Saturday: 9:00 AM - 1:00 PM</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Copyright */}
+          <div className="border-t border-gray-700 pt-8">
+            <p className="text-gray-400 text-sm">
+              © 2025 Switchbee Solutions LLP. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
