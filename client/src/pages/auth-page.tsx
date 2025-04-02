@@ -46,8 +46,8 @@ export default function AuthPage() {
     // Check if the username is "admin" - prevent admin login through main form
     if (loginData.username.toLowerCase() === "admin") {
       toast({
-        title: "Admin Login Required",
-        description: "Please use the Admin Login button to access administrator features.",
+        title: "Invalid credentials",
+        description: "Please check your username and password.",
         variant: "destructive",
       });
       return;
@@ -55,14 +55,9 @@ export default function AuthPage() {
     
     loginMutation.mutate(loginData, {
       onSuccess: (user) => {
-        // Verify the user is not an admin
+        // Verify the user is not an admin - silently enforce role separation
         if (user.role === "admin") {
-          toast({
-            title: "Access Denied",
-            description: "Administrators must use the Admin Login button.",
-            variant: "destructive",
-          });
-          // Log the user out immediately
+          // Log the user out immediately without specific messaging
           loginMutation.reset();
           setTimeout(() => logoutMutation.mutate(), 500);
         }
@@ -86,9 +81,9 @@ export default function AuthPage() {
     // Ensure the username is "admin" - prevent candidate login through admin form
     if (adminLoginData.username.toLowerCase() !== "admin") {
       toast({
-        title: "Admin Username Required",
-        description: "Please use a valid administrator username.",
-        variant: "destructive",
+        title: "Invalid credentials",
+        description: "Please check your username and password.",
+        variant: "destructive", 
       });
       return;
     }
@@ -98,8 +93,8 @@ export default function AuthPage() {
       onSuccess: (user) => {
         if (user.role !== "admin") {
           toast({
-            title: "Access Denied",
-            description: "The provided credentials do not have administrator privileges",
+            title: "Invalid credentials",
+            description: "Please check your username and password.",
             variant: "destructive",
           });
           // Log out immediately if role is not admin
@@ -116,8 +111,8 @@ export default function AuthPage() {
       },
       onError: () => {
         toast({
-          title: "Authentication Failed",
-          description: "Invalid admin credentials. Please try again.",
+          title: "Invalid credentials",
+          description: "Please check your username and password.",
           variant: "destructive",
         });
       }
