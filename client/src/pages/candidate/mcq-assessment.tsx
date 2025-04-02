@@ -189,6 +189,13 @@ export default function MCQAssessment() {
   // Handle response selection
   const handleResponseChange = (optionId: string) => {
     const newResponses = [...responses];
+    // Make sure the response exists before trying to set its property
+    if (!newResponses[currentQuestionIndex]) {
+      newResponses[currentQuestionIndex] = {
+        questionId: questions[currentQuestionIndex].id,
+        selectedOptionId: ""
+      };
+    }
     newResponses[currentQuestionIndex].selectedOptionId = optionId;
     setResponses(newResponses);
   };
@@ -218,7 +225,7 @@ export default function MCQAssessment() {
     if (index === currentQuestionIndex) {
       return "border-2 border-primary text-primary font-bold";
     }
-    if (responses[index]?.selectedOptionId) {
+    if (responses && responses[index]?.selectedOptionId) {
       return "bg-primary text-white";
     }
     return "bg-gray-200 text-gray-500";
@@ -231,7 +238,8 @@ export default function MCQAssessment() {
   
   // Calculate assessment completion percentage
   const getCompletionPercentage = () => {
-    const answeredCount = responses.filter(r => r.selectedOptionId).length;
+    if (!responses || !responses.length) return 0;
+    const answeredCount = responses.filter(r => r && r.selectedOptionId).length;
     return Math.round((answeredCount / questions.length) * 100);
   };
 
@@ -273,7 +281,7 @@ export default function MCQAssessment() {
               )}
               
               <RadioGroup
-                value={responses[currentQuestionIndex]?.selectedOptionId || ""}
+                value={(responses && responses[currentQuestionIndex]?.selectedOptionId) || ""}
                 onValueChange={handleResponseChange}
                 className="space-y-3"
               >
@@ -340,7 +348,7 @@ export default function MCQAssessment() {
                           Are you sure you want to submit your assessment? You won't be able to change
                           your answers after submission.
                           
-                          {responses.some(r => !r.selectedOptionId) && (
+                          {responses && responses.some(r => !r?.selectedOptionId) && (
                             <p className="mt-2 text-red-500">
                               Warning: You have unanswered questions. Please check all questions before submitting.
                             </p>
