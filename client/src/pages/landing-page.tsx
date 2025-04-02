@@ -91,19 +91,16 @@ export default function LandingPage() {
             </div>
             <div>
               <h3 className="text-xl font-semibold text-[#0E2D4A] mb-2">Optimizing Human Capital</h3>
-              <p className="text-gray-600 mb-3">Empower businesses with skilled, motivated workforce management solutions.</p>
-              <button className="text-[#0E2D4A] font-medium hover:text-blue-700 flex items-center">
-                Learn more <span className="ml-2">→</span>
-              </button>
+              <p className="text-gray-600">Empower businesses with skilled, motivated workforce management solutions.</p>
             </div>
-            <div className="hidden md:block">
+            <div className="hidden md:block ml-auto">
               <div className="relative w-24 h-24">
                 <div className="absolute inset-0 border-4 border-[#0E2D4A] rounded-full" style={{ clipPath: 'inset(0 5% 0 0)' }}>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-lg font-bold">95%</span>
                   </div>
                 </div>
-                <div className="text-sm text-center mt-28">Client Satisfaction</div>
+                <div className="text-sm text-center mt-6">Client Satisfaction</div>
               </div>
             </div>
           </div>
@@ -117,19 +114,16 @@ export default function LandingPage() {
             </div>
             <div>
               <h3 className="text-xl font-semibold text-[#0E2D4A] mb-2">Ensuring Payroll Precision</h3>
-              <p className="text-gray-600 mb-3">Deliver precise and efficient payroll services with modern solutions.</p>
-              <button className="text-[#0E2D4A] font-medium hover:text-blue-700 flex items-center">
-                Learn more <span className="ml-2">→</span>
-              </button>
+              <p className="text-gray-600">Deliver precise and efficient payroll services with modern solutions.</p>
             </div>
-            <div className="hidden md:block">
+            <div className="hidden md:block ml-auto">
               <div className="relative w-24 h-24">
                 <div className="absolute inset-0 border-4 border-[#0E2D4A] rounded-full" style={{ clipPath: 'inset(0 0.1% 0 0)' }}>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-lg font-bold">99.9%</span>
                   </div>
                 </div>
-                <div className="text-sm text-center mt-28">Accuracy Rate</div>
+                <div className="text-sm text-center mt-6">Accuracy Rate</div>
               </div>
             </div>
           </div>
@@ -143,19 +137,16 @@ export default function LandingPage() {
             </div>
             <div>
               <h3 className="text-xl font-semibold text-[#0E2D4A] mb-2">Ethical Business Practices</h3>
-              <p className="text-gray-600 mb-3">Maintain highest standards of ethics and integrity in all operations.</p>
-              <button className="text-[#0E2D4A] font-medium hover:text-blue-700 flex items-center">
-                Learn more <span className="ml-2">→</span>
-              </button>
+              <p className="text-gray-600">Maintain highest standards of ethics and integrity in all operations.</p>
             </div>
-            <div className="hidden md:block">
+            <div className="hidden md:block ml-auto">
               <div className="relative w-24 h-24">
                 <div className="absolute inset-0 border-4 border-[#0E2D4A] rounded-full">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-lg font-bold">100%</span>
                   </div>
                 </div>
-                <div className="text-sm text-center mt-28">Compliance</div>
+                <div className="text-sm text-center mt-6">Compliance</div>
               </div>
             </div>
           </div>
@@ -169,10 +160,7 @@ export default function LandingPage() {
             </div>
             <div>
               <h3 className="text-xl font-semibold text-[#0E2D4A] mb-2">Holistic Infrastructure</h3>
-              <p className="text-gray-600 mb-3">Provide integrated management solutions for seamless operations.</p>
-              <button className="text-[#0E2D4A] font-medium hover:text-blue-700 flex items-center">
-                Learn more <span className="ml-2">→</span>
-              </button>
+              <p className="text-gray-600">Provide integrated management solutions for seamless operations.</p>
             </div>
             <div className="hidden md:block">
               <div className="relative w-24 h-24">
