@@ -96,11 +96,12 @@ export default function AuthPage() {
               {loginMutation.isPending ? "Logging in..." : "Login"}
             </Button>
             
-            <div className="grid grid-cols-2 gap-3 mt-6">
+            <div className="text-center mt-6">
+              <p className="text-gray-500 mb-2">Are you an administrator?</p>
               <Button 
                 type="button" 
                 variant="outline" 
-                className="p-3"
+                className="px-6"
                 onClick={() => {
                   setLoginData({
                     username: "admin",
@@ -109,22 +110,7 @@ export default function AuthPage() {
                   loginMutation.mutate({ username: "admin", password: "admin123" });
                 }}
               >
-                Admin Login
-              </Button>
-              
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="p-3"
-                onClick={() => {
-                  setLoginData({
-                    username: "candidate",
-                    password: "candidate123"
-                  });
-                  loginMutation.mutate({ username: "candidate", password: "candidate123" });
-                }}
-              >
-                Candidate Login
+                Login as Admin
               </Button>
             </div>
           </form>
