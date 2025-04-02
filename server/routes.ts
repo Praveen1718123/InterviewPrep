@@ -125,6 +125,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Delete candidate
+  app.delete("/api/admin/candidates/:id", isAdmin, async (req, res) => {
+    try {
+      const candidateId = parseInt(req.params.id);
+      if (isNaN(candidateId)) {
+        return res.status(400).json({ message: "Invalid candidate ID" });
+      }
+      
+      // Get existing candidate
+      const existingCandidate = await storage.getUser(candidateId);
+      if (!existingCandidate) {
+        return res.status(404).json({ message: "Candidate not found" });
+      }
+      
+      // If this is not a candidate account, prevent deletion
+      if (existingCandidate.role !== "candidate") {
+        return res.status(403).json({ message: "Can only delete candidate accounts" });
+      }
+      
+      // Delete the candidate
+      await storage.deleteUser(candidateId);
+      
+      res.status(200).json({ message: "Candidate deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting candidate:", error);
+      res.status(500).json({ message: "Error deleting candidate" });
+    }
+  });
+  
   // Get candidate assessments
   app.get("/api/admin/candidates/:id/assessments", isAdmin, async (req, res) => {
     try {

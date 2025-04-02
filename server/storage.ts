@@ -26,6 +26,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, userData: Partial<User>): Promise<User>;
+  deleteUser(id: number): Promise<void>;
   getCandidates(): Promise<User[]>;
   
   // Assessment operations
@@ -150,6 +151,24 @@ export class MemStorage implements IStorage {
     };
     this.users.set(id, updatedUser);
     return updatedUser;
+  }
+  
+  async deleteUser(id: number): Promise<void> {
+    const existingUser = await this.getUser(id);
+    if (!existingUser) {
+      throw new Error("User not found");
+    }
+    
+    // Delete user
+    this.users.delete(id);
+    
+    // Also delete all associated candidate assessments
+    const candidateAssessments = Array.from(this.candidateAssessments.values());
+    for (const assessment of candidateAssessments) {
+      if (assessment.candidateId === id) {
+        this.candidateAssessments.delete(assessment.id);
+      }
+    }
   }
 
   async getCandidates(): Promise<User[]> {
@@ -476,6 +495,21 @@ export class PostgresStorage implements IStorage {
       .returning();
     
     return result[0];
+  }
+  
+  async deleteUser(id: number): Promise<void> {
+    const existingUser = await this.getUser(id);
+    if (!existingUser) {
+      throw new Error("User not found");
+    }
+    
+    // First delete all related candidate assessments
+    await this.db.delete(candidateAssessments)
+      .where(eq(candidateAssessments.candidateId, id));
+    
+    // Then delete the user
+    await this.db.delete(users)
+      .where(eq(users.id, id));
   }
   
   async getCandidates(): Promise<User[]> {

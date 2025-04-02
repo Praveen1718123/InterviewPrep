@@ -11,7 +11,8 @@ import {
   ArrowLeft,
   Save,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Trash2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -34,6 +35,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // Define validation schema
 const editCandidateSchema = z.object({
@@ -118,6 +130,37 @@ export default function EditCandidate() {
     onError: (error: Error) => {
       toast({
         title: "Failed to update candidate",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Delete candidate mutation
+  const deleteCandidateMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("DELETE", `/api/admin/candidates/${candidateId}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete candidate");
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Candidate deleted",
+        description: "Candidate has been deleted successfully.",
+      });
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/candidates"] });
+      
+      // Navigate back to candidates list
+      navigate("/admin/candidates");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to delete candidate",
         description: error.message,
         variant: "destructive",
       });
@@ -295,30 +338,72 @@ export default function EditCandidate() {
                       />
                     </div>
                     
-                    <div className="flex justify-end space-x-4">
-                      <Button 
-                        type="button" 
-                        variant="outline"
-                        onClick={() => navigate(`/admin/candidates/${candidateId}`)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button 
-                        type="submit" 
-                        disabled={updateCandidateMutation.isPending}
-                      >
-                        {updateCandidateMutation.isPending ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Saving...
-                          </>
-                        ) : (
-                          <>
-                            <Save className="h-4 w-4 mr-2" />
-                            Save Changes
-                          </>
-                        )}
-                      </Button>
+                    <div className="flex justify-between items-center">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            type="button" 
+                            variant="destructive"
+                            disabled={deleteCandidateMutation.isPending}
+                          >
+                            {deleteCandidateMutation.isPending ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Deleting...
+                              </>
+                            ) : (
+                              <>
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete Candidate
+                              </>
+                            )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete the candidate
+                              account and all associated assessment data.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => deleteCandidateMutation.mutate()}
+                              className="bg-red-600 hover:bg-red-700 text-white"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                      
+                      <div className="flex space-x-4">
+                        <Button 
+                          type="button" 
+                          variant="outline"
+                          onClick={() => navigate(`/admin/candidates/${candidateId}`)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          type="submit" 
+                          disabled={updateCandidateMutation.isPending}
+                        >
+                          {updateCandidateMutation.isPending ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="h-4 w-4 mr-2" />
+                              Save Changes
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </form>
                 </Form>
