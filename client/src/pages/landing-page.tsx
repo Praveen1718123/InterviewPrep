@@ -311,6 +311,144 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Contact Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="text-center mb-12">
+            <span className="text-[#4D95BC] font-medium">Contact Us</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#0E2D4A] mt-2">
+              Get in Touch
+            </h2>
+            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+              Have questions? We're here to help. Reach out to us through any of the channels below.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Contact Form */}
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <form className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                  <input
+                    type="text"
+                    placeholder="John Doe"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#4D95BC] focus:ring-[#4D95BC] p-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#4D95BC] focus:ring-[#4D95BC] p-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Subject</label>
+                  <input
+                    type="text"
+                    placeholder="How can we help?"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#4D95BC] focus:ring-[#4D95BC] p-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Message</label>
+                  <textarea
+                    rows={4}
+                    placeholder="Your message here..."
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#4D95BC] focus:ring-[#4D95BC] p-2"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-[#0E2D4A] text-white py-2 px-4 rounded-md hover:bg-[#0c2339] transition duration-200"
+                >
+                  Send Message
+                </button>
+              </form>
+            </div>
+
+            {/* Contact Information */}
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-xl font-semibold text-[#0E2D4A] mb-4">Contact Information</h3>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="mt-1">
+                      <svg className="w-5 h-5 text-[#4D95BC]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-[#0E2D4A]">Office Address</h4>
+                      <p className="text-gray-600">
+                        Near Happiest Mind Company,<br />
+                        Near Happiest mind, No:118,<br />
+                        Dr.Marigowda road, Madiwala,<br />
+                        Bengaluru, Karnataka 560068
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3">
+                    <div className="mt-1">
+                      <svg className="w-5 h-5 text-[#4D95BC]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-[#0E2D4A]">Email</h4>
+                      <p className="text-gray-600">info@switchbeesolution.com</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3">
+                    <div className="mt-1">
+                      <svg className="w-5 h-5 text-[#4D95BC]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-[#0E2D4A]">Business Hours</h4>
+                      <p className="text-gray-600">
+                        Monday - Friday: 9:00 AM - 6:00 PM<br />
+                        Saturday: 9:00 AM - 1:00 PM
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold text-[#0E2D4A] mb-4">Connect With Us</h3>
+                <p className="text-gray-600 mb-4">
+                  Follow us on social media to stay updated with our latest news and announcements.
+                </p>
+                <div className="flex space-x-4">
+                  <a href="#" className="text-gray-600 hover:text-[#4D95BC]">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
+                    </svg>
+                  </a>
+                  <a href="#" className="text-gray-600 hover:text-[#4D95BC]">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-4.466 19.59c-.405.078-.534-.171-.534-.384v-2.195c0-.747-.262-1.233-.55-1.481 1.782-.198 3.654-.875 3.654-3.947 0-.874-.312-1.588-.823-2.147.082-.202.356-1.016-.079-2.117 0 0-.671-.215-2.198.82-.64-.18-1.324-.267-2.004-.271-.68.003-1.364.091-2.003.269-1.528-1.035-2.2-.82-2.2-.82-.434 1.102-.16 1.915-.077 2.118-.512.56-.824 1.273-.824 2.147 0 3.064 1.867 3.751 3.645 3.954-.229.2-.436.552-.508 1.07-.457.204-1.614.557-2.328-.666 0 0-.423-.768-1.227-.825 0 0-.78-.01-.055.487 0 0 .525.246.889 1.17 0 0 .463 1.428 2.688.944v1.489c0 .211-.129.459-.528.385-3.18-1.057-5.472-4.056-5.472-7.59 0-4.419 3.582-8 8-8s8 3.581 8 8c0 3.533-2.289 6.531-5.466 7.59z"/>
+                    </svg>
+                  </a>
+                  <a href="#" className="text-gray-600 hover:text-[#4D95BC]">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
