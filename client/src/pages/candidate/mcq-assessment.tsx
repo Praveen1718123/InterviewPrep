@@ -1,6 +1,4 @@
 
-import { AssessmentTimer } from "@/components/ui/assessment-timer";
-
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -254,19 +252,6 @@ export default function MCQAssessment() {
               <div className="bg-primary text-white text-sm py-1 px-3 rounded-md mr-3">
                 Question No. {currentQuestionIndex + 1}
               </div>
-              
-              <AssessmentTimer
-                durationInSeconds={300} // 5 minutes
-                startTime={assessmentData.startedAt}
-                onTimeEnd={() => {
-                  if (currentQuestionIndex < questions.length - 1) {
-                    goToNextQuestion();
-                  } else {
-                    setSubmitDialogOpen(true);
-                  }
-                }}
-                className="ml-auto text-sm font-medium"
-              />
               
 
               
