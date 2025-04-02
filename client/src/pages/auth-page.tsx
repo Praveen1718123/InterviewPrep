@@ -134,9 +134,11 @@ export default function AuthPage() {
       <div className="w-full max-w-md bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="p-6 md:p-8">
           <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 rounded-full bg-[#4D95BC] flex items-center justify-center">
-              <User className="w-10 h-10 text-white" />
-            </div>
+            <img 
+              src="/assets/switchbee-logo.svg" 
+              alt="Switchbee Solutions LLP Logo" 
+              className="h-24" 
+            />
           </div>
           
           <h1 className="text-2xl font-bold text-center mb-8 text-[#0E2D4A]">Switchbee Solutions LLP</h1>

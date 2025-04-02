@@ -7,31 +7,11 @@ export default function LandingPage() {
       {/* Header/Navigation */}
       <header className="container mx-auto py-4 px-4 md:px-6 flex justify-between items-center">
         <div className="flex items-center">
-          <svg
-            width="50"
-            height="32"
-            viewBox="0 0 50 32"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="mr-2"
-          >
-            <path
-              d="M16.5 10C22.5 10 27.5 15 33.5 15C39.5 15 44.5 10 44.5 10C44.5 10 39.5 5 33.5 5C27.5 5 22.5 10 16.5 10Z"
-              fill="#4D95BC"
-              stroke="#0E2D4A"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M5.5 22C11.5 22 16.5 17 22.5 17C28.5 17 33.5 22 33.5 22C33.5 22 28.5 27 22.5 27C16.5 27 11.5 22 5.5 22Z"
-              fill="#4D95BC"
-              stroke="#0E2D4A"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <img 
+            src="/assets/switchbee-logo.svg" 
+            alt="Switchbee Solutions LLP Logo" 
+            className="h-12 mr-2" 
+          />
           <span className="text-xl font-semibold text-[#0E2D4A]">Switchbee Solutions LLP</span>
         </div>
         <nav className="hidden md:flex space-x-8">

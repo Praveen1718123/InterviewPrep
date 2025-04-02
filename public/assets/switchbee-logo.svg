@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 160">
+  <!-- Curved lines (waves) -->
+  <path d="M80 60 C130 20, 170 20, 220 60" stroke="#4D95BC" stroke-width="15" fill="none" />
+  <path d="M100 80 C150 40, 190 40, 240 80" stroke="#4D95BC" stroke-width="15" fill="none" />
+  
+  <!-- Lower curved shapes -->
+  <path d="M40 100 C90 140, 130 140, 180 100" stroke="#0E2D4A" stroke-width="15" fill="none" />
+  <path d="M60 120 C110 160, 150 160, 200 120" stroke="#0E2D4A" stroke-width="15" fill="none" />
+  
+  <!-- Yellow circle (sun/dot) -->
+  <circle cx="150" cy="80" r="15" fill="#F8B932" />
+  
+  <!-- Text -->
+  <text x="55" y="150" font-family="Arial" font-size="18" font-weight="bold" fill="#0E2D4A">Switchbee Solutions LLP</text>
+</svg>
