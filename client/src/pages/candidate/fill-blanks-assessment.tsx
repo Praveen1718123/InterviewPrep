@@ -254,13 +254,14 @@ export default function FillBlanksAssessment() {
                 <h2 className="text-xl font-semibold">{assessmentData.assessment.title}</h2>
                 <p className="text-gray-500 text-sm mt-1">Fill in all blanks with appropriate terms</p>
               </div>
-              <div className="flex items-center">
-                <div className="bg-primary text-white text-sm py-1 px-3 rounded-full mr-4">
+              <div className="flex items-center space-x-3">
+                <div className="bg-primary text-white text-sm py-1 px-3 rounded-full">
                   Question {currentQuestionIndex + 1} of {questions.length}
                 </div>
                 {timeRemaining !== null && (
-                  <div className="text-sm text-gray-600">
-                    Time remaining: <span className="font-medium">{formatTimeRemaining()}</span>
+                  <div className="bg-blue-500 text-white text-sm py-1 px-3 rounded-full flex items-center">
+                    <span className="mr-1">⏱️</span>
+                    {formatTimeRemaining()}
                   </div>
                 )}
               </div>
@@ -312,7 +313,10 @@ export default function FillBlanksAssessment() {
                   </div>
                   <AlertDialog open={submitDialogOpen} onOpenChange={setSubmitDialogOpen}>
                     <AlertDialogTrigger asChild>
-                      <Button variant="success" disabled={submitAssessmentMutation.isPending}>
+                      <Button 
+                        variant="default" 
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                        disabled={submitAssessmentMutation.isPending}>
                         {submitAssessmentMutation.isPending ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

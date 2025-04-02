@@ -297,13 +297,21 @@ export default function VideoInterview() {
             
             <div className="border-b border-gray-200 pb-6 mb-6">
               <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center">
-                  <div className="bg-primary text-white text-sm py-1 px-3 rounded-full mr-4">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-primary text-white text-sm py-1 px-3 rounded-full">
                     Question {currentQuestionIndex + 1} of {questions.length}
                   </div>
-                  <div className="text-sm text-gray-600">
-                    Time limit: <span className="font-medium">{currentQuestion.timeLimit} seconds</span>
-                  </div>
+                  
+                  {remainingTime !== null ? (
+                    <div className="bg-blue-500 text-white text-sm py-1 px-3 rounded-full flex items-center">
+                      <span className="mr-1">⏱️</span>
+                      {formatTimeRemaining()}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-600">
+                      Time limit: <span className="font-medium">{currentQuestion.timeLimit} seconds</span>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -350,14 +358,6 @@ export default function VideoInterview() {
                   />
                 )}
               </div>
-              
-              {remainingTime !== null && (
-                <div className="text-center mb-4">
-                  <p className="text-sm font-medium text-primary">
-                    Recording: {formatTimeRemaining()} remaining
-                  </p>
-                </div>
-              )}
               
               <div className="flex justify-center space-x-4">
                 {status === "inactive" && !responses[currentQuestionIndex]?.videoUrl ? (
