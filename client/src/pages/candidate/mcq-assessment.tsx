@@ -248,19 +248,15 @@ export default function MCQAssessment() {
       <div>
         <Card className="mb-6">
           <CardContent className="p-6">
-            <div className="mb-6">
+            <div className="flex justify-between items-center mb-3">
               <h2 className="text-xl font-semibold">{assessmentData.assessment.title}</h2>
-              <p className="text-gray-500 text-sm mt-1">Complete all questions before submitting</p>
-            </div>
-            
-            <div className="flex justify-between items-center mb-6">
+              
               {assessmentData.status === "in-progress" && assessmentData.assessment.timeLimit && (
-                <div className="flex items-center">
-                  <div className="flex items-center text-gray-600">
-                    <span className="mr-2">⏱️</span>
-                    <span className="font-medium">Time Remaining:</span>
+                <div className="flex items-center bg-gray-100 px-3 py-1.5 rounded-md border border-gray-300">
+                  <div className="text-gray-600 text-sm mr-2">
+                    <span className="font-medium">Time Left</span>
                   </div>
-                  <div className="bg-blue-500 text-white text-sm py-1 px-3 rounded-full ml-2 flex items-center">
+                  <div className="bg-blue-500 text-white text-sm py-1 px-2 rounded flex items-center font-medium">
                     <AssessmentTimer
                       durationInSeconds={assessmentData.assessment.timeLimit * 60}
                       startTime={assessmentData.startedAt}
@@ -270,8 +266,21 @@ export default function MCQAssessment() {
                   </div>
                 </div>
               )}
-              <div className="bg-primary text-white text-sm py-1 px-3 rounded-full">
-                Question {currentQuestionIndex + 1} of {questions.length}
+            </div>
+            
+            <div className="flex items-center mb-5 border-b border-gray-200 pb-3">
+              <div className="bg-primary text-white text-sm py-1 px-3 rounded-md mr-3">
+                Question No. {currentQuestionIndex + 1}
+              </div>
+              <div className="flex items-center text-xs">
+                <div className="flex items-center">
+                  <span className="inline-block w-4 h-4 rounded-full bg-green-500 text-white flex items-center justify-center text-[10px] mr-1">✓</span>
+                  <span className="mr-2">{responses ? responses.filter(r => r?.selectedOptionId).length : 0}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="inline-block w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] mr-1">✗</span>
+                  <span>{responses ? responses.filter(r => !r?.selectedOptionId).length : questions.length}</span>
+                </div>
               </div>
             </div>
             
