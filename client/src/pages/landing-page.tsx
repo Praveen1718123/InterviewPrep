@@ -45,6 +45,97 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Services Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="text-center mb-12">
+            <span className="text-[#4D95BC] font-medium">Our Services</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#0E2D4A] mt-2">
+              Comprehensive Solutions for Your Business
+            </h2>
+            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+              Discover our range of professional services designed to enhance your business 
+              operations and streamline your workforce management.
+            </p>
+          </div>
+
+          <div className="flex items-center">
+            <button className="p-2 bg-gray-100 rounded-full">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <div className="flex-1 mx-4">
+              <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl shadow-sm overflow-hidden">
+                <div className="grid md:grid-cols-2 gap-8 p-8">
+                  <div className="relative">
+                    <span className="absolute top-4 left-4 bg-amber-400 text-white p-2 rounded-lg">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </span>
+                    <img 
+                      src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" 
+                      alt="Manpower Supply" 
+                      className="w-full h-72 object-cover rounded-lg"
+                    />
+                  </div>
+                  <div className="flex flex-col justify-center">
+                    <h3 className="text-2xl font-bold text-[#0E2D4A] mb-4">Manpower Supply</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-medium mb-2">About This Service</h4>
+                        <p className="text-gray-600 text-sm">
+                          Our comprehensive manpower supply service connects businesses with top-tier talent across diverse industries. We handle everything from initial recruitment to onboarding, ensuring a perfect match between skilled professionals and your organizational needs.
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="font-medium mb-2">Key Benefits</h4>
+                        <ul className="space-y-2">
+                          <li className="flex items-center text-sm text-gray-600">
+                            <span className="mr-2 text-amber-400">•</span>
+                            Access to pre-screened, qualified professionals
+                          </li>
+                          <li className="flex items-center text-sm text-gray-600">
+                            <span className="mr-2 text-amber-400">•</span>
+                            Reduced recruitment time and costs
+                          </li>
+                          <li className="flex items-center text-sm text-gray-600">
+                            <span className="mr-2 text-amber-400">•</span>
+                            Flexible staffing solutions
+                          </li>
+                          <li className="flex items-center text-sm text-gray-600">
+                            <span className="mr-2 text-amber-400">•</span>
+                            Industry-specific expertise
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button className="p-2 bg-gray-100 rounded-full">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="flex justify-center mt-8">
+            <div className="flex space-x-2">
+              <div className="w-8 h-2 bg-amber-400 rounded-full"></div>
+              <div className="w-2 h-2 bg-gray-200 rounded-full"></div>
+              <div className="w-2 h-2 bg-gray-200 rounded-full"></div>
+              <div className="w-2 h-2 bg-gray-200 rounded-full"></div>
+              <div className="w-2 h-2 bg-gray-200 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Grid */}
       <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-4 md:px-6">
