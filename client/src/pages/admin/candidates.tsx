@@ -6,7 +6,9 @@ import {
   Loader2, 
   Search,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  UserPlus,
+  Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +30,7 @@ export default function AdminCandidates() {
   const itemsPerPage = 10;
 
   // Fetch candidates
-  const { data: candidates, isLoading } = useQuery({
+  const { data: candidates = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/admin/candidates"],
   });
 
@@ -131,7 +133,16 @@ export default function AdminCandidates() {
                   </SelectContent>
                 </Select>
                 <Link href="/admin/candidates/new">
-                  <Button>Add New</Button>
+                  <Button>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add New
+                  </Button>
+                </Link>
+                <Link href="/admin/bulk-assignment">
+                  <Button variant="outline">
+                    <Users className="h-4 w-4 mr-2" />
+                    Bulk Assign
+                  </Button>
                 </Link>
               </div>
             </div>

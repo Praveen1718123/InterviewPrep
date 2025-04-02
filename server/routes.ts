@@ -88,6 +88,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       handleZodError(error, res);
     }
   });
+  
+  // Bulk assessment assignment endpoint
+  app.post("/api/admin/bulk-assign-assessment", isAdmin, async (req, res) => {
+    try {
+      const { candidateIds, assessmentId, scheduledFor } = req.body;
+      
+      if (!Array.isArray(candidateIds) || candidateIds.length === 0) {
+        return res.status(400).json({ message: "candidateIds must be a non-empty array" });
+      }
+      
+      if (!assessmentId) {
+        return res.status(400).json({ message: "assessmentId is required" });
+      }
+      
+      const results = [];
+      const errors = [];
+      
+      // Process each candidate assignment
+      for (const candidateId of candidateIds) {
+        try {
+          const assignmentData = insertCandidateAssessmentSchema.parse({
+            candidateId,
+            assessmentId,
+            scheduledFor: scheduledFor || null,
+            status: "pending"
+          });
+          
+          const assignment = await storage.assignAssessment(assignmentData);
+          results.push(assignment);
+        } catch (error) {
+          errors.push({ candidateId, error: error instanceof Error ? error.message : String(error) });
+        }
+      }
+      
+      res.status(201).json({ 
+        success: results.length > 0,
+        assigned: results.length,
+        failed: errors.length, 
+        results,
+        errors 
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error processing bulk assessment assignment" });
+    }
+  });
 
   app.post("/api/admin/provide-feedback", isAdmin, async (req, res) => {
     try {

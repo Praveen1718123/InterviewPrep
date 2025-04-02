@@ -24,12 +24,12 @@ import {
 
 export default function AdminDashboard() {
   // Fetch candidates
-  const { data: candidates, isLoading: isLoadingCandidates } = useQuery({
+  const { data: candidates = [], isLoading: isLoadingCandidates } = useQuery<any[]>({
     queryKey: ["/api/admin/candidates"],
   });
 
   // Fetch assessments
-  const { data: assessments, isLoading: isLoadingAssessments } = useQuery({
+  const { data: assessments = [], isLoading: isLoadingAssessments } = useQuery<any[]>({
     queryKey: ["/api/admin/assessments"],
   });
 

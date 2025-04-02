@@ -16,6 +16,7 @@ const AdminDashboard = lazy(() => import("@/pages/admin/dashboard"));
 const AdminCandidates = lazy(() => import("@/pages/admin/candidates"));
 const AdminAssessments = lazy(() => import("@/pages/admin/assessments"));
 const CreateAssessment = lazy(() => import("@/pages/admin/create-assessment"));
+const BulkAssignment = lazy(() => import("@/pages/admin/bulk-assignment"));
 
 // Loading fallback for lazy-loaded components
 const LoadingFallback = () => (
@@ -62,6 +63,7 @@ function App() {
           <ProtectedRoute path="/admin/candidates" component={AdminCandidates} />
           <ProtectedRoute path="/admin/assessments" component={AdminAssessments} />
           <ProtectedRoute path="/admin/assessments/create" component={CreateAssessment} />
+          <ProtectedRoute path="/admin/bulk-assignment" component={BulkAssignment} />
           
           {/* Protected Candidate Routes */}
           <ProtectedRoute path="/candidate" component={CandidateDashboard} />
