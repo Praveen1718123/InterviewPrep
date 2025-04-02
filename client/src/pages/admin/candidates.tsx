@@ -198,11 +198,11 @@ export default function AdminCandidates() {
                               {getStatusBadge(candidate.status)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <Link href={`/admin/candidates/${candidate.id}`}>
-                                <a className="text-primary hover:text-primary-dark mr-3">View</a>
+                              <Link to={`/admin/candidates/${candidate.id}`} className="text-primary hover:text-primary-dark mr-3">
+                                View
                               </Link>
-                              <Link href={`/admin/candidates/${candidate.id}/edit`}>
-                                <a className="text-gray-600 hover:text-gray-900">Edit</a>
+                              <Link to={`/admin/candidates/${candidate.id}/edit`} className="text-gray-600 hover:text-gray-900">
+                                Edit
                               </Link>
                             </td>
                           </tr>

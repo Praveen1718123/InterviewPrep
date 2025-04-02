@@ -131,13 +131,18 @@ export default function AuthPage() {
                 
                 <div className="text-center mt-4">
                   <p className="text-gray-700">
-                    If you are an admin, <Button variant="link" className="p-0 font-normal text-blue-700" onClick={() => {
-                      setLoginData({
-                        username: "admin",
-                        password: "admin123"
-                      });
-                      loginMutation.mutate({ username: "admin", password: "admin123" });
-                    }}>click here to login</Button>.
+                    If you are an admin, <span 
+                      className="text-blue-700 cursor-pointer underline" 
+                      onClick={() => {
+                        setLoginData({
+                          username: "admin",
+                          password: "admin123"
+                        });
+                        loginMutation.mutate({ username: "admin", password: "admin123" });
+                      }}
+                    >
+                      click here to login
+                    </span>.
                   </p>
                 </div>
               </form>

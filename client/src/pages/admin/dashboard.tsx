@@ -249,11 +249,11 @@ export default function AdminDashboard() {
                               {getStatusBadge(candidate.status || "active")}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <Link href={`/admin/candidates/${candidate.id}`}>
-                                <a className="text-primary hover:text-primary-dark mr-3">View</a>
+                              <Link to={`/admin/candidates/${candidate.id}`} className="text-primary hover:text-primary-dark mr-3">
+                                View
                               </Link>
-                              <Link href={`/admin/candidates/${candidate.id}/edit`}>
-                                <a className="text-gray-600 hover:text-gray-900">Edit</a>
+                              <Link to={`/admin/candidates/${candidate.id}/edit`} className="text-gray-600 hover:text-gray-900">
+                                Edit
                               </Link>
                             </td>
                           </tr>
@@ -273,7 +273,7 @@ export default function AdminDashboard() {
                   <div className="text-sm text-gray-500">
                     Showing 1 to {Math.min(candidates?.length || 0, 3)} of {candidates?.length || 0} entries
                   </div>
-                  <Link href="/admin/candidates">
+                  <Link to="/admin/candidates">
                     <Button variant="outline">View All Candidates</Button>
                   </Link>
                 </div>
@@ -285,7 +285,7 @@ export default function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold">Assessment Management</h2>
-                  <Link href="/admin/assessments/create">
+                  <Link to="/admin/assessments/create">
                     <Button>Create New Assessment</Button>
                   </Link>
                 </div>
@@ -350,12 +350,16 @@ export default function AdminDashboard() {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  <Link href={`/admin/assessments/${assessment.id}/edit`}>
-                                    <DropdownMenuItem>Edit</DropdownMenuItem>
-                                  </Link>
-                                  <Link href={`/admin/assessments/${assessment.id}/duplicate`}>
-                                    <DropdownMenuItem>Duplicate</DropdownMenuItem>
-                                  </Link>
+                                  <DropdownMenuItem asChild>
+                                    <Link to={`/admin/assessments/${assessment.id}/edit`}>
+                                      Edit
+                                    </Link>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem asChild>
+                                    <Link to={`/admin/assessments/${assessment.id}/duplicate`}>
+                                      Duplicate
+                                    </Link>
+                                  </DropdownMenuItem>
                                   <DropdownMenuItem className="text-red-600">
                                     Delete
                                   </DropdownMenuItem>
@@ -376,7 +380,7 @@ export default function AdminDashboard() {
                 </div>
                 
                 <div className="mt-4 flex justify-end">
-                  <Link href="/admin/assessments">
+                  <Link to="/admin/assessments">
                     <Button variant="outline">View All Assessments</Button>
                   </Link>
                 </div>
