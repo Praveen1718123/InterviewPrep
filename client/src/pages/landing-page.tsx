@@ -67,6 +67,124 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Goals Section */}
+      <section className="container mx-auto px-4 md:px-6 py-16 md:py-24">
+        <div className="text-center mb-12">
+          <h3 className="text-amber-500 font-medium mb-4">Our Goals</h3>
+          <h2 className="text-3xl md:text-4xl font-bold text-[#0E2D4A] mb-4">
+            Empowering Your Business Success
+          </h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Discover how our comprehensive solutions drive excellence in workforce
+            management and business operations.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Human Capital */}
+          <div className="flex items-start space-x-4">
+            <div className="bg-blue-100 p-3 rounded-lg">
+              <svg className="w-6 h-6 text-[#0E2D4A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-[#0E2D4A] mb-2">Optimizing Human Capital</h3>
+              <p className="text-gray-600 mb-3">Empower businesses with skilled, motivated workforce management solutions.</p>
+              <button className="text-[#0E2D4A] font-medium hover:text-blue-700 flex items-center">
+                Learn more <span className="ml-2">→</span>
+              </button>
+            </div>
+            <div className="hidden md:block">
+              <div className="relative w-24 h-24">
+                <div className="absolute inset-0 border-4 border-[#0E2D4A] rounded-full" style={{ clipPath: 'inset(0 5% 0 0)' }}>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-lg font-bold">95%</span>
+                  </div>
+                </div>
+                <div className="text-sm text-center mt-28">Client Satisfaction</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Payroll Precision */}
+          <div className="flex items-start space-x-4">
+            <div className="bg-blue-100 p-3 rounded-lg">
+              <svg className="w-6 h-6 text-[#0E2D4A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-[#0E2D4A] mb-2">Ensuring Payroll Precision</h3>
+              <p className="text-gray-600 mb-3">Deliver precise and efficient payroll services with modern solutions.</p>
+              <button className="text-[#0E2D4A] font-medium hover:text-blue-700 flex items-center">
+                Learn more <span className="ml-2">→</span>
+              </button>
+            </div>
+            <div className="hidden md:block">
+              <div className="relative w-24 h-24">
+                <div className="absolute inset-0 border-4 border-[#0E2D4A] rounded-full" style={{ clipPath: 'inset(0 0.1% 0 0)' }}>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-lg font-bold">99.9%</span>
+                  </div>
+                </div>
+                <div className="text-sm text-center mt-28">Accuracy Rate</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Ethical Practices */}
+          <div className="flex items-start space-x-4">
+            <div className="bg-blue-100 p-3 rounded-lg">
+              <svg className="w-6 h-6 text-[#0E2D4A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-[#0E2D4A] mb-2">Ethical Business Practices</h3>
+              <p className="text-gray-600 mb-3">Maintain highest standards of ethics and integrity in all operations.</p>
+              <button className="text-[#0E2D4A] font-medium hover:text-blue-700 flex items-center">
+                Learn more <span className="ml-2">→</span>
+              </button>
+            </div>
+            <div className="hidden md:block">
+              <div className="relative w-24 h-24">
+                <div className="absolute inset-0 border-4 border-[#0E2D4A] rounded-full">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-lg font-bold">100%</span>
+                  </div>
+                </div>
+                <div className="text-sm text-center mt-28">Compliance</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Infrastructure */}
+          <div className="flex items-start space-x-4">
+            <div className="bg-blue-100 p-3 rounded-lg">
+              <svg className="w-6 h-6 text-[#0E2D4A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-[#0E2D4A] mb-2">Holistic Infrastructure</h3>
+              <p className="text-gray-600 mb-3">Provide integrated management solutions for seamless operations.</p>
+              <button className="text-[#0E2D4A] font-medium hover:text-blue-700 flex items-center">
+                Learn more <span className="ml-2">→</span>
+              </button>
+            </div>
+            <div className="hidden md:block">
+              <div className="relative w-24 h-24">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-lg font-bold">24/7</span>
+                </div>
+                <div className="text-sm text-center mt-28">Support</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
