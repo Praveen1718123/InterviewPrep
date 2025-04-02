@@ -249,21 +249,25 @@ export default function FillBlanksAssessment() {
       <div>
         <Card className="mb-6">
           <CardContent className="p-6">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold">{assessmentData.assessment.title}</h2>
+              <p className="text-gray-500 text-sm mt-1">Fill in all blanks with appropriate terms</p>
+            </div>
+            
             <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-xl font-semibold">{assessmentData.assessment.title}</h2>
-                <p className="text-gray-500 text-sm mt-1">Fill in all blanks with appropriate terms</p>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="bg-primary text-white text-sm py-1 px-3 rounded-full">
-                  Question {currentQuestionIndex + 1} of {questions.length}
-                </div>
-                {timeRemaining !== null && (
-                  <div className="bg-blue-500 text-white text-sm py-1 px-3 rounded-full flex items-center">
-                    <span className="mr-1">⏱️</span>
+              {timeRemaining !== null && (
+                <div className="flex items-center">
+                  <div className="flex items-center text-gray-600">
+                    <span className="mr-2">⏱️</span>
+                    <span className="font-medium">Time Remaining:</span>
+                  </div>
+                  <div className="bg-blue-500 text-white text-sm py-1 px-3 rounded-full ml-2 flex items-center">
                     {formatTimeRemaining()}
                   </div>
-                )}
+                </div>
+              )}
+              <div className="bg-primary text-white text-sm py-1 px-3 rounded-full">
+                Question {currentQuestionIndex + 1} of {questions.length}
               </div>
             </div>
             

@@ -297,21 +297,24 @@ export default function VideoInterview() {
             
             <div className="border-b border-gray-200 pb-6 mb-6">
               <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="bg-primary text-white text-sm py-1 px-3 rounded-full">
-                    Question {currentQuestionIndex + 1} of {questions.length}
-                  </div>
-                  
-                  {remainingTime !== null ? (
-                    <div className="bg-blue-500 text-white text-sm py-1 px-3 rounded-full flex items-center">
-                      <span className="mr-1">⏱️</span>
+                {remainingTime !== null ? (
+                  <div className="flex items-center">
+                    <div className="flex items-center text-gray-600">
+                      <span className="mr-2">⏱️</span>
+                      <span className="font-medium">Time Remaining:</span>
+                    </div>
+                    <div className="bg-blue-500 text-white text-sm py-1 px-3 rounded-full ml-2 flex items-center">
                       {formatTimeRemaining()}
                     </div>
-                  ) : (
-                    <div className="text-sm text-gray-600">
-                      Time limit: <span className="font-medium">{currentQuestion.timeLimit} seconds</span>
-                    </div>
-                  )}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-600">
+                    <span className="mr-2">⏱️</span>
+                    <span className="font-medium">Time limit:</span> {currentQuestion.timeLimit} seconds
+                  </div>
+                )}
+                <div className="bg-primary text-white text-sm py-1 px-3 rounded-full">
+                  Question {currentQuestionIndex + 1} of {questions.length}
                 </div>
               </div>
               
