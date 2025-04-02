@@ -20,17 +20,43 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+interface FillBlankQuestion {
+  id: string;
+  text: string;
+  blanks: Array<{id: string, placeholder?: string}>;
+  hint?: string;
+}
+
+interface FillBlankResponse {
+  questionId: string;
+  answers: Record<string, string>;
+}
+
+interface AssessmentData {
+  id: number;
+  status: 'pending' | 'in-progress' | 'completed' | 'reviewed';
+  startedAt: string;
+  responses?: FillBlankResponse[];
+  assessment: {
+    id: number;
+    title: string;
+    description: string;
+    timeLimit?: number;
+    questions: FillBlankQuestion[];
+  };
+}
+
 export default function FillBlanksAssessment() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [responses, setResponses] = useState<any[]>([]);
+  const [responses, setResponses] = useState<FillBlankResponse[]>([]);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
   // Fetch assessment details
-  const { data: assessmentData, isLoading, error } = useQuery({
+  const { data: assessmentData, isLoading, error } = useQuery<AssessmentData>({
     queryKey: [`/api/candidate/assessment/${id}`],
     enabled: !!id,
   });
@@ -38,6 +64,7 @@ export default function FillBlanksAssessment() {
   // Start assessment mutation
   const startAssessmentMutation = useMutation({
     mutationFn: async () => {
+      if (!assessmentData) return null;
       const res = await apiRequest("POST", "/api/candidate/start-assessment", {
         candidateAssessmentId: assessmentData.id,
       });
@@ -58,6 +85,7 @@ export default function FillBlanksAssessment() {
   // Submit assessment mutation
   const submitAssessmentMutation = useMutation({
     mutationFn: async () => {
+      if (!assessmentData) return null;
       const res = await apiRequest("POST", "/api/candidate/submit-fill-in-blanks", {
         candidateAssessmentId: assessmentData.id,
         responses,
@@ -101,7 +129,7 @@ export default function FillBlanksAssessment() {
         // Initialize empty responses for each question
         const questions = assessmentData.assessment.questions;
         setResponses(
-          questions.map((q: any) => ({
+          questions.map((q: FillBlankQuestion) => ({
             questionId: q.id,
             answers: {},
           }))
@@ -177,7 +205,7 @@ export default function FillBlanksAssessment() {
     const parts = currentQuestion.text.split(/(\[\[[^\]]+\]\])/g);
     let blankIndex = 0;
     
-    return parts.map((part, index) => {
+    return parts.map((part: string, index: number) => {
       if (part.match(/^\[\[([^\]]+)\]\]$/)) {
         const blankId = currentQuestion.blanks[blankIndex].id;
         const value = responses[currentQuestionIndex]?.answers[blankId] || "";
@@ -264,7 +292,7 @@ export default function FillBlanksAssessment() {
                     <span className="mr-2">⏱️</span>
                     <span className="text-sm font-medium mr-1">Time Remaining:</span>
                   </div>
-                  <div className="bg-blue-500 text-white text-sm py-1 px-3 rounded-md ml-1 flex items-center font-medium">
+                  <div className="bg-blue-500 text-white text-sm py-1 px-3 rounded-md ml-1 flex items-center font-medium min-w-[50px] justify-center">
                     {formatTimeRemaining()}
                   </div>
                 </div>
@@ -318,7 +346,7 @@ export default function FillBlanksAssessment() {
               <div className="bg-gray-50 p-3 rounded-md">
                 <div className="flex items-center justify-between">
                   <div className="flex flex-wrap gap-2">
-                    {questions.map((_, index) => (
+                    {questions.map((_: FillBlankQuestion, index: number) => (
                       <button
                         key={index}
                         className={`h-8 w-8 rounded-full flex items-center justify-center text-sm ${getQuestionStatusClass(

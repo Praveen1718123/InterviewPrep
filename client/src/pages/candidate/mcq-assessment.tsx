@@ -264,12 +264,15 @@ export default function MCQAssessment() {
                     <span className="text-sm font-medium mr-1">Time Remaining:</span>
                   </div>
                   <div className="bg-blue-500 text-white text-sm py-1 px-3 rounded-md ml-1 flex items-center font-medium">
-                    <AssessmentTimer
-                      durationInSeconds={assessmentData.assessment.timeLimit * 60}
-                      startTime={assessmentData.startedAt}
-                      onTimeEnd={handleTimeEnd}
-                      className="text-white"
-                    />
+                    <span className="block min-w-[40px] text-center">
+                      <AssessmentTimer
+                        durationInSeconds={assessmentData.assessment.timeLimit * 60}
+                        startTime={assessmentData.startedAt}
+                        onTimeEnd={handleTimeEnd}
+                        className="text-white"
+                        showProgress={false}
+                      />
+                    </span>
                   </div>
                 </div>
               )}

@@ -85,36 +85,14 @@ export function AssessmentTimer({
   if (timeRemaining === null) return null;
 
   return (
-    <div className={cn("flex flex-col gap-2", className)}>
-      <div className="flex items-center gap-2">
-        <Clock className={cn(
-          "h-4 w-4",
-          timeRemaining <= 30 && "text-destructive animate-pulse",
-          timeRemaining > 30 && timeRemaining <= 60 && "text-yellow-500"
-        )} />
-        
-        <span className="text-sm font-medium mr-2">Time Remaining:</span>
-        
-        <Badge variant={getTimeStatus()} className={cn(
-          "font-mono",
-          timeRemaining <= 30 && "animate-pulse"
-        )}>
-          {formatTimeRemaining()}
-        </Badge>
-        
-        {timeRemaining <= 30 && (
-          <span className="text-xs text-destructive flex items-center">
-            <AlertCircle className="h-3 w-3 mr-1" />
-            Running out of time!
-          </span>
-        )}
-      </div>
+    <div className={cn("", className)}>
+      {formatTimeRemaining()}
       
       {showProgress && (
         <Progress 
           value={percentRemaining} 
           className={cn(
-            "h-1.5",
+            "h-1.5 mt-1",
             timeRemaining <= 30 && "bg-destructive/20",
             timeRemaining > 30 && timeRemaining <= 60 && "bg-yellow-200"
           )}
