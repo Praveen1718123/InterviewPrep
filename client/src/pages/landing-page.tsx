@@ -45,6 +45,81 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Founders Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="text-center mb-12">
+            <span className="text-[#4D95BC] font-medium">Our Leadership</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#0E2D4A] mt-2">
+              Meet Our Founders
+            </h2>
+            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+              Experienced leaders committed to transforming workforce management and business operations.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* First Founder */}
+            <div className="flex flex-col items-center text-center">
+              <div className="w-48 h-48 mb-6">
+                <img 
+                  src="/assets/founder1.jpg" 
+                  alt="Mr. Arunraj Selavarajan" 
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              </div>
+              <h3 className="text-xl font-bold text-[#0E2D4A] mb-1">Mr. Arunraj Selavarajan</h3>
+              <p className="text-[#4D95BC] text-sm mb-4">CEO & Co-Founder</p>
+              <p className="text-gray-600 text-sm mb-4">
+                Visionary leader with extensive experience in business strategy and workforce management. 
+                Driving SwitchBee Solutions towards excellence in manpower and business solutions.
+              </p>
+              <div className="flex space-x-4">
+                <a href="#" className="text-gray-600 hover:text-[#4D95BC]">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                  </svg>
+                </a>
+                <a href="#" className="text-gray-600 hover:text-[#4D95BC]">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Second Founder */}
+            <div className="flex flex-col items-center text-center">
+              <div className="w-48 h-48 mb-6">
+                <img 
+                  src="/assets/founder2.jpg" 
+                  alt="Mr. Gokulakrishnan" 
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              </div>
+              <h3 className="text-xl font-bold text-[#0E2D4A] mb-1">Mr. Gokulakrishnan</h3>
+              <p className="text-[#4D95BC] text-sm mb-4">COO & Co-Founder</p>
+              <p className="text-gray-600 text-sm mb-4">
+                Operations expert focused on delivering exceptional service quality and business 
+                process optimization. Leading operational excellence at SwitchBee Solutions.
+              </p>
+              <div className="flex space-x-4">
+                <a href="#" className="text-gray-600 hover:text-[#4D95BC]">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                  </svg>
+                </a>
+                <a href="#" className="text-gray-600 hover:text-[#4D95BC]">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Services Section */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4 md:px-6">
