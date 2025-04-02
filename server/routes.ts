@@ -259,3 +259,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   return httpServer;
 }
+// Add this new endpoint after other admin routes
+app.post("/api/admin/send-credentials", isAdmin, async (req, res) => {
+  try {
+    const { email, username, password } = req.body;
+    
+    // Here you would integrate with your email service
+    // For now, we'll just simulate email sending
+    console.log("Sending credentials email to:", email, {
+      username,
+      password,
+    });
+
+    res.status(200).json({ message: "Credentials sent successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to send credentials" });
+  }
+});

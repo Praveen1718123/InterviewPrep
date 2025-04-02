@@ -132,10 +132,10 @@ export default function AdminCandidates() {
                     <SelectItem value="review-pending">Review Pending</SelectItem>
                   </SelectContent>
                 </Select>
-                <Link href="/admin/candidates/new">
+                <Link href="/admin/create-candidate">
                   <Button>
                     <UserPlus className="h-4 w-4 mr-2" />
-                    Add New
+                    Add New Candidate
                   </Button>
                 </Link>
                 <Link href="/admin/bulk-assignment">
