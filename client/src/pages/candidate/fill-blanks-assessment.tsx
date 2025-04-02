@@ -52,7 +52,7 @@ export default function FillBlanksAssessment() {
   const { toast } = useToast();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState<FillBlankResponse[]>([]);
-  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
   // Fetch assessment details
@@ -136,29 +136,7 @@ export default function FillBlanksAssessment() {
         );
       }
 
-      // Set up timer if needed
-      if (assessmentData.assessment.timeLimit) {
-        const startTime = new Date(assessmentData.startedAt).getTime();
-        const timeLimit = assessmentData.assessment.timeLimit * 60 * 1000; // convert to ms
-        const endTime = startTime + timeLimit;
-        const now = Date.now();
-        const remaining = Math.max(0, endTime - now);
-        
-        setTimeRemaining(Math.floor(remaining / 1000));
-        
-        const timer = setInterval(() => {
-          setTimeRemaining((prev) => {
-            if (prev === null || prev <= 1) {
-              clearInterval(timer);
-              submitAssessmentMutation.mutate();
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-        
-        return () => clearInterval(timer);
-      }
+
     }
   }, [assessmentData]);
 
@@ -192,13 +170,7 @@ export default function FillBlanksAssessment() {
   const questions = assessmentData.assessment.questions;
   const currentQuestion = questions[currentQuestionIndex];
 
-  // Format time remaining
-  const formatTimeRemaining = () => {
-    if (timeRemaining === null) return "";
-    const minutes = Math.floor(timeRemaining / 60);
-    const seconds = timeRemaining % 60;
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
+
 
   // Replace blanks with input fields
   const renderQuestionWithInputs = () => {
@@ -286,17 +258,7 @@ export default function FillBlanksAssessment() {
                 Question No. {currentQuestionIndex + 1}
               </div>
               
-              {timeRemaining !== null && (
-                <div className="flex items-center mr-4">
-                  <div className="flex items-center">
-                    <span className="mr-2">⏱️</span>
-                    <span className="text-sm font-medium mr-1">Time Remaining:</span>
-                  </div>
-                  <div className="bg-blue-500 text-white text-sm py-1 px-3 rounded-md ml-1 flex items-center font-medium min-w-[50px] justify-center">
-                    {formatTimeRemaining()}
-                  </div>
-                </div>
-              )}
+
               
               <div className="flex items-center text-xs ml-auto">
                 <div className="flex items-center">

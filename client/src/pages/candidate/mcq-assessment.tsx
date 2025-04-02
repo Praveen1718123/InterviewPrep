@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { AssessmentTimer } from "@/components/ui/assessment-timer";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -149,12 +149,7 @@ export default function MCQAssessment() {
     }
   }, [assessmentData]);
 
-  // Handle auto-submission when time is up
-  const handleTimeEnd = () => {
-    if (assessmentData?.status === "in-progress") {
-      submitAssessmentMutation.mutate();
-    }
-  };
+
 
   if (isLoading) {
     return (
@@ -257,25 +252,7 @@ export default function MCQAssessment() {
                 Question No. {currentQuestionIndex + 1}
               </div>
               
-              {assessmentData.status === "in-progress" && assessmentData.assessment.timeLimit && (
-                <div className="flex items-center mr-4">
-                  <div className="flex items-center">
-                    <span className="mr-2">⏱️</span>
-                    <span className="text-sm font-medium mr-1">Time Remaining:</span>
-                  </div>
-                  <div className="bg-blue-500 text-white text-sm py-1 px-3 rounded-md ml-1 flex items-center font-medium">
-                    <span className="block min-w-[40px] text-center">
-                      <AssessmentTimer
-                        durationInSeconds={assessmentData.assessment.timeLimit * 60}
-                        startTime={assessmentData.startedAt}
-                        onTimeEnd={handleTimeEnd}
-                        className="text-white"
-                        showProgress={false}
-                      />
-                    </span>
-                  </div>
-                </div>
-              )}
+
               
               <div className="flex items-center text-xs ml-auto">
                 <div className="flex items-center">
@@ -292,15 +269,7 @@ export default function MCQAssessment() {
             <div className="border-b border-gray-200 pb-6 mb-6">
               <h3 className="text-lg font-medium mb-4">{currentQuestion.text}</h3>
               
-              {/* Per question time limit */}
-              {currentQuestion.timeLimit && (
-                <div className="mb-4">
-                  <AssessmentTimer
-                    durationInSeconds={currentQuestion.timeLimit}
-                    showProgress={false}
-                  />
-                </div>
-              )}
+
               
               <RadioGroup
                 value={(responses && responses[currentQuestionIndex]?.selectedOptionId) || ""}
