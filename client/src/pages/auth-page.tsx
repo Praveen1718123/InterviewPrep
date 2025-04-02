@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { User } from "lucide-react";
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
@@ -61,18 +62,24 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-        <div className="p-6 md:p-8 lg:p-10 bg-white rounded-xl shadow-sm">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="p-6 md:p-8">
+          <div className="flex justify-center mb-4">
+            <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center">
+              <User className="w-10 h-10 text-white" />
+            </div>
+          </div>
+          
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="w-full mb-6">
-              <TabsTrigger value="login" className="w-1/2">Login</TabsTrigger>
-              <TabsTrigger value="register" className="w-1/2">Register</TabsTrigger>
+            <TabsList className="w-full mb-8 border-b border-gray-200 grid grid-cols-2">
+              <TabsTrigger value="login" className="data-[state=active]:border-b-2 data-[state=active]:border-blue-500 pb-2 text-lg font-medium">Login</TabsTrigger>
+              <TabsTrigger value="register" className="data-[state=active]:border-b-2 data-[state=active]:border-blue-500 pb-2 text-lg font-medium">Sign Up</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
-              <form onSubmit={handleLoginSubmit} className="space-y-4">
+              <form onSubmit={handleLoginSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="username" className="text-sm font-medium">
+                  <label htmlFor="username" className="text-xl font-medium">
                     Username
                   </label>
                   <Input
@@ -83,11 +90,12 @@ export default function AuthPage() {
                     placeholder="Enter your username"
                     required
                     minLength={3}
+                    className="p-3 text-base rounded-md"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium">
+                  <label htmlFor="password" className="text-xl font-medium">
                     Password
                   </label>
                   <Input
@@ -99,64 +107,46 @@ export default function AuthPage() {
                     placeholder="Enter your password"
                     required
                     minLength={6}
+                    className="p-3 text-base rounded-md"
                   />
+                </div>
+                
+                <div className="flex justify-end">
+                  <Button 
+                    type="button" 
+                    variant="link" 
+                    className="px-0 font-normal text-blue-700"
+                  >
+                    Forgot password?
+                  </Button>
                 </div>
                 
                 <Button 
                   type="submit" 
-                  className="w-full mb-4" 
+                  className="w-full py-6 text-lg bg-blue-500 hover:bg-blue-600" 
                   disabled={loginMutation.isPending}
                 >
                   {loginMutation.isPending ? "Logging in..." : "Login"}
                 </Button>
                 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">Quick Access</span>
-                  </div>
-                </div>
-                
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => {
+                <div className="text-center mt-4">
+                  <p className="text-gray-700">
+                    If you are an admin, <Button variant="link" className="p-0 font-normal text-blue-700" onClick={() => {
                       setLoginData({
                         username: "admin",
                         password: "admin123"
                       });
                       loginMutation.mutate({ username: "admin", password: "admin123" });
-                    }}
-                  >
-                    Admin Flow
-                  </Button>
-                  
-                  <Button 
-                    type="button" 
-                    variant="secondary" 
-                    className="w-full"
-                    onClick={() => {
-                      setLoginData({
-                        username: "candidate",
-                        password: "candidate123"
-                      });
-                      loginMutation.mutate({ username: "candidate", password: "candidate123" });
-                    }}
-                  >
-                    Candidate Flow
-                  </Button>
+                    }}>click here to login</Button>.
+                  </p>
                 </div>
               </form>
             </TabsContent>
             
             <TabsContent value="register">
-              <form onSubmit={handleRegisterSubmit} className="space-y-4">
+              <form onSubmit={handleRegisterSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="reg-username" className="text-sm font-medium">
+                  <label htmlFor="reg-username" className="text-xl font-medium">
                     Username
                   </label>
                   <Input
@@ -167,11 +157,12 @@ export default function AuthPage() {
                     placeholder="Choose a username"
                     required
                     minLength={3}
+                    className="p-3 text-base rounded-md"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium">
+                  <label htmlFor="email" className="text-xl font-medium">
                     Email
                   </label>
                   <Input
@@ -182,11 +173,12 @@ export default function AuthPage() {
                     onChange={handleRegisterChange}
                     placeholder="Your email address"
                     required
+                    className="p-3 text-base rounded-md"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <label htmlFor="fullName" className="text-sm font-medium">
+                  <label htmlFor="fullName" className="text-xl font-medium">
                     Full Name
                   </label>
                   <Input
@@ -197,11 +189,12 @@ export default function AuthPage() {
                     placeholder="Your full name"
                     required
                     minLength={2}
+                    className="p-3 text-base rounded-md"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <label htmlFor="reg-password" className="text-sm font-medium">
+                  <label htmlFor="reg-password" className="text-xl font-medium">
                     Password
                   </label>
                   <Input
@@ -213,69 +206,20 @@ export default function AuthPage() {
                     placeholder="Create a password"
                     required
                     minLength={6}
+                    className="p-3 text-base rounded-md"
                   />
                 </div>
                 
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className="w-full py-6 text-lg bg-blue-500 hover:bg-blue-600" 
                   disabled={registerMutation.isPending}
                 >
-                  {registerMutation.isPending ? "Creating account..." : "Create Account"}
+                  {registerMutation.isPending ? "Creating account..." : "Sign Up"}
                 </Button>
               </form>
             </TabsContent>
           </Tabs>
-        </div>
-        
-        <div className="hidden md:block text-center md:text-left">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Prepare for Your <span className="text-primary">Dream Job</span>
-          </h1>
-          <p className="text-lg text-gray-600 mb-6">
-            InterviewPrep helps you master interview skills through structured mock assessments and personalized feedback.
-          </p>
-          <div className="space-y-4">
-            <div className="flex items-start">
-              <div className="flex-shrink-0 mt-1">
-                <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
-                  <svg className="h-4 w-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-lg font-medium text-gray-900">Multiple Question Types</h3>
-                <p className="mt-1 text-gray-600">Practice with MCQs, fill-in-the-blanks, and video interviews</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <div className="flex-shrink-0 mt-1">
-                <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
-                  <svg className="h-4 w-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-lg font-medium text-gray-900">Expert Feedback</h3>
-                <p className="mt-1 text-gray-600">Receive detailed feedback to improve your skills</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <div className="flex-shrink-0 mt-1">
-                <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
-                  <svg className="h-4 w-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-lg font-medium text-gray-900">Track Your Progress</h3>
-                <p className="mt-1 text-gray-600">Monitor your improvement over time with detailed analytics</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
