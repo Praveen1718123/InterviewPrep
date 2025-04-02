@@ -30,8 +30,10 @@ export default function AdminCandidates() {
   const itemsPerPage = 10;
 
   // Fetch candidates
-  const { data: candidates = [], isLoading } = useQuery<any[]>({
+  const { data: candidates = [], isLoading, refetch } = useQuery<any[]>({
     queryKey: ["/api/admin/candidates"],
+    refetchOnWindowFocus: true,
+    refetchOnMount: true
   });
 
   // Filter candidates

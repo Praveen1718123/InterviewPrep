@@ -14,7 +14,7 @@ import {
 import { Link, useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -81,6 +81,8 @@ export default function CreateCandidate() {
         title: "Candidate created",
         description: "Candidate account has been created successfully.",
       });
+      // Invalidate candidates query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/candidates"] });
       setCreatedUser(data);
     },
     onError: (error: Error) => {
