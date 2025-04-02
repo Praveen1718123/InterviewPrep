@@ -40,8 +40,29 @@ export default function VideoInterview() {
     error: recordingError 
   } = useRecorder();
 
+  // Define the assessment data type (simplified)
+  interface AssessmentData {
+    id: number;
+    candidateId: number;
+    assessmentId: number;
+    status: string;
+    startedAt?: string;
+    completedAt?: string;
+    responses?: any[];
+    assessment: {
+      id: number;
+      title: string;
+      type: string;
+      questions: {
+        id: number;
+        text: string;
+        timeLimit: number;
+      }[];
+    };
+  }
+
   // Fetch assessment details
-  const { data: assessmentData, isLoading, error } = useQuery({
+  const { data: assessmentData, isLoading, error } = useQuery<AssessmentData>({
     queryKey: [`/api/candidate/assessment/${id}`],
     enabled: !!id,
   });
@@ -49,6 +70,9 @@ export default function VideoInterview() {
   // Start assessment mutation
   const startAssessmentMutation = useMutation({
     mutationFn: async () => {
+      if (!assessmentData) {
+        throw new Error("Assessment data not loaded");
+      }
       const res = await apiRequest("POST", "/api/candidate/start-assessment", {
         candidateAssessmentId: assessmentData.id,
       });
@@ -69,6 +93,9 @@ export default function VideoInterview() {
   // Submit assessment mutation
   const submitAssessmentMutation = useMutation({
     mutationFn: async () => {
+      if (!assessmentData) {
+        throw new Error("Assessment data not loaded");
+      }
       const res = await apiRequest("POST", "/api/candidate/submit-video", {
         candidateAssessmentId: assessmentData.id,
         responses,
@@ -280,9 +307,19 @@ export default function VideoInterview() {
                 </div>
               </div>
               
-              <div className="bg-gray-50 p-4 rounded-md mb-6">
-                <p className="text-gray-800">{currentQuestion.text}</p>
-              </div>
+              {/* Only show the question when recording has started or stopped */}
+              {(status === "recording" || status === "stopped" || responses[currentQuestionIndex]?.videoUrl) && (
+                <div className="bg-gray-50 p-4 rounded-md mb-6">
+                  <p className="text-gray-800">{currentQuestion.text}</p>
+                </div>
+              )}
+              
+              {/* Show instruction when not recording */}
+              {status === "inactive" && !responses[currentQuestionIndex]?.videoUrl && (
+                <div className="bg-blue-50 p-4 rounded-md mb-6">
+                  <p className="text-blue-800 text-center">Press "Start Recording" to reveal the question and begin your response</p>
+                </div>
+              )}
               
               <div className="aspect-w-16 aspect-h-9 bg-gray-100 rounded-lg mb-6 overflow-hidden">
                 {recordingError ? (
@@ -323,32 +360,48 @@ export default function VideoInterview() {
               )}
               
               <div className="flex justify-center space-x-4">
-                <Button
-                  onClick={startRecording}
-                  disabled={status !== "inactive"}
-                  className="flex items-center"
-                >
-                  <Video className="mr-2 h-4 w-4" />
-                  Start Recording
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={stopRecording}
-                  disabled={status !== "recording"}
-                  className="flex items-center"
-                >
-                  <StopCircle className="mr-2 h-4 w-4" />
-                  Stop Recording
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={resetRecording}
-                  disabled={status !== "stopped" && !responses[currentQuestionIndex]?.videoUrl}
-                  className="flex items-center"
-                >
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Re-record
-                </Button>
+                {status === "inactive" && !responses[currentQuestionIndex]?.videoUrl ? (
+                  <div className="text-center">
+                    <Button
+                      onClick={startRecording}
+                      size="lg"
+                      className="flex items-center px-6 py-6 text-lg animate-pulse"
+                    >
+                      <Video className="mr-2 h-5 w-5" />
+                      Start Recording to Reveal Question
+                    </Button>
+                    <p className="text-sm text-gray-500 mt-2">You will see the question after you start recording</p>
+                  </div>
+                ) : (
+                  <>
+                    <Button
+                      onClick={startRecording}
+                      disabled={status !== "inactive"}
+                      className="flex items-center"
+                    >
+                      <Video className="mr-2 h-4 w-4" />
+                      Start Recording
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={stopRecording}
+                      disabled={status !== "recording"}
+                      className="flex items-center"
+                    >
+                      <StopCircle className="mr-2 h-4 w-4" />
+                      Stop Recording
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={resetRecording}
+                      disabled={status !== "stopped" && !responses[currentQuestionIndex]?.videoUrl}
+                      className="flex items-center"
+                    >
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Re-record
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
             
@@ -372,7 +425,7 @@ export default function VideoInterview() {
               <div className="bg-gray-50 p-3 rounded-md">
                 <div className="flex items-center justify-between">
                   <div className="flex flex-wrap gap-2">
-                    {questions.map((_, index) => (
+                    {questions.map((question, index: number) => (
                       <button
                         key={index}
                         className={`h-8 w-8 rounded-full flex items-center justify-center text-sm ${getQuestionStatusClass(
@@ -388,7 +441,8 @@ export default function VideoInterview() {
                   <AlertDialog open={submitDialogOpen} onOpenChange={setSubmitDialogOpen}>
                     <AlertDialogTrigger asChild>
                       <Button 
-                        variant="success" 
+                        variant="default" 
+                        className="bg-green-600 hover:bg-green-700 text-white"
                         disabled={submitAssessmentMutation.isPending || status === "recording" || !allQuestionsAnswered}
                       >
                         {submitAssessmentMutation.isPending ? (
