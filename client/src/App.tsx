@@ -15,6 +15,7 @@ const VideoInterview = lazy(() => import("@/pages/candidate/video-interview"));
 const SkillAnalysis = lazy(() => import("@/pages/candidate/skill-analysis"));
 const AdminDashboard = lazy(() => import("@/pages/admin/dashboard"));
 const AdminCandidates = lazy(() => import("@/pages/admin/candidates"));
+const CreateCandidate = lazy(() => import("@/pages/admin/create-candidate"));
 const AdminAssessments = lazy(() => import("@/pages/admin/assessments"));
 const CreateAssessment = lazy(() => import("@/pages/admin/create-assessment"));
 const BulkAssignment = lazy(() => import("@/pages/admin/bulk-assignment"));
@@ -62,6 +63,7 @@ function App() {
           {/* Protected Admin Routes */}
           <ProtectedRoute path="/admin" component={AdminDashboard} />
           <ProtectedRoute path="/admin/candidates" component={AdminCandidates} />
+          <ProtectedRoute path="/admin/candidates/create" component={CreateCandidate} />
           <ProtectedRoute path="/admin/assessments" component={AdminAssessments} />
           <ProtectedRoute path="/admin/assessments/create" component={CreateAssessment} />
           <ProtectedRoute path="/admin/bulk-assignment" component={BulkAssignment} />

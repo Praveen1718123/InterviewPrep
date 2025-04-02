@@ -1,146 +1,253 @@
-
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { 
+  Loader2, 
+  ArrowLeft,
+  Mail,
+  CheckCircle
+} from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+// Define validation schema
+const candidateFormSchema = z.object({
+  fullName: z.string().min(3, "Full name must be at least 3 characters"),
+  email: z.string().email("Please enter a valid email"),
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  sendCredentials: z.boolean().default(false),
+});
+
+type CandidateFormValues = z.infer<typeof candidateFormSchema>;
 
 export default function CreateCandidate() {
   const { toast } = useToast();
-  const [, navigate] = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    username: "",
-    password: "",
-    sendEmail: true
+  const [, navigate] = useLocation();
+  const [createdUser, setCreatedUser] = useState<{ id: number; fullName: string; email: string } | null>(null);
+
+  // Initialize form
+  const form = useForm<CandidateFormValues>({
+    resolver: zodResolver(candidateFormSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      username: "",
+      password: "",
+      sendCredentials: false,
+    },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const response = await fetch("/api/admin/candidates", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) throw new Error("Failed to create candidate");
-
-      const result = await response.json();
-
-      if (formData.sendEmail) {
-        await fetch("/api/admin/send-credentials", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: formData.email,
-            username: formData.username,
-            password: formData.password,
-          }),
+  // Create candidate mutation
+  const createCandidateMutation = useMutation({
+    mutationFn: async (data: CandidateFormValues) => {
+      const { sendCredentials, ...userData } = data;
+      
+      // Create the candidate
+      const response = await apiRequest("POST", "/api/admin/candidates", userData);
+      const newUser = await response.json();
+      
+      // If sendCredentials is checked, send an email with login details
+      if (sendCredentials) {
+        await apiRequest("POST", "/api/admin/send-credentials", {
+          email: userData.email,
+          username: userData.username,
+          password: userData.password,
         });
       }
-
+      
+      return newUser;
+    },
+    onSuccess: (data) => {
       toast({
-        title: "Success",
-        description: "Candidate created successfully",
+        title: "Candidate created",
+        description: "Candidate account has been created successfully.",
       });
-
-      navigate("/admin/candidates");
-    } catch (error) {
+      setCreatedUser(data);
+    },
+    onError: (error: Error) => {
       toast({
-        title: "Error",
-        description: "Failed to create candidate",
+        title: "Failed to create candidate",
+        description: error.message,
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
-    }
+    },
+  });
+
+  // Form submission handler
+  const onSubmit = (data: CandidateFormValues) => {
+    createCandidateMutation.mutate(data);
   };
 
   return (
     <DashboardLayout title="Create Candidate">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-6">
+          <Link href="/admin/candidates">
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 pl-0">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Candidates List
+            </Button>
+          </Link>
+        </div>
+        
         <Card>
           <CardContent className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Full Name</label>
-                <Input
-                  required
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  placeholder="Enter full name"
-                />
+            {createdUser ? (
+              <div className="text-center p-6">
+                <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold mb-2">Candidate Created Successfully</h2>
+                <p className="text-gray-600 mb-6">
+                  {createdUser.fullName} has been added to your candidates list.
+                  {form.getValues("sendCredentials") && (
+                    <> Login credentials have been sent to {createdUser.email}</>
+                  )}
+                </p>
+                <div className="flex space-x-4 justify-center">
+                  <Button onClick={() => navigate("/admin/candidates")}>
+                    View All Candidates
+                  </Button>
+                  <Button variant="outline" onClick={() => {
+                    form.reset();
+                    setCreatedUser(null);
+                  }}>
+                    Create Another Candidate
+                  </Button>
+                </div>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Email</label>
-                <Input
-                  required
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="Enter email address"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Username</label>
-                <Input
-                  required
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  placeholder="Enter username"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Password</label>
-                <Input
-                  required
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder="Enter password"
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="sendEmail"
-                  checked={formData.sendEmail}
-                  onChange={(e) => setFormData({ ...formData, sendEmail: e.target.checked })}
-                  className="rounded border-gray-300"
-                />
-                <label htmlFor="sendEmail" className="text-sm">
-                  Send credentials via email
-                </label>
-              </div>
-
-              <div className="flex justify-end space-x-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate("/admin/candidates")}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Creating..." : "Create Candidate"}
-                </Button>
-              </div>
-            </form>
+            ) : (
+              <>
+                <h2 className="text-xl font-semibold mb-4">Create New Candidate</h2>
+                <p className="text-gray-600 mb-6">
+                  Fill in the details below to create a new candidate account. The candidate will use these
+                  credentials to access the assessment platform.
+                </p>
+                
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="fullName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Full Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter candidate's full name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter candidate's email" type="email" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="username"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Username</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Create a username" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              The username the candidate will use to log in
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Create a password" type="password" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              Minimum 6 characters
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="sendCredentials"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>Send login credentials</FormLabel>
+                            <FormDescription>
+                              Send an email with login details to the candidate's email address
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="flex justify-end">
+                      <Button 
+                        type="submit" 
+                        disabled={createCandidateMutation.isPending}
+                        className="min-w-[150px]"
+                      >
+                        {createCandidateMutation.isPending ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Creating...
+                          </>
+                        ) : (
+                          "Create Candidate"
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

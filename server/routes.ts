@@ -1,13 +1,14 @@
 import type { Express, Response as ExpressResponse } from "express";
 import { createServer, type Server } from "http";
-import { setupAuth } from "./auth";
+import { setupAuth, hashPassword } from "./auth";
 import { storage } from "./storage";
 import { 
   insertAssessmentSchema, 
   insertCandidateAssessmentSchema, 
   mcqResponseSchema,
   fillInBlanksResponseSchema,
-  videoResponseSchema 
+  videoResponseSchema,
+  insertUserSchema
 } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
@@ -141,6 +142,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updated);
     } catch (error) {
       res.status(500).json({ message: "Error providing feedback" });
+    }
+  });
+  
+  // Create candidate endpoint
+  app.post("/api/admin/candidates", isAdmin, async (req, res) => {
+    try {
+      // Validate request data
+      const userData = insertUserSchema.parse({
+        ...req.body,
+        role: "candidate" // Force role to be candidate
+      });
+      
+      // Check if username or email already exists
+      const existingUserWithUsername = await storage.getUserByUsername(userData.username);
+      if (existingUserWithUsername) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      
+      const existingUserWithEmail = await storage.getUserByEmail(userData.email);
+      if (existingUserWithEmail) {
+        return res.status(400).json({ message: "Email already exists" });
+      }
+      
+      // Hash the password before creating user
+      const hashedPassword = await hashPassword(userData.password);
+      
+      // Create the user with hashed password
+      const user = await storage.createUser({
+        ...userData,
+        password: hashedPassword
+      });
+      
+      // Remove password from response
+      const { password, ...userWithoutPassword } = user;
+      
+      res.status(201).json(userWithoutPassword);
+    } catch (error) {
+      handleZodError(error, res);
     }
   });
 
