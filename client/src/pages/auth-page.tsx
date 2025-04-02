@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
-  const { user, loginMutation } = useAuth();
+  const { user, loginMutation, logoutMutation } = useAuth();
   const { toast } = useToast();
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   
@@ -42,7 +42,32 @@ export default function AuthPage() {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    loginMutation.mutate(loginData);
+    
+    // Check if the username is "admin" - prevent admin login through main form
+    if (loginData.username.toLowerCase() === "admin") {
+      toast({
+        title: "Admin Login Required",
+        description: "Please use the Admin Login button to access administrator features.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    loginMutation.mutate(loginData, {
+      onSuccess: (user) => {
+        // Verify the user is not an admin
+        if (user.role === "admin") {
+          toast({
+            title: "Access Denied",
+            description: "Administrators must use the Admin Login button.",
+            variant: "destructive",
+          });
+          // Log the user out immediately
+          loginMutation.reset();
+          setTimeout(() => logoutMutation.mutate(), 500);
+        }
+      }
+    });
   };
 
   const handleAdminLoginSubmit = async (e: React.FormEvent) => {
@@ -58,6 +83,16 @@ export default function AuthPage() {
       return;
     }
 
+    // Ensure the username is "admin" - prevent candidate login through admin form
+    if (adminLoginData.username.toLowerCase() !== "admin") {
+      toast({
+        title: "Admin Username Required",
+        description: "Please use a valid administrator username.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Attempt login with admin credentials
     loginMutation.mutate(adminLoginData, {
       onSuccess: (user) => {
@@ -67,6 +102,9 @@ export default function AuthPage() {
             description: "The provided credentials do not have administrator privileges",
             variant: "destructive",
           });
+          // Log out immediately if role is not admin
+          loginMutation.reset();
+          setTimeout(() => logoutMutation.mutate(), 500);
         } else {
           setIsAdminDialogOpen(false);
           toast({
