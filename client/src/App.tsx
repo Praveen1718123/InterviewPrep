@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { ProtectedRoute } from "./lib/protected-route";
 
 // Lazy load components to reduce initial bundle size
+const LandingPage = lazy(() => import("@/pages/landing-page"));
 const AuthPage = lazy(() => import("@/pages/auth-page"));
 const CandidateDashboard = lazy(() => import("@/pages/candidate/dashboard"));
 const MCQAssessment = lazy(() => import("@/pages/candidate/mcq-assessment"));
@@ -56,7 +57,7 @@ function App() {
         <Switch>
           {/* Public Routes */}
           <Route path="/auth" component={AuthPage} />
-          <Route path="/" component={WelcomePage} />
+          <Route path="/" component={LandingPage} />
           
           {/* Protected Admin Routes */}
           <ProtectedRoute path="/admin" component={AdminDashboard} />

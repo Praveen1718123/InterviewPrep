@@ -134,12 +134,12 @@ export default function AuthPage() {
       <div className="w-full max-w-md bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="p-6 md:p-8">
           <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center">
+            <div className="w-20 h-20 rounded-full bg-[#4D95BC] flex items-center justify-center">
               <User className="w-10 h-10 text-white" />
             </div>
           </div>
           
-          <h1 className="text-2xl font-bold text-center mb-8">Interview Prep Platform</h1>
+          <h1 className="text-2xl font-bold text-center mb-8 text-[#0E2D4A]">Switchbee Solutions LLP</h1>
           
           <form onSubmit={handleLoginSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -179,7 +179,7 @@ export default function AuthPage() {
               <Button 
                 type="button" 
                 variant="link" 
-                className="px-0 font-normal text-blue-700"
+                className="px-0 font-normal text-[#4D95BC]"
               >
                 Forgot password?
               </Button>
@@ -187,7 +187,7 @@ export default function AuthPage() {
             
             <Button 
               type="submit" 
-              className="w-full py-6 text-lg bg-blue-500 hover:bg-blue-600" 
+              className="w-full py-6 text-lg bg-[#0E2D4A] hover:bg-[#0c2339]" 
               disabled={loginMutation.isPending}
             >
               {loginMutation.isPending ? "Logging in..." : "Login"}
@@ -208,7 +208,7 @@ export default function AuthPage() {
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                      <Lock className="h-5 w-5 text-blue-500" />
+                      <Lock className="h-5 w-5 text-[#4D95BC]" />
                       Administrator Login
                     </DialogTitle>
                     <DialogDescription>
@@ -254,7 +254,7 @@ export default function AuthPage() {
                       </DialogClose>
                       <Button 
                         type="submit" 
-                        className="bg-blue-500 hover:bg-blue-600"
+                        className="bg-[#0E2D4A] hover:bg-[#0c2339]"
                         disabled={loginMutation.isPending}
                       >
                         {loginMutation.isPending ? "Logging in..." : "Login"}
