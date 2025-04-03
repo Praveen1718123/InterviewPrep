@@ -16,17 +16,21 @@ import {
   UserX,
   AlertCircle,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Key,
+  Copy
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ViewCandidate() {
   const params = useParams<{ id: string }>();
   const candidateId = parseInt(params.id);
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("details");
+  const { toast } = useToast();
 
   // Fetch candidate details
   const { data: candidate, isLoading: candidateLoading } = useQuery({
@@ -104,6 +108,29 @@ export default function ViewCandidate() {
         return <Badge variant="outline">{status}</Badge>;
     }
   };
+  
+  const copyCredentialsToClipboard = () => {
+    const credentialText = `
+Username: ${candidate.username}
+Password: ${candidate.password}
+Email: ${candidate.email}
+    `.trim();
+    
+    navigator.clipboard.writeText(credentialText)
+      .then(() => {
+        toast({
+          title: "Credentials Copied",
+          description: "Candidate credentials have been copied to clipboard.",
+        });
+      })
+      .catch(() => {
+        toast({
+          title: "Failed to copy",
+          description: "Unable to copy credentials to clipboard.",
+          variant: "destructive",
+        });
+      });
+  };
 
   return (
     <DashboardLayout title="Candidate Details">
@@ -162,6 +189,24 @@ export default function ViewCandidate() {
                   </p>
                 </div>
               </div>
+              
+              <div className="flex items-start">
+                <Key className="h-5 w-5 text-gray-500 mr-3 mt-0.5" />
+                <div>
+                  <p className="text-gray-600 mb-1">Password</p>
+                  <div className="flex items-center">
+                    <p className="font-medium">{candidate.password}</p>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-6 w-6 p-0 ml-2 text-gray-500 hover:text-gray-700"
+                      onClick={copyCredentialsToClipboard}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <div className="flex space-x-3 mt-8">
@@ -171,6 +216,14 @@ export default function ViewCandidate() {
               >
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Candidate
+              </Button>
+              <Button 
+                variant="outline"
+                size="icon"
+                onClick={copyCredentialsToClipboard}
+                title="Copy Credentials"
+              >
+                <Copy className="h-4 w-4" />
               </Button>
             </div>
           </CardContent>
@@ -228,7 +281,7 @@ export default function ViewCandidate() {
                           <p className="text-2xl font-bold text-green-600">
                             {assessmentsLoading ? (
                               <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                            ) : assessments?.filter(a => a.status === "completed" || a.status === "reviewed").length || 0}
+                            ) : assessments?.filter((a: any) => a.status === "completed" || a.status === "reviewed").length || 0}
                           </p>
                           <p className="text-gray-600 text-sm mt-1">Completed</p>
                         </div>
@@ -265,7 +318,7 @@ export default function ViewCandidate() {
                     </div>
                   ) : (
                     <div className="divide-y">
-                      {assessments.map((assessment) => (
+                      {assessments.map((assessment: any) => (
                         <div key={assessment.id} className="py-4 first:pt-0 last:pb-0">
                           <div className="flex justify-between items-start">
                             <div>
