@@ -56,7 +56,9 @@ export default function AdminCandidates() {
         const statusMatch = !statusFilter || candidate.status === statusFilter;
 
         // Filter by batch
-        const batchMatch = !batchFilter || candidate.batch === batchFilter;
+        const batchMatch = !batchFilter || 
+          (batchFilter === "no-batch" && !candidate.batch) || 
+          candidate.batch === batchFilter;
         
         return searchMatch && statusMatch && batchMatch;
       })
@@ -129,9 +131,10 @@ export default function AdminCandidates() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Batches</SelectItem>
-                    {Array.from(new Set(candidates?.map(c => c.batch) || [])).map(batch => (
-                      <SelectItem key={batch} value={batch || ""}>{batch || "No Batch"}</SelectItem>
+                    {Array.from(new Set(candidates?.map(c => c.batch).filter(Boolean) || [])).map(batch => (
+                      <SelectItem key={batch} value={batch}>{batch}</SelectItem>
                     ))}
+                    <SelectItem value="no-batch">No Batch</SelectItem>
                   </SelectContent>
                 </Select>
                 <div className="relative w-full md:w-64">
