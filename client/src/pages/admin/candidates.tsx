@@ -61,8 +61,6 @@ export default function AdminCandidates() {
     refetchOnMount: true
   });
 
-  const [batchFilter, setBatchFilter] = useState<string | null>(null);
-
   // Handle batch filter change
   const handleBatchFilterChange = (value: string) => {
     setBatchFilter(value === "all" ? null : value);
@@ -273,7 +271,7 @@ export default function AdminCandidates() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Batches</SelectItem>
-                    {Array.from(new Set(candidates?.map(c => c.batch).filter(Boolean) || [])).map(batch => (
+                    {Array.from(new Set(candidates?.map(c => c.batch).filter(batch => batch && batch.trim()) || [])).map(batch => (
                       <SelectItem key={batch} value={batch}>{batch}</SelectItem>
                     ))}
                     <SelectItem value="no-batch">No Batch</SelectItem>
