@@ -28,6 +28,8 @@ export interface IStorage {
   updateUser(id: number, userData: Partial<User>): Promise<User>;
   deleteUser(id: number): Promise<void>;
   getCandidates(): Promise<User[]>;
+  getBatches(): Promise<string[]>; // Added getBatches function
+  createBatch(name: string): Promise<{ name: string }>; // Added createBatch function
 
   // Assessment operations
   createAssessment(assessment: InsertAssessment): Promise<Assessment>;
@@ -177,6 +179,20 @@ export class MemStorage implements IStorage {
     return Array.from(this.users.values()).filter(
       (user) => user.role === "candidate",
     );
+  }
+
+  async getBatches(): Promise<string[]> { // Added getBatches implementation
+    const batches = new Set<string>();
+    for (const user of this.users.values()) {
+      if (user.batch) {
+        batches.add(user.batch);
+      }
+    }
+    return Array.from(batches);
+  }
+
+  async createBatch(name: string): Promise<{ name: string }> { // Added createBatch implementation
+    return { name };
   }
 
   // Assessment operations
@@ -518,6 +534,15 @@ export class PostgresStorage implements IStorage {
 
   async getCandidates(): Promise<User[]> {
     return await this.db.select().from(users).where(eq(users.role, "candidate"));
+  }
+
+  async getBatches(): Promise<string[]> { // Added getBatches implementation for Postgres
+    const result = await this.db.query.raw`SELECT DISTINCT batch FROM users WHERE batch IS NOT NULL ORDER BY batch`;
+    return result.rows.map(row => row.batch as string);
+  }
+
+  async createBatch(name: string): Promise<{ name: string }> { // Added createBatch implementation for Postgres
+    return { name };
   }
 
   // Assessment operations

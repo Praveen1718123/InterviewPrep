@@ -424,6 +424,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Batch management endpoints
+  app.get("/api/admin/batches", isAdmin, async (req, res) => {
+    try {
+      const batches = await storage.getBatches();
+      res.json(batches);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching batches" });
+    }
+  });
+
+  app.post("/api/admin/batches", isAdmin, async (req, res) => {
+    try {
+      const { name } = req.body;
+      if (!name || !name.trim()) {
+        return res.status(400).json({ message: "Batch name is required" });
+      }
+      await storage.createBatch(name.trim());
+      res.status(201).json({ message: "Batch created successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error creating batch" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // Add admin credentials endpoint
