@@ -28,12 +28,12 @@ export interface IStorage {
   updateUser(id: number, userData: Partial<User>): Promise<User>;
   deleteUser(id: number): Promise<void>;
   getCandidates(): Promise<User[]>;
-  
+
   // Assessment operations
   createAssessment(assessment: InsertAssessment): Promise<Assessment>;
   getAssessment(id: number): Promise<Assessment | undefined>;
   getAssessments(): Promise<Assessment[]>;
-  
+
   // Candidate Assessment operations
   assignAssessment(assignment: InsertCandidateAssessment): Promise<CandidateAssessment>;
   getCandidateAssignments(candidateId: number): Promise<CandidateAssessment[]>;
@@ -44,10 +44,10 @@ export interface IStorage {
   submitFillInBlanksResponses(candidateAssessmentId: number, candidateId: number, responses: FillInBlanksResponse[]): Promise<CandidateAssessment>;
   submitVideoResponses(candidateAssessmentId: number, candidateId: number, responses: VideoResponse[]): Promise<CandidateAssessment>;
   provideFeedback(candidateAssessmentId: number, feedback: string, score?: number): Promise<CandidateAssessment>;
-  
+
   // Initialize database (create tables, seed data)
   initializeStorage(): Promise<void>;
-  
+
   // Session store
   sessionStore: any; // Changed from session.SessionStore for compatibility
 }
@@ -57,7 +57,7 @@ export class MemStorage implements IStorage {
   private assessments: Map<number, Assessment>;
   private candidateAssessments: Map<number, CandidateAssessment>;
   sessionStore: any; // Using any type for compatibility
-  
+
   private userIdCounter: number;
   private assessmentIdCounter: number;
   private candidateAssessmentIdCounter: number;
@@ -69,15 +69,15 @@ export class MemStorage implements IStorage {
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
     });
-    
+
     this.userIdCounter = 1;
     this.assessmentIdCounter = 1;
     this.candidateAssessmentIdCounter = 1;
-    
+
     // Initialize will handle creating test users
     this.initializeStorage();
   }
-  
+
   // Added for interface compatibility
   async initializeStorage(): Promise<void> {
     try {
@@ -89,10 +89,11 @@ export class MemStorage implements IStorage {
           password: await hashPassword("admin123"),
           email: "admin@example.com",
           fullName: "Admin User",
-          role: "admin"
+          role: "admin",
+          batch: null
         });
       }
-      
+
       // Create a candidate user for testing if they don't exist yet
       const existingCandidate = await this.getUserByUsername("candidate");
       if (!existingCandidate) {
@@ -101,7 +102,8 @@ export class MemStorage implements IStorage {
           password: await hashPassword("candidate123"),
           email: "candidate@example.com",
           fullName: "Test Candidate",
-          role: "candidate"
+          role: "candidate",
+          batch: null
         });
       }
     } catch (error) {
@@ -152,16 +154,16 @@ export class MemStorage implements IStorage {
     this.users.set(id, updatedUser);
     return updatedUser;
   }
-  
+
   async deleteUser(id: number): Promise<void> {
     const existingUser = await this.getUser(id);
     if (!existingUser) {
       throw new Error("User not found");
     }
-    
+
     // Delete user
     this.users.delete(id);
-    
+
     // Also delete all associated candidate assessments
     const candidateAssessments = Array.from(this.candidateAssessments.values());
     for (const assessment of candidateAssessments) {
@@ -227,7 +229,7 @@ export class MemStorage implements IStorage {
   async getCandidateAssessments(candidateId: number): Promise<any[]> {
     const assignments = await this.getCandidateAssignments(candidateId);
     const result = [];
-    
+
     for (const assignment of assignments) {
       const assessment = await this.getAssessment(assignment.assessmentId);
       if (assessment) {
@@ -242,19 +244,19 @@ export class MemStorage implements IStorage {
         });
       }
     }
-    
+
     return result;
   }
 
   async getCandidateAssignment(candidateId: number, assessmentId: number): Promise<any | undefined> {
     const assignments = await this.getCandidateAssignments(candidateId);
     const assignment = assignments.find(a => a.assessmentId === assessmentId);
-    
+
     if (!assignment) return undefined;
-    
+
     const assessment = await this.getAssessment(assessmentId);
     if (!assessment) return undefined;
-    
+
     return {
       ...assignment,
       assessment
@@ -266,13 +268,13 @@ export class MemStorage implements IStorage {
     if (!assignment || assignment.candidateId !== candidateId) {
       throw new Error("Assessment not found or not assigned to this candidate");
     }
-    
+
     const updatedAssignment: CandidateAssessment = {
       ...assignment,
       status: "in-progress",
       startedAt: new Date(),
     };
-    
+
     this.candidateAssessments.set(candidateAssessmentId, updatedAssignment);
     return updatedAssignment;
   }
@@ -282,26 +284,26 @@ export class MemStorage implements IStorage {
     if (!assignment || assignment.candidateId !== candidateId) {
       throw new Error("Assessment not found or not assigned to this candidate");
     }
-    
+
     const assessment = await this.getAssessment(assignment.assessmentId);
     if (!assessment || assessment.type !== "mcq") {
       throw new Error("Invalid assessment type");
     }
-    
+
     // Calculate score for MCQ
     let score = 0;
     const questions = assessment.questions as any[];
-    
+
     for (const response of responses) {
       const question = questions.find(q => q.id === response.questionId);
       if (question && question.correctOptionId === response.selectedOptionId) {
         score++;
       }
     }
-    
+
     // Convert to percentage
     const percentageScore = Math.round((score / questions.length) * 100);
-    
+
     const updatedAssignment: CandidateAssessment = {
       ...assignment,
       responses,
@@ -309,7 +311,7 @@ export class MemStorage implements IStorage {
       completedAt: new Date(),
       score: percentageScore,
     };
-    
+
     this.candidateAssessments.set(candidateAssessmentId, updatedAssignment);
     return updatedAssignment;
   }
@@ -319,17 +321,17 @@ export class MemStorage implements IStorage {
     if (!assignment || assignment.candidateId !== candidateId) {
       throw new Error("Assessment not found or not assigned to this candidate");
     }
-    
+
     const assessment = await this.getAssessment(assignment.assessmentId);
     if (!assessment || assessment.type !== "fill-in-blanks") {
       throw new Error("Invalid assessment type");
     }
-    
+
     // Calculate score for fill-in-blanks
     let totalBlanks = 0;
     let correctBlanks = 0;
     const questions = assessment.questions as any[];
-    
+
     for (const response of responses) {
       const question = questions.find(q => q.id === response.questionId);
       if (question) {
@@ -342,10 +344,10 @@ export class MemStorage implements IStorage {
         });
       }
     }
-    
+
     // Convert to percentage
     const percentageScore = totalBlanks > 0 ? Math.round((correctBlanks / totalBlanks) * 100) : 0;
-    
+
     const updatedAssignment: CandidateAssessment = {
       ...assignment,
       responses,
@@ -353,7 +355,7 @@ export class MemStorage implements IStorage {
       completedAt: new Date(),
       score: percentageScore,
     };
-    
+
     this.candidateAssessments.set(candidateAssessmentId, updatedAssignment);
     return updatedAssignment;
   }
@@ -363,19 +365,19 @@ export class MemStorage implements IStorage {
     if (!assignment || assignment.candidateId !== candidateId) {
       throw new Error("Assessment not found or not assigned to this candidate");
     }
-    
+
     const assessment = await this.getAssessment(assignment.assessmentId);
     if (!assessment || assessment.type !== "video") {
       throw new Error("Invalid assessment type");
     }
-    
+
     const updatedAssignment: CandidateAssessment = {
       ...assignment,
       responses,
       status: "completed",
       completedAt: new Date(),
     };
-    
+
     this.candidateAssessments.set(candidateAssessmentId, updatedAssignment);
     return updatedAssignment;
   }
@@ -385,21 +387,21 @@ export class MemStorage implements IStorage {
     if (!assignment) {
       throw new Error("Assignment not found");
     }
-    
+
     const updatedAssignment: CandidateAssessment = {
       ...assignment,
       feedback,
       status: "reviewed",
     };
-    
+
     if (score !== undefined) {
       updatedAssignment.score = score;
     }
-    
+
     this.candidateAssessments.set(candidateAssessmentId, updatedAssignment);
     return updatedAssignment;
   }
-  
+
 
 }
 
@@ -407,26 +409,26 @@ export class MemStorage implements IStorage {
 export class PostgresStorage implements IStorage {
   private db: ReturnType<typeof drizzle>;
   sessionStore: any;
-  
+
   constructor() {
     // Initialize PostgreSQL connection
     const pool = new Pool({
       connectionString: process.env.DATABASE_URL,
     });
-    
+
     this.db = drizzle(pool);
-    
+
     // Initialize session store
     this.sessionStore = new PostgresSessionStore({
       pool,
       createTableIfMissing: true,
     });
   }
-  
+
   async initializeStorage(): Promise<void> {
     try {
       console.log("Initializing PostgreSQL storage and creating admin user...");
-      
+
       // Create admin user for testing
       const existingAdmin = await this.getUserByUsername("admin");
       if (!existingAdmin) {
@@ -435,11 +437,12 @@ export class PostgresStorage implements IStorage {
           password: await hashPassword("admin123"), // Manually hash password
           email: "admin@example.com",
           fullName: "Admin User",
-          role: "admin"
+          role: "admin",
+          batch: null
         });
         console.log("Admin user created");
       }
-      
+
       // Create candidate user for testing
       const existingCandidate = await this.getUserByUsername("candidate");
       if (!existingCandidate) {
@@ -448,7 +451,8 @@ export class PostgresStorage implements IStorage {
           password: await hashPassword("candidate123"), // Manually hash password
           email: "candidate@example.com",
           fullName: "Test Candidate",
-          role: "candidate"
+          role: "candidate",
+          batch: null
         });
         console.log("Candidate user created");
       }
@@ -457,23 +461,23 @@ export class PostgresStorage implements IStorage {
       throw error;
     }
   }
-  
+
   // User operations
   async getUser(id: number): Promise<User | undefined> {
     const result = await this.db.select().from(users).where(eq(users.id, id));
     return result[0];
   }
-  
+
   async getUserByUsername(username: string): Promise<User | undefined> {
     const result = await this.db.select().from(users).where(eq(users.username, username));
     return result[0];
   }
-  
+
   async getUserByEmail(email: string): Promise<User | undefined> {
     const result = await this.db.select().from(users).where(eq(users.email, email));
     return result[0];
   }
-  
+
   async createUser(user: InsertUser): Promise<User> {
     const result = await this.db.insert(users).values({
       ...user,
@@ -482,40 +486,40 @@ export class PostgresStorage implements IStorage {
     }).returning();
     return result[0];
   }
-  
+
   async updateUser(id: number, userData: Partial<User>): Promise<User> {
     const existingUser = await this.getUser(id);
     if (!existingUser) {
       throw new Error("User not found");
     }
-    
+
     const result = await this.db.update(users)
       .set(userData)
       .where(eq(users.id, id))
       .returning();
-    
+
     return result[0];
   }
-  
+
   async deleteUser(id: number): Promise<void> {
     const existingUser = await this.getUser(id);
     if (!existingUser) {
       throw new Error("User not found");
     }
-    
+
     // First delete all related candidate assessments
     await this.db.delete(candidateAssessments)
       .where(eq(candidateAssessments.candidateId, id));
-    
+
     // Then delete the user
     await this.db.delete(users)
       .where(eq(users.id, id));
   }
-  
+
   async getCandidates(): Promise<User[]> {
     return await this.db.select().from(users).where(eq(users.role, "candidate"));
   }
-  
+
   // Assessment operations
   async createAssessment(assessment: InsertAssessment): Promise<Assessment> {
     const result = await this.db.insert(assessments).values({
@@ -526,16 +530,16 @@ export class PostgresStorage implements IStorage {
     }).returning();
     return result[0];
   }
-  
+
   async getAssessment(id: number): Promise<Assessment | undefined> {
     const result = await this.db.select().from(assessments).where(eq(assessments.id, id));
     return result[0];
   }
-  
+
   async getAssessments(): Promise<Assessment[]> {
     return await this.db.select().from(assessments);
   }
-  
+
   // Candidate Assessment operations
   async assignAssessment(assignment: InsertCandidateAssessment): Promise<CandidateAssessment> {
     const result = await this.db.insert(candidateAssessments).values({
@@ -549,19 +553,19 @@ export class PostgresStorage implements IStorage {
       feedback: assignment.feedback || null,
       scheduledFor: assignment.scheduledFor || null
     }).returning();
-    
+
     return result[0];
   }
-  
+
   async getCandidateAssignments(candidateId: number): Promise<CandidateAssessment[]> {
     return await this.db.select().from(candidateAssessments)
       .where(eq(candidateAssessments.candidateId, candidateId));
   }
-  
+
   async getCandidateAssessments(candidateId: number): Promise<any[]> {
     const assignments = await this.getCandidateAssignments(candidateId);
     const result = [];
-    
+
     for (const assignment of assignments) {
       const assessment = await this.getAssessment(assignment.assessmentId);
       if (assessment) {
@@ -576,40 +580,40 @@ export class PostgresStorage implements IStorage {
         });
       }
     }
-    
+
     return result;
   }
-  
+
   async getCandidateAssignment(candidateId: number, assessmentId: number): Promise<any | undefined> {
     const result = await this.db.select().from(candidateAssessments)
       .where(and(
         eq(candidateAssessments.candidateId, candidateId),
         eq(candidateAssessments.assessmentId, assessmentId)
       ));
-    
+
     if (result.length === 0) return undefined;
-    
+
     const assignment = result[0];
     const assessment = await this.getAssessment(assessmentId);
     if (!assessment) return undefined;
-    
+
     return {
       ...assignment,
       assessment
     };
   }
-  
+
   async startAssessment(candidateAssessmentId: number, candidateId: number): Promise<CandidateAssessment> {
     const assignments = await this.db.select().from(candidateAssessments)
       .where(and(
         eq(candidateAssessments.id, candidateAssessmentId),
         eq(candidateAssessments.candidateId, candidateId)
       ));
-    
+
     if (assignments.length === 0) {
       throw new Error("Assessment not found or not assigned to this candidate");
     }
-    
+
     const result = await this.db.update(candidateAssessments)
       .set({
         status: "in-progress",
@@ -617,42 +621,42 @@ export class PostgresStorage implements IStorage {
       })
       .where(eq(candidateAssessments.id, candidateAssessmentId))
       .returning();
-    
+
     return result[0];
   }
-  
+
   async submitMCQResponses(candidateAssessmentId: number, candidateId: number, responses: MCQResponse[]): Promise<CandidateAssessment> {
     const assignments = await this.db.select().from(candidateAssessments)
       .where(and(
         eq(candidateAssessments.id, candidateAssessmentId),
         eq(candidateAssessments.candidateId, candidateId)
       ));
-    
+
     if (assignments.length === 0) {
       throw new Error("Assessment not found or not assigned to this candidate");
     }
-    
+
     const assignment = assignments[0];
     const assessment = await this.getAssessment(assignment.assessmentId);
-    
+
     if (!assessment || assessment.type !== "mcq") {
       throw new Error("Invalid assessment type");
     }
-    
+
     // Calculate score for MCQ
     let score = 0;
     const questions = assessment.questions as any[];
-    
+
     for (const response of responses) {
       const question = questions.find((q: any) => q.id === response.questionId);
       if (question && question.correctOptionId === response.selectedOptionId) {
         score++;
       }
     }
-    
+
     // Convert to percentage
     const percentageScore = Math.round((score / questions.length) * 100);
-    
+
     const result = await this.db.update(candidateAssessments)
       .set({
         responses: responses,
@@ -662,33 +666,33 @@ export class PostgresStorage implements IStorage {
       })
       .where(eq(candidateAssessments.id, candidateAssessmentId))
       .returning();
-    
+
     return result[0];
   }
-  
+
   async submitFillInBlanksResponses(candidateAssessmentId: number, candidateId: number, responses: FillInBlanksResponse[]): Promise<CandidateAssessment> {
     const assignments = await this.db.select().from(candidateAssessments)
       .where(and(
         eq(candidateAssessments.id, candidateAssessmentId),
         eq(candidateAssessments.candidateId, candidateId)
       ));
-    
+
     if (assignments.length === 0) {
       throw new Error("Assessment not found or not assigned to this candidate");
     }
-    
+
     const assignment = assignments[0];
     const assessment = await this.getAssessment(assignment.assessmentId);
-    
+
     if (!assessment || assessment.type !== "fill-in-blanks") {
       throw new Error("Invalid assessment type");
     }
-    
+
     // Calculate score for fill-in-blanks
     let totalBlanks = 0;
     let correctBlanks = 0;
     const questions = assessment.questions as any[];
-    
+
     for (const response of responses) {
       const question = questions.find((q: any) => q.id === response.questionId);
       if (question) {
@@ -701,10 +705,10 @@ export class PostgresStorage implements IStorage {
         });
       }
     }
-    
+
     // Convert to percentage
     const percentageScore = totalBlanks > 0 ? Math.round((correctBlanks / totalBlanks) * 100) : 0;
-    
+
     const result = await this.db.update(candidateAssessments)
       .set({
         responses: responses,
@@ -714,28 +718,28 @@ export class PostgresStorage implements IStorage {
       })
       .where(eq(candidateAssessments.id, candidateAssessmentId))
       .returning();
-    
+
     return result[0];
   }
-  
+
   async submitVideoResponses(candidateAssessmentId: number, candidateId: number, responses: VideoResponse[]): Promise<CandidateAssessment> {
     const assignments = await this.db.select().from(candidateAssessments)
       .where(and(
         eq(candidateAssessments.id, candidateAssessmentId),
         eq(candidateAssessments.candidateId, candidateId)
       ));
-    
+
     if (assignments.length === 0) {
       throw new Error("Assessment not found or not assigned to this candidate");
     }
-    
+
     const assignment = assignments[0];
     const assessment = await this.getAssessment(assignment.assessmentId);
-    
+
     if (!assessment || assessment.type !== "video") {
       throw new Error("Invalid assessment type");
     }
-    
+
     const result = await this.db.update(candidateAssessments)
       .set({
         responses: responses,
@@ -744,32 +748,32 @@ export class PostgresStorage implements IStorage {
       })
       .where(eq(candidateAssessments.id, candidateAssessmentId))
       .returning();
-    
+
     return result[0];
   }
-  
+
   async provideFeedback(candidateAssessmentId: number, feedback: string, score?: number): Promise<CandidateAssessment> {
     const assignments = await this.db.select().from(candidateAssessments)
       .where(eq(candidateAssessments.id, candidateAssessmentId));
-    
+
     if (assignments.length === 0) {
       throw new Error("Assignment not found");
     }
-    
+
     const updateData: any = {
       feedback: feedback,
       status: "reviewed"
     };
-    
+
     if (score !== undefined) {
       updateData.score = score;
     }
-    
+
     const result = await this.db.update(candidateAssessments)
       .set(updateData)
       .where(eq(candidateAssessments.id, candidateAssessmentId))
       .returning();
-    
+
     return result[0];
   }
 }
