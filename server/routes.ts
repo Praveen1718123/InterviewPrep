@@ -449,6 +449,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
 
+  // Batch operations endpoints
+  app.post("/api/admin/candidates/batch", isAdmin, async (req, res) => {
+    try {
+      const { candidateIds, batchName } = req.body;
+      
+      if (!Array.isArray(candidateIds) || candidateIds.length === 0) {
+        return res.status(400).json({ message: "candidateIds must be a non-empty array" });
+      }
+      
+      if (!batchName || !batchName.trim()) {
+        return res.status(400).json({ message: "Batch name is required" });
+      }
+      
+      const results = [];
+      const errors = [];
+      
+      // Process each candidate assignment
+      for (const candidateId of candidateIds) {
+        try {
+          // Check if candidate exists
+          const candidate = await storage.getUser(candidateId);
+          if (!candidate || candidate.role !== "candidate") {
+            errors.push({ candidateId, error: "Invalid candidate" });
+            continue;
+          }
+          
+          // Update candidate batch
+          const updatedCandidate = await storage.updateUser(candidateId, {
+            batch: batchName.trim()
+          });
+          
+          results.push(updatedCandidate);
+        } catch (error) {
+          errors.push({ candidateId, error: error instanceof Error ? error.message : String(error) });
+        }
+      }
+      
+      res.status(200).json({ 
+        success: results.length > 0,
+        updated: results.length,
+        failed: errors.length, 
+        results,
+        errors 
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error assigning batch to candidates" });
+    }
+  });
+  
+  app.post("/api/admin/candidates/status", isAdmin, async (req, res) => {
+    try {
+      const { candidateIds, status } = req.body;
+      
+      if (!Array.isArray(candidateIds) || candidateIds.length === 0) {
+        return res.status(400).json({ message: "candidateIds must be a non-empty array" });
+      }
+      
+      if (!status || !status.trim()) {
+        return res.status(400).json({ message: "Status is required" });
+      }
+      
+      const results = [];
+      const errors = [];
+      
+      // Process each candidate status update
+      for (const candidateId of candidateIds) {
+        try {
+          // Check if candidate exists
+          const candidate = await storage.getUser(candidateId);
+          if (!candidate || candidate.role !== "candidate") {
+            errors.push({ candidateId, error: "Invalid candidate" });
+            continue;
+          }
+          
+          // Update candidate status
+          const updatedCandidate = await storage.updateUser(candidateId, {
+            status: status.trim()
+          });
+          
+          results.push(updatedCandidate);
+        } catch (error) {
+          errors.push({ candidateId, error: error instanceof Error ? error.message : String(error) });
+        }
+      }
+      
+      res.status(200).json({ 
+        success: results.length > 0,
+        updated: results.length,
+        failed: errors.length, 
+        results,
+        errors 
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error updating candidate status" });
+    }
+  });
+  
+  app.post("/api/admin/candidates/bulk-delete", isAdmin, async (req, res) => {
+    try {
+      const { candidateIds } = req.body;
+      
+      if (!Array.isArray(candidateIds) || candidateIds.length === 0) {
+        return res.status(400).json({ message: "candidateIds must be a non-empty array" });
+      }
+      
+      const results = [];
+      const errors = [];
+      
+      // Process each candidate deletion
+      for (const candidateId of candidateIds) {
+        try {
+          // Check if candidate exists
+          const candidate = await storage.getUser(candidateId);
+          if (!candidate || candidate.role !== "candidate") {
+            errors.push({ candidateId, error: "Invalid candidate" });
+            continue;
+          }
+          
+          // Delete the candidate
+          await storage.deleteUser(candidateId);
+          
+          results.push({ id: candidateId, deleted: true });
+        } catch (error) {
+          errors.push({ candidateId, error: error instanceof Error ? error.message : String(error) });
+        }
+      }
+      
+      res.status(200).json({ 
+        success: results.length > 0,
+        deleted: results.length,
+        failed: errors.length, 
+        results,
+        errors 
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting candidates" });
+    }
+  });
+  
   // Add admin credentials endpoint
   app.post("/api/admin/send-credentials", isAdmin, async (req, res) => {
     try {
