@@ -26,6 +26,7 @@ import {
 export default function AdminCandidates() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [batchFilter, setBatchFilter] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -35,6 +36,12 @@ export default function AdminCandidates() {
     refetchOnWindowFocus: true,
     refetchOnMount: true
   });
+
+  // Handle batch filter change
+  const handleBatchFilterChange = (value: string) => {
+    setBatchFilter(value === "all" ? null : value);
+    setCurrentPage(1); // Reset to first page on filter change
+  };
 
   // Filter candidates
   const filteredCandidates = candidates
@@ -47,8 +54,11 @@ export default function AdminCandidates() {
         
         // Filter by status
         const statusMatch = !statusFilter || candidate.status === statusFilter;
+
+        // Filter by batch
+        const batchMatch = !batchFilter || candidate.batch === batchFilter;
         
-        return searchMatch && statusMatch;
+        return searchMatch && statusMatch && batchMatch;
       })
     : [];
 
