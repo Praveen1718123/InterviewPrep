@@ -34,6 +34,7 @@ const candidateFormSchema = z.object({
   email: z.string().email("Please enter a valid email"),
   username: z.string().min(3, "Username must be at least 3 characters"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  batch: z.string().min(1, "Please select a batch"),
   sendCredentials: z.boolean().default(false),
 });
 
@@ -209,6 +210,34 @@ export default function CreateCandidate() {
                       />
                     </div>
                     
+                    <FormField
+                      control={form.control}
+                      name="batch"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Batch</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select batch" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from({ length: 12 }, (_, i) => {
+                                const date = new Date();
+                                date.setMonth(date.getMonth() + i);
+                                const batchName = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+                                return (
+                                  <SelectItem key={batchName} value={batchName}>
+                                    {batchName}
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <FormField
                       control={form.control}
                       name="sendCredentials"

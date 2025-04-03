@@ -10,6 +10,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   fullName: text("full_name").notNull(),
   role: text("role", { enum: ["admin", "candidate"] }).notNull().default("candidate"),
+  batch: text("batch"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

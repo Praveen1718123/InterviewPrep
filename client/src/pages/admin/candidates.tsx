@@ -110,6 +110,20 @@ export default function AdminCandidates() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
               <h2 className="text-xl font-semibold">All Candidates</h2>
               <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full md:w-auto">
+                <Select
+                  value={batchFilter || "all"}
+                  onValueChange={handleBatchFilterChange}
+                >
+                  <SelectTrigger className="w-full md:w-36">
+                    <SelectValue placeholder="Batch" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Batches</SelectItem>
+                    {Array.from(new Set(candidates?.map(c => c.batch) || [])).map(batch => (
+                      <SelectItem key={batch} value={batch || ""}>{batch || "No Batch"}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <div className="relative w-full md:w-64">
                   <Input 
                     type="text" 
