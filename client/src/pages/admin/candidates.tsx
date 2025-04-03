@@ -55,11 +55,13 @@ export default function AdminCandidates() {
   const { toast } = useToast();
 
   // Fetch candidates
-  const { data: candidates = [], isLoading, refetch } = useQuery<any[]>({
+  const { data: candidates = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/admin/candidates"],
     refetchOnWindowFocus: true,
     refetchOnMount: true
   });
+
+  const [batchFilter, setBatchFilter] = useState<string | null>(null);
 
   // Handle batch filter change
   const handleBatchFilterChange = (value: string) => {
@@ -75,7 +77,7 @@ export default function AdminCandidates() {
           !search || 
           candidate.fullName.toLowerCase().includes(search.toLowerCase()) ||
           candidate.email.toLowerCase().includes(search.toLowerCase());
-        
+
         // Filter by status
         const statusMatch = !statusFilter || candidate.status === statusFilter;
 
@@ -83,7 +85,7 @@ export default function AdminCandidates() {
         const batchMatch = !batchFilter || 
           (batchFilter === "no-batch" && !candidate.batch) || 
           candidate.batch === batchFilter;
-        
+
         return searchMatch && statusMatch && batchMatch;
       })
     : [];
@@ -137,7 +139,7 @@ export default function AdminCandidates() {
         return <Badge className="bg-gray-100 text-gray-800">{status || "Unknown"}</Badge>;
     }
   };
-  
+
   // Toggle candidate selection
   const toggleCandidateSelection = (candidateId: number) => {
     setSelectedCandidates(prevSelected => {
@@ -148,7 +150,7 @@ export default function AdminCandidates() {
       }
     });
   };
-  
+
   // Toggle select all candidates on current page
   const toggleSelectAll = () => {
     if (selectAll) {
@@ -159,23 +161,23 @@ export default function AdminCandidates() {
       setSelectAll(true);
     }
   };
-  
+
   // Clear selections when filters change
   useEffect(() => {
     setSelectedCandidates([]);
     setSelectAll(false);
   }, [search, statusFilter, batchFilter]);
-  
+
   // Handle batch action selection
   const handleBatchAction = (action: string) => {
     setBatchAction(action);
     setShowBatchActionDialog(true);
   };
-  
+
   // Execute batch action
   const executeBatchAction = async () => {
     if (!batchAction || selectedCandidates.length === 0) return;
-    
+
     try {
       if (batchAction === "batch") {
         // Assign candidates to a batch
@@ -189,9 +191,9 @@ export default function AdminCandidates() {
             batchName: newBatchName,
           }),
         });
-        
+
         if (!response.ok) throw new Error('Failed to assign batch');
-        
+
         toast({
           title: "Batch Assignment Successful",
           description: `${selectedCandidates.length} candidates assigned to ${newBatchName}`,
@@ -208,9 +210,9 @@ export default function AdminCandidates() {
             status: newBatchName, // reusing the field for status value
           }),
         });
-        
+
         if (!response.ok) throw new Error('Failed to update status');
-        
+
         toast({
           title: "Status Update Successful",
           description: `${selectedCandidates.length} candidates updated to ${newBatchName}`,
@@ -226,25 +228,25 @@ export default function AdminCandidates() {
             candidateIds: selectedCandidates,
           }),
         });
-        
+
         if (!response.ok) throw new Error('Failed to delete candidates');
-        
+
         toast({
           title: "Deletion Successful",
           description: `${selectedCandidates.length} candidates deleted`,
         });
       }
-      
+
       // Reset state
       setSelectedCandidates([]);
       setSelectAll(false);
       setBatchAction(null);
       setNewBatchName("");
       setShowBatchActionDialog(false);
-      
+
       // Refresh candidate list
       refetch();
-      
+
     } catch (error) {
       toast({
         title: "Action Failed",
@@ -315,7 +317,7 @@ export default function AdminCandidates() {
                 </Link>
               </div>
             </div>
-            
+
             {isLoading ? (
               <div className="flex justify-center p-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -420,7 +422,7 @@ export default function AdminCandidates() {
                     </tbody>
                   </table>
                 </div>
-                
+
                 {/* Batch Action Controls */}
                 {selectedCandidates.length > 0 && (
                   <div className="mt-4 flex items-center bg-primary/5 p-4 rounded-md">
@@ -455,7 +457,7 @@ export default function AdminCandidates() {
                     </div>
                   </div>
                 )}
-                
+
                 {/* Batch Action Dialog */}
                 <AlertDialog open={showBatchActionDialog} onOpenChange={setShowBatchActionDialog}>
                   <AlertDialogContent>
@@ -508,7 +510,7 @@ export default function AdminCandidates() {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-                
+
                 {/* Delete Confirmation Dialog */}
                 <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                   <AlertDialogContent>
@@ -541,7 +543,7 @@ export default function AdminCandidates() {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-                
+
                 {totalPages > 1 && (
                   <div className="mt-4 flex items-center justify-between">
                     <div className="text-sm text-gray-500">
@@ -557,7 +559,7 @@ export default function AdminCandidates() {
                         <ChevronLeft className="h-4 w-4" />
                         <span className="ml-1">Previous</span>
                       </Button>
-                      
+
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                         // Calculate which page numbers to show
                         let pageNum;
@@ -574,7 +576,7 @@ export default function AdminCandidates() {
                           // In the middle, show current page and 2 on each side
                           pageNum = currentPage - 2 + i;
                         }
-                        
+
                         return (
                           <Button
                             key={pageNum}
@@ -586,7 +588,7 @@ export default function AdminCandidates() {
                           </Button>
                         );
                       })}
-                      
+
                       <Button 
                         variant="outline" 
                         size="sm"
