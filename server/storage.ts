@@ -205,7 +205,8 @@ export class MemStorage implements IStorage {
       id, 
       createdAt,
       description: assessment.description || null,
-      timeLimit: assessment.timeLimit || null
+      timeLimit: assessment.timeLimit || null,
+      questions: assessment.questions || []
     };
     this.assessments.set(id, newAssessment);
     return newAssessment;
@@ -566,6 +567,7 @@ export class PostgresStorage implements IStorage {
       ...assessment,
       description: assessment.description || null,
       timeLimit: assessment.timeLimit || null,
+      questions: assessment.questions || [],
       createdAt: new Date()
     }).returning();
     return result[0];

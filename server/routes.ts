@@ -188,7 +188,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If we're here, isAdmin middleware has already confirmed req.user exists
       const assessmentData = insertAssessmentSchema.parse({
         ...req.body,
-        createdBy: req.user!.id
+        createdBy: req.user!.id,
+        questions: [] // Initialize questions as an empty array
       });
       const assessment = await storage.createAssessment(assessmentData);
       res.status(201).json(assessment);
@@ -204,8 +205,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!assessment) {
         return res.status(404).json({ message: "Assessment not found" });
       }
+      
+      // Add default questions array if not present
+      if (!assessment.questions) {
+        assessment.questions = [];
+      }
+      
+      console.log("Returning assessment:", assessment);
       res.json(assessment);
     } catch (error) {
+      console.error("Error fetching assessment:", error);
       res.status(500).json({ message: "Error fetching assessment" });
     }
   });
@@ -219,10 +228,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Assessment not found" });
       }
 
-      const questions = [...assessment.questions, { ...req.body, id: crypto.randomUUID() }];
+      // Ensure questions is initialized as an array
+      const currentQuestions = Array.isArray(assessment.questions) ? assessment.questions : [];
+      
+      const questions = [...currentQuestions, { ...req.body, id: crypto.randomUUID() }];
       const updated = await storage.updateAssessment(assessmentId, { questions });
       res.json(updated);
     } catch (error) {
+      console.error("Error adding question:", error);
       res.status(500).json({ message: "Error adding question" });
     }
   });
@@ -237,14 +250,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!assessment) {
         return res.status(404).json({ message: "Assessment not found" });
       }
-
-      const questions = assessment.questions.map(q => 
+      
+      // Ensure questions is initialized as an array
+      const currentQuestions = Array.isArray(assessment.questions) ? assessment.questions : [];
+      
+      const questions = currentQuestions.map((q: any) => 
         q.id === questionId ? { ...req.body, id: questionId } : q
       );
       
       const updated = await storage.updateAssessment(assessmentId, { questions });
       res.json(updated);
     } catch (error) {
+      console.error("Error updating question:", error);
       res.status(500).json({ message: "Error updating question" });
     }
   });
@@ -259,11 +276,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!assessment) {
         return res.status(404).json({ message: "Assessment not found" });
       }
-
-      const questions = assessment.questions.filter(q => q.id !== questionId);
+      
+      // Ensure questions is initialized as an array
+      const currentQuestions = Array.isArray(assessment.questions) ? assessment.questions : [];
+      
+      const questions = currentQuestions.filter((q: any) => q.id !== questionId);
       const updated = await storage.updateAssessment(assessmentId, { questions });
       res.json(updated);
     } catch (error) {
+      console.error("Error deleting question:", error);
       res.status(500).json({ message: "Error deleting question" });
     }
   });
@@ -274,6 +295,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const assessmentId = parseInt(req.params.id);
       const { questions } = req.body;
       
+      if (!Array.isArray(questions)) {
+        return res.status(400).json({ message: "Questions must be an array" });
+      }
+      
       const assessment = await storage.getAssessment(assessmentId);
       if (!assessment) {
         return res.status(404).json({ message: "Assessment not found" });
@@ -282,6 +307,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updated = await storage.updateAssessment(assessmentId, { questions });
       res.json(updated);
     } catch (error) {
+      console.error("Error reordering questions:", error);
       res.status(500).json({ message: "Error reordering questions" });
     }
   });

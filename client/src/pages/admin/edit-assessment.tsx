@@ -65,6 +65,8 @@ export default function EditAssessment() {
     if (assessment?.questions) {
       setReorderedQuestions([...assessment.questions]);
     }
+    // Add debug logging
+    console.log("Assessment data:", assessment);
   }, [assessment]);
 
   // Add question mutation
