@@ -135,8 +135,8 @@ export default function AuthPage() {
         <div className="p-6 md:p-8">
           <div className="flex justify-center mb-10">
             <img 
-              src="/assets/Asset 1.svg" 
-              alt="Company Logo" 
+              src="/assets/brand-logo.svg" 
+              alt="Switchbee Solutions LLP Logo" 
               className="h-28" 
             />
           </div>

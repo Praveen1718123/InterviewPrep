@@ -8,8 +8,8 @@ export default function LandingPage() {
       <header className="container mx-auto py-4 px-4 md:px-6 flex justify-between items-center">
         <div className="flex items-center">
           <img 
-            src="/assets/Asset 1.svg" 
-            alt="Company Logo" 
+            src="/assets/brand-logo.svg" 
+            alt="Switchbee Solutions LLP Logo" 
             className="h-16" 
           />
         </div>
@@ -457,7 +457,7 @@ export default function LandingPage() {
             {/* Logo and Description */}
             <div>
               <img 
-                src="/assets/switchbee-logo.svg" 
+                src="/assets/brand-logo.svg" 
                 alt="Switchbee Solutions LLP" 
                 className="h-8 mb-4"
               />
