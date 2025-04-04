@@ -11,8 +11,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
-
-const { Pool } = pg;
+import { pool } from "./db";
 import connectPg from "connect-pg-simple";
 import { eq, and } from "drizzle-orm";
 
@@ -478,14 +477,10 @@ export class PostgresStorage implements IStorage {
   sessionStore: any;
 
   constructor() {
-    // Initialize PostgreSQL connection
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-    });
-
+    // Use the imported pool from db.ts to avoid creating multiple connections
     this.db = drizzle(pool);
 
-    // Initialize session store
+    // Initialize session store with the imported pool
     this.sessionStore = new PostgresSessionStore({
       pool,
       createTableIfMissing: true,
@@ -869,7 +864,5 @@ export class PostgresStorage implements IStorage {
   }
 }
 
-// Choose which storage implementation to use
-export const storage = process.env.DATABASE_URL
-  ? new PostgresStorage()
-  : new MemStorage();
+// Always use PostgreSQL storage with the configured external database
+export const storage = new PostgresStorage();
