@@ -609,7 +609,7 @@ export default function EditAssessment() {
   }
 
   return (
-    <DashboardLayout title={`Edit Assessment: ${assessment.title}`}>
+    <DashboardLayout title={`Edit Assessment${assessment?.title ? ': ' + assessment.title : ''}`}>
       <div className="max-w-7xl mx-auto">
         <Tabs 
           defaultValue="questions" 
@@ -619,7 +619,7 @@ export default function EditAssessment() {
         >
           <TabsList className="mb-6">
             <TabsTrigger value="details">Assessment Details</TabsTrigger>
-            <TabsTrigger value="questions">Questions ({assessment.questions?.length || 0})</TabsTrigger>
+            <TabsTrigger value="questions">Questions ({assessment?.questions?.length || 0})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="details">
@@ -631,19 +631,19 @@ export default function EditAssessment() {
                     <div className="space-y-3">
                       <div>
                         <span className="text-sm font-medium text-gray-500">Title:</span>
-                        <p>{assessment.title}</p>
+                        <p>{assessment?.title}</p>
                       </div>
                       <div>
                         <span className="text-sm font-medium text-gray-500">Description:</span>
-                        <p>{assessment.description || "No description"}</p>
+                        <p>{assessment?.description || "No description"}</p>
                       </div>
                       <div>
                         <span className="text-sm font-medium text-gray-500">Type:</span>
-                        <p className="capitalize">{assessment.type}</p>
+                        <p className="capitalize">{assessment?.type}</p>
                       </div>
                       <div>
                         <span className="text-sm font-medium text-gray-500">Time Limit:</span>
-                        <p>{assessment.timeLimit ? `${assessment.timeLimit} minutes` : "No time limit"}</p>
+                        <p>{assessment?.timeLimit ? `${assessment.timeLimit} minutes` : "No time limit"}</p>
                       </div>
                     </div>
                   </div>
@@ -652,11 +652,11 @@ export default function EditAssessment() {
                     <div className="space-y-3">
                       <div>
                         <span className="text-sm font-medium text-gray-500">Total Questions:</span>
-                        <p>{assessment.questions?.length || 0}</p>
+                        <p>{assessment?.questions?.length || 0}</p>
                       </div>
                       <div>
                         <span className="text-sm font-medium text-gray-500">Created At:</span>
-                        <p>{new Date(assessment.createdAt).toLocaleDateString()}</p>
+                        <p>{assessment?.createdAt ? new Date(assessment.createdAt).toLocaleDateString() : ''}</p>
                       </div>
                     </div>
                   </div>
@@ -697,13 +697,13 @@ export default function EditAssessment() {
                             <DialogHeader>
                               <DialogTitle>Add New Question</DialogTitle>
                             </DialogHeader>
-                            {assessment.type === "mcq" && (
+                            {assessment?.type === "mcq" && (
                               <MCQQuestionForm onSubmit={handleAddQuestion} />
                             )}
-                            {assessment.type === "fill-in-blanks" && (
+                            {assessment?.type === "fill-in-blanks" && (
                               <FillInBlanksQuestionForm onSubmit={handleAddQuestion} />
                             )}
-                            {assessment.type === "video" && (
+                            {assessment?.type === "video" && (
                               <VideoQuestionForm onSubmit={handleAddQuestion} />
                             )}
                           </DialogContent>
@@ -714,7 +714,7 @@ export default function EditAssessment() {
                 </div>
 
                 <div className="space-y-4">
-                  {assessment.questions && assessment.questions.length > 0 ? (
+                  {assessment?.questions && assessment.questions.length > 0 ? (
                     (isReordering ? reorderedQuestions : assessment.questions).map((question: any, index: number) => (
                       <Card key={question.id} className="overflow-hidden">
                         <div className="p-4 border-b flex justify-between items-center bg-gray-50">
@@ -765,13 +765,13 @@ export default function EditAssessment() {
                                     <DialogHeader>
                                       <DialogTitle>Edit Question</DialogTitle>
                                     </DialogHeader>
-                                    {assessment.type === "mcq" && currentQuestion && (
+                                    {assessment?.type === "mcq" && currentQuestion && (
                                       <MCQQuestionForm onSubmit={handleEditQuestion} initialData={currentQuestion} />
                                     )}
-                                    {assessment.type === "fill-in-blanks" && currentQuestion && (
+                                    {assessment?.type === "fill-in-blanks" && currentQuestion && (
                                       <FillInBlanksQuestionForm onSubmit={handleEditQuestion} initialData={currentQuestion} />
                                     )}
-                                    {assessment.type === "video" && currentQuestion && (
+                                    {assessment?.type === "video" && currentQuestion && (
                                       <VideoQuestionForm onSubmit={handleEditQuestion} initialData={currentQuestion} />
                                     )}
                                   </DialogContent>
@@ -811,7 +811,7 @@ export default function EditAssessment() {
                             <p className="text-gray-700">{question.text}</p>
                           </div>
                           
-                          {assessment.type === "mcq" && (
+                          {assessment?.type === "mcq" && (
                             <div>
                               <div className="font-medium mb-1">Options:</div>
                               <ul className="space-y-1">
@@ -828,7 +828,7 @@ export default function EditAssessment() {
                             </div>
                           )}
                           
-                          {assessment.type === "fill-in-blanks" && (
+                          {assessment?.type === "fill-in-blanks" && (
                             <div>
                               <div className="font-medium mb-1">Blanks:</div>
                               <ul className="space-y-1">
