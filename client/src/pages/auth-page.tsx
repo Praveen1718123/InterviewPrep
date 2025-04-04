@@ -20,7 +20,7 @@ export default function AuthPage() {
   const { user, loginMutation, logoutMutation } = useAuth();
   const { toast } = useToast();
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
-
+  
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
@@ -42,7 +42,7 @@ export default function AuthPage() {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     // Check if the username is "admin" - prevent admin login through main form
     if (loginData.username.toLowerCase() === "admin") {
       toast({
@@ -52,7 +52,7 @@ export default function AuthPage() {
       });
       return;
     }
-
+    
     loginMutation.mutate(loginData, {
       onSuccess: (user) => {
         // Verify the user is not an admin - silently enforce role separation
@@ -67,7 +67,7 @@ export default function AuthPage() {
 
   const handleAdminLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     // Validate admin fields
     if (!adminLoginData.username || !adminLoginData.password) {
       toast({
@@ -135,12 +135,12 @@ export default function AuthPage() {
         <div className="p-6 md:p-8">
           <div className="flex justify-center mb-10">
             <img 
-              src="/assets/Switchbee Solution LLP.svg" 
-              alt="Switchbee Solutions LLP Logo" 
+              src="/assets/Asset 1.svg" 
+              alt="Company Logo" 
               className="h-28" 
             />
           </div>
-
+          
           <form onSubmit={handleLoginSubmit} className="space-y-6">
             <div className="space-y-2">
               <label htmlFor="username" className="text-xl font-medium">
@@ -157,7 +157,7 @@ export default function AuthPage() {
                 className="p-3 text-base rounded-md"
               />
             </div>
-
+            
             <div className="space-y-2">
               <label htmlFor="password" className="text-xl font-medium">
                 Password
@@ -174,7 +174,7 @@ export default function AuthPage() {
                 className="p-3 text-base rounded-md"
               />
             </div>
-
+            
             <div className="flex justify-end">
               <Button 
                 type="button" 
@@ -184,7 +184,7 @@ export default function AuthPage() {
                 Forgot password?
               </Button>
             </div>
-
+            
             <Button 
               type="submit" 
               className="w-full py-6 text-lg bg-[#0E2D4A] hover:bg-[#0c2339]" 
@@ -192,7 +192,7 @@ export default function AuthPage() {
             >
               {loginMutation.isPending ? "Logging in..." : "Login"}
             </Button>
-
+            
             <div className="text-center mt-6">
               <p className="text-gray-500 mb-2">Are you an administrator?</p>
               <Dialog open={isAdminDialogOpen} onOpenChange={setIsAdminDialogOpen}>
@@ -215,7 +215,7 @@ export default function AuthPage() {
                       Please enter your administrator credentials to access the admin dashboard.
                     </DialogDescription>
                   </DialogHeader>
-
+                  
                   <form onSubmit={handleAdminLoginSubmit} className="space-y-4 mt-2">
                     <div className="space-y-2">
                       <label htmlFor="admin-username" className="text-sm font-medium">
@@ -230,7 +230,7 @@ export default function AuthPage() {
                         required
                       />
                     </div>
-
+                    
                     <div className="space-y-2">
                       <label htmlFor="admin-password" className="text-sm font-medium">
                         Admin Password
@@ -245,7 +245,7 @@ export default function AuthPage() {
                         required
                       />
                     </div>
-
+                    
                     <div className="flex justify-end gap-2 mt-4">
                       <DialogClose asChild>
                         <Button type="button" variant="outline">

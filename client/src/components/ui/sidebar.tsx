@@ -90,12 +90,8 @@ export function Sidebar({ className }: SidebarProps) {
           className
         )}
       >
-        <div className="p-5">
-          <img 
-            src="/assets/brand-logo.svg" 
-            alt="Switchbee Solutions LLP Logo" 
-            className="h-10" 
-          />
+        <div className="p-6">
+          <h1 className="text-2xl font-bold text-primary">InterviewPrep</h1>
         </div>
         <nav className="mt-6">
           <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">

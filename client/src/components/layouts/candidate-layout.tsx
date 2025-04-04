@@ -25,7 +25,7 @@ export function CandidateLayout({ children, title, className }: CandidateLayoutP
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
               <img 
-                src="/assets/Switchbee Solution LLP.svg" 
+                src="/assets/switchbee-logo.svg" 
                 alt="Switchbee Solutions LLP Logo" 
                 className="h-8" 
               />
