@@ -50,15 +50,18 @@ export async function comparePasswords(supplied: string, stored: string) {
 export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "interview-prep-platform-secret",
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
     store: storage.sessionStore,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      secure: false, // Set to false in development
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: 'lax'
     }
   };
+  
+  console.log("Session store initialized:", !!storage.sessionStore);
 
   app.set("trust proxy", 1);
   app.use(session(sessionSettings));
@@ -68,6 +71,7 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
+        console.log(`Login attempt for user: ${username}`);
         const user = await storage.getUserByUsername(username);
         
         if (!user) {
@@ -87,6 +91,7 @@ export function setupAuth(app: Express) {
           return done(null, false);
         }
         
+        console.log(`Login successful for user: ${username}, ID: ${user.id}, Role: ${user.role}`);
         return done(null, user);
       } catch (error) {
         console.error('Authentication error:', error);
@@ -95,10 +100,24 @@ export function setupAuth(app: Express) {
     }),
   );
 
-  passport.serializeUser((user, done) => done(null, user.id));
+  passport.serializeUser((user, done) => {
+    console.log(`Serializing user ID: ${user.id}`);
+    done(null, user.id);
+  });
   passport.deserializeUser(async (id: number, done) => {
-    const user = await storage.getUser(id);
-    done(null, user);
+    try {
+      console.log(`Deserializing user ID: ${id}`);
+      const user = await storage.getUser(id);
+      if (!user) {
+        console.error(`User with ID ${id} not found during deserialization`);
+        return done(null, false);
+      }
+      console.log(`User deserialized successfully: ${user.username}, Role: ${user.role}`);
+      done(null, user);
+    } catch (error) {
+      console.error('Error deserializing user:', error);
+      done(error, null);
+    }
   });
 
   app.post("/api/register", async (req, res, next) => {
@@ -124,7 +143,18 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    res.status(200).json(req.user);
+    console.log(`POST /api/login - Login successful, Session ID: ${req.sessionID}`);
+    console.log(`POST /api/login - User in request: ${req.user!.username}, ID: ${req.user!.id}`);
+    
+    // Save the session explicitly to ensure it's properly stored
+    req.session.save((err) => {
+      if (err) {
+        console.error("Error saving session:", err);
+      } else {
+        console.log("Session saved successfully");
+      }
+      res.status(200).json(req.user);
+    });
   });
 
   app.post("/api/logout", (req, res, next) => {
@@ -135,14 +165,31 @@ export function setupAuth(app: Express) {
   });
 
   app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send();
+    console.log("GET /api/user - Session ID:", req.sessionID);
+    console.log("GET /api/user - Is authenticated:", req.isAuthenticated());
+    
+    if (!req.isAuthenticated()) {
+      console.log("GET /api/user - Authentication failed");
+      return res.status(401).send();
+    }
+    
+    console.log(`GET /api/user - User: ${req.user!.username}, ID: ${req.user!.id}, Role: ${req.user!.role}`);
     res.json(req.user);
   });
 
   // Middleware to check if user is admin
   const isAdmin = (req: Request, res: Response, next: NextFunction) => {
-    if (!req.isAuthenticated()) return res.status(401).send();
-    if (req.user!.role !== "admin") return res.status(403).send();
+    console.log(`isAdmin check - Auth status: ${req.isAuthenticated()}`);
+    if (!req.isAuthenticated()) {
+      console.log('isAdmin middleware: User not authenticated');
+      return res.status(401).send();
+    }
+    console.log(`isAdmin check - User role: ${req.user!.role}`);
+    if (req.user!.role !== "admin") {
+      console.log(`isAdmin middleware: User ${req.user!.username} is not an admin`);
+      return res.status(403).send();
+    }
+    console.log(`Admin access granted to: ${req.user!.username}`);
     next();
   };
 
