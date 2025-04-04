@@ -210,6 +210,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add question to assessment
+  app.post("/api/admin/assessments/:id/questions", isAdmin, async (req, res) => {
+    try {
+      const assessmentId = parseInt(req.params.id);
+      const assessment = await storage.getAssessment(assessmentId);
+      if (!assessment) {
+        return res.status(404).json({ message: "Assessment not found" });
+      }
+
+      const questions = [...assessment.questions, { ...req.body, id: crypto.randomUUID() }];
+      const updated = await storage.updateAssessment(assessmentId, { questions });
+      res.json(updated);
+    } catch (error) {
+      res.status(500).json({ message: "Error adding question" });
+    }
+  });
+
+  // Update question
+  app.put("/api/admin/assessments/:id/questions/:questionId", isAdmin, async (req, res) => {
+    try {
+      const assessmentId = parseInt(req.params.id);
+      const questionId = req.params.questionId;
+      
+      const assessment = await storage.getAssessment(assessmentId);
+      if (!assessment) {
+        return res.status(404).json({ message: "Assessment not found" });
+      }
+
+      const questions = assessment.questions.map(q => 
+        q.id === questionId ? { ...req.body, id: questionId } : q
+      );
+      
+      const updated = await storage.updateAssessment(assessmentId, { questions });
+      res.json(updated);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating question" });
+    }
+  });
+
+  // Delete question
+  app.delete("/api/admin/assessments/:id/questions/:questionId", isAdmin, async (req, res) => {
+    try {
+      const assessmentId = parseInt(req.params.id);
+      const questionId = req.params.questionId;
+      
+      const assessment = await storage.getAssessment(assessmentId);
+      if (!assessment) {
+        return res.status(404).json({ message: "Assessment not found" });
+      }
+
+      const questions = assessment.questions.filter(q => q.id !== questionId);
+      const updated = await storage.updateAssessment(assessmentId, { questions });
+      res.json(updated);
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting question" });
+    }
+  });
+
+  // Reorder questions
+  app.put("/api/admin/assessments/:id/questions/reorder", isAdmin, async (req, res) => {
+    try {
+      const assessmentId = parseInt(req.params.id);
+      const { questions } = req.body;
+      
+      const assessment = await storage.getAssessment(assessmentId);
+      if (!assessment) {
+        return res.status(404).json({ message: "Assessment not found" });
+      }
+
+      const updated = await storage.updateAssessment(assessmentId, { questions });
+      res.json(updated);
+    } catch (error) {
+      res.status(500).json({ message: "Error reordering questions" });
+    }
+  });
+
   app.post("/api/admin/assign-assessment", isAdmin, async (req, res) => {
     try {
       const assignmentData = insertCandidateAssessmentSchema.parse(req.body);

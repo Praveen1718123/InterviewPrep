@@ -45,10 +45,10 @@ export default function AdminAssessments() {
           !search || 
           assessment.title.toLowerCase().includes(search.toLowerCase()) ||
           (assessment.description && assessment.description.toLowerCase().includes(search.toLowerCase()));
-        
+
         // Filter by type
         const typeMatch = !typeFilter || assessment.type === typeFilter;
-        
+
         return searchMatch && typeMatch;
       })
     : [];
@@ -82,6 +82,34 @@ export default function AdminAssessments() {
       description: "The assessment has been successfully deleted.",
     });
   };
+
+  const handleDuplicate = (id: number) => {
+    // Implement duplicate functionality here.  This would typically involve an API call.
+    console.log("Duplicating assessment:", id);
+    toast({
+      title: "Duplicating Assessment",
+      description: "The assessment is being duplicated. Please wait."
+    })
+  };
+
+  const handleExport = (id: number) => {
+    // Implement export functionality here. This would typically involve an API call to download a file.
+    console.log("Exporting assessment questions:", id);
+    toast({
+      title: "Exporting Questions",
+      description: "The questions are being exported. Please wait."
+    })
+  };
+
+  const handleImport = (id: number) => {
+    // Implement import functionality here. This would typically involve a file upload and API call.
+    console.log("Importing questions to assessment:", id);
+    toast({
+      title: "Importing Questions",
+      description: "The questions are being imported. Please wait."
+    })
+  };
+
 
   return (
     <DashboardLayout title="Assessments">
@@ -123,7 +151,7 @@ export default function AdminAssessments() {
                 </Link>
               </div>
             </div>
-            
+
             {isLoading ? (
               <div className="flex justify-center p-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -194,20 +222,31 @@ export default function AdminAssessments() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <Link href={`/admin/assessments/${assessment.id}/edit`}>
-                                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                                    <DropdownMenuItem>Edit Assessment</DropdownMenuItem>
                                   </Link>
-                                  <DropdownMenuItem>Assign to Candidates</DropdownMenuItem>
+                                  <Link href={`/admin/assessments/${assessment.id}/questions`}>
+                                    <DropdownMenuItem>Manage Questions</DropdownMenuItem>
+                                  </Link>
+                                  <DropdownMenuItem onClick={() => window.location.href=`/admin/assessments/${assessment.id}/assign`}>
+                                    Assign to Candidates
+                                  </DropdownMenuItem>
                                   <Link href={`/admin/assessments/${assessment.id}/view`}>
                                     <DropdownMenuItem>View Responses</DropdownMenuItem>
                                   </Link>
-                                  <Link href={`/admin/assessments/${assessment.id}/duplicate`}>
-                                    <DropdownMenuItem>Duplicate</DropdownMenuItem>
-                                  </Link>
+                                  <DropdownMenuItem onClick={() => handleDuplicate(assessment.id)}>
+                                    Duplicate Assessment
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleExport(assessment.id)}>
+                                    Export Questions
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleImport(assessment.id)}>
+                                    Import Questions
+                                  </DropdownMenuItem>
                                   <DropdownMenuItem 
                                     className="text-red-600"
                                     onClick={() => handleDelete(assessment.id)}
                                   >
-                                    Delete
+                                    Delete Assessment
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
