@@ -9,14 +9,6 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 
-// Extend session data to include our custom properties
-declare module 'express-session' {
-  interface SessionData {
-    passport?: { user: number };
-    user?: SelectUser;
-  }
-}
-
 declare global {
   namespace Express {
     interface User extends SelectUser {}
@@ -58,17 +50,14 @@ export async function comparePasswords(supplied: string, stored: string) {
 export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "interview-prep-platform-secret",
-    resave: false, // Changed to false to prevent unnecessary session saves
-    saveUninitialized: false, // Changed to false to prevent storing empty sessions
+    resave: false,
+    saveUninitialized: false,
     store: storage.sessionStore,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Only use secure in production
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'lax', // Helps with cross-site request issues
-      path: '/', // Ensure cookie is available for all paths
-    },
-    name: 'switchbee.sid' // Custom name to avoid default "connect.sid"
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
   };
 
   app.set("trust proxy", 1);
@@ -135,55 +124,19 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    // Add session details to response for debugging
-    console.log('Login successful for user:', req.user?.username);
-    console.log('Session ID:', req.sessionID);
-    console.log('Session data:', req.session);
-    
-    // Passport already sets up the session correctly, so we can just return the user
-    // No need for additional session regeneration which was causing issues
-    res.status(200).json({
-      user: req.user,
-      sessionID: req.sessionID,
-      message: 'Login successful'
-    });
+    res.status(200).json(req.user);
   });
 
   app.post("/api/logout", (req, res, next) => {
-    // First logout the user (remove from req.user)
     req.logout((err) => {
       if (err) return next(err);
-      
-      // Then destroy the session completely
-      req.session.destroy((err) => {
-        if (err) {
-          console.error('Error destroying session:', err);
-          return res.status(500).json({ message: 'Logout failed' });
-        }
-        
-        // Clear the session cookie
-        res.clearCookie('switchbee.sid');
-        
-        res.status(200).json({ message: 'Logout successful' });
-      });
+      res.status(200).send();
     });
   });
 
   app.get("/api/user", (req, res) => {
     if (!req.isAuthenticated()) return res.status(401).send();
     res.json(req.user);
-  });
-  
-  // Added for session management help
-  app.post("/api/refresh-session", (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ message: 'Not authenticated' });
-    // Touch the session to extend its life
-    req.session.touch();
-    res.json({ 
-      message: 'Session refreshed', 
-      user: req.user,
-      sessionID: req.sessionID 
-    });
   });
 
   // Middleware to check if user is admin

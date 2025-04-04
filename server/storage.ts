@@ -484,12 +484,9 @@ export class PostgresStorage implements IStorage {
     this.db = drizzle(pool);
 
     // Initialize session store with the imported pool
-    const PostgresSessionStore = connectPg(session);
     this.sessionStore = new PostgresSessionStore({
       pool,
       createTableIfMissing: true,
-      tableName: 'session',
-      pruneSessionInterval: 60 * 15, // Prune expired sessions every 15 minutes
     });
   }
 

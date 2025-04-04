@@ -22,22 +22,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: 'ok', message: 'API is working' });
   });
   
-  // Add debug route to test session functionality
-  app.get('/api/debug/session', (req, res) => {
-    // Show session info for debugging
-    const sessionID = req.sessionID;
-    const isAuthenticated = req.isAuthenticated();
-    const user = req.user;
-    const sessionInfo = {
-      sessionID,
-      isAuthenticated,
-      user: user || null,
-      session: req.session
-    };
-    console.log('Session debug info:', sessionInfo);
-    res.json(sessionInfo);
-  });
-  
   // Sets up /api/register, /api/login, /api/logout, /api/user
   const { isAdmin } = setupAuth(app);
 
