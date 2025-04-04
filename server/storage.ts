@@ -172,7 +172,8 @@ export class MemStorage implements IStorage {
       ...insertUser, 
       id, 
       createdAt,
-      role: insertUser.role || "candidate" 
+      role: insertUser.role || "candidate",
+      batch: insertUser.batch || null
     };
     this.users.set(id, user);
     return user;
@@ -218,7 +219,9 @@ export class MemStorage implements IStorage {
 
   async getBatches(): Promise<string[]> { // Added getBatches implementation
     const batches = new Set<string>();
-    for (const user of this.users.values()) {
+    // Convert to array and then iterate to avoid the MapIterator error
+    const userArray = Array.from(this.users.values());
+    for (const user of userArray) {
       if (user.batch) {
         batches.add(user.batch);
       }
@@ -583,8 +586,9 @@ export class PostgresStorage implements IStorage {
   }
 
   async getBatches(): Promise<string[]> { // Added getBatches implementation for Postgres
-    const result = await this.db.query.raw`SELECT DISTINCT batch FROM users WHERE batch IS NOT NULL ORDER BY batch`;
-    return result.rows.map(row => row.batch as string);
+    // Using SQL query directly through the pool
+    const result = await pool.query('SELECT DISTINCT batch FROM users WHERE batch IS NOT NULL ORDER BY batch');
+    return result.rows.map((row: any) => row.batch as string);
   }
 
   async createBatch(name: string): Promise<{ name: string }> { // Added createBatch implementation for Postgres

@@ -1,6 +1,6 @@
 import type { Express, Response as ExpressResponse } from "express";
 import { createServer, type Server } from "http";
-import { setupAuth } from "./auth";
+import { setupAuth, hashPassword, comparePasswords } from "./auth";
 import { storage, hashPasswordLocal } from "./storage";
 import { 
   insertAssessmentSchema, 
