@@ -12,9 +12,26 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@tanstack/react-query": "^5.71.5",
+    "autoprefixer": "^10.4.21",
+    "bcryptjs": "^3.0.2",
+    "connect-pg-simple": "^10.0.0",
+    "drizzle-orm": "^0.28.6",
+    "drizzle-zod": "^0.5.0",
     "express": "latest",
+    "express-session": "^1.18.1",
+    "nanoid": "^5.1.5",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "pg": "^8.14.1",
+    "postcss": "^8.5.3",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "tailwindcss": "^4.1.2",
+    "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.19.3",
+    "zod": "^3.24.2",
+    "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {
     "@types/react": "^19.1.0",
