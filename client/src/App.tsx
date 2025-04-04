@@ -21,6 +21,8 @@ const EditCandidate = lazy(() => import("@/pages/admin/edit-candidate"));
 const AdminAssessments = lazy(() => import("@/pages/admin/assessments"));
 const CreateAssessment = lazy(() => import("@/pages/admin/create-assessment"));
 const EditAssessment = lazy(() => import("@/pages/admin/edit-assessment"));
+const AdminProfile = lazy(() => import("@/pages/admin/profile"));
+const AdminSettings = lazy(() => import("@/pages/admin/settings"));
 const BulkAssignment = lazy(() => import("@/pages/admin/bulk-assignment"));
 
 // Loading fallback for lazy-loaded components

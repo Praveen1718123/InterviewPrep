@@ -25,7 +25,7 @@ export function Sidebar({ className }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isAdmin = user?.role === "admin";
-  
+
   const navItems = isAdmin
     ? [
         { href: "/admin", label: "Overview", icon: <Home className="mr-3 h-5 w-5" /> },
