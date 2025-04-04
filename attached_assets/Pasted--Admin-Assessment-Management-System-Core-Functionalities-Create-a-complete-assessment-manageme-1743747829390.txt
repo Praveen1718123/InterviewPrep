@@ -1,0 +1,71 @@
+# Admin Assessment Management System
+
+## Core Functionalities
+
+Create a complete assessment management system for admins with the following features:
+
+### General Assessment Configuration
+- Create new assessments with custom titles, descriptions, and time limits
+- Enable/disable assessments
+- Schedule assessment availability periods
+- Set passing criteria and scoring rules
+- Customize assessment instructions
+- Define round sequencing (which rounds are mandatory/optional)
+- Assessment duplication for quick creation of similar tests
+
+### Round 1: MCQ Management
+- Add/edit/delete questions in the MCQ question bank
+- Import questions from CSV/Excel
+- Categorize questions by difficulty, topic, and domain
+- Set question point values
+- Create question pools for randomized selection
+- Option to include images with questions
+- Set time limits per question or entire section
+- Configure negative marking
+- Preview MCQ section as a candidate would see it
+
+### Round 2: Fill-Ups Management
+- Create technical fill-in-the-blank questions
+- Define acceptable alternative answers
+- Set partial credit rules
+- Include context or diagrams with questions
+- Configure case sensitivity settings
+- Set character limits for answers
+- Implement keyword-based auto-grading
+
+### Round 3: Video Interview Configuration
+- Create interview question prompts
+- Set time limits for each response
+- Define recording parameters (max attempts, quality)
+- Create evaluation criteria for reviewers
+- Upload sample responses for reference
+- Set up auto-transcription for responses
+- Configure review workflow
+
+### Round 4: Diagram Task Management
+- Create network topology diagram tasks
+- Upload reference diagrams
+- Define required elements for solutions
+- Set evaluation criteria
+- Configure available component library
+- Set constraints and requirements
+- Define scoring rubrics
+
+### Results and Analytics
+- View individual candidate performance
+- Generate performance reports by question, topic, or assessment
+- Identify common knowledge gaps
+- Track candidate progress across rounds
+- Export results in multiple formats
+- Performance trend visualization
+- Candidate ranking system
+
+### Security Features
+- Question bank encryption
+- Anti-cheating mechanisms
+- Session monitoring
+- IP tracking for suspicious activity
+- Secure video storage for interviews
+- Role-based access control for reviewers
+
+Build this system with a clean, intuitive interface that allows non-technical admins to easily create, manage, and analyze complex multi-round assessments for networking engineer candidates.
