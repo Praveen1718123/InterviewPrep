@@ -5,6 +5,7 @@ import type { Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
+// Import storage without hashPassword to avoid circular dependency 
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 
@@ -16,13 +17,14 @@ declare global {
 
 const scryptAsync = promisify(scrypt);
 
+// Keep hash function for auth related operations
 export async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
   const buf = (await scryptAsync(password, salt, 64)) as Buffer;
   return `${buf.toString("hex")}.${salt}`;
 }
 
-async function comparePasswords(supplied: string, stored: string) {
+export async function comparePasswords(supplied: string, stored: string) {
   if (!stored || !stored.includes('.')) {
     console.error('Invalid stored password format');
     return false;

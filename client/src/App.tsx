@@ -75,6 +75,8 @@ function App() {
           <ProtectedRoute path="/admin/assessments/create" component={CreateAssessment} />
           <ProtectedRoute path="/admin/assessments/:id/edit" component={EditAssessment} />
           <ProtectedRoute path="/admin/bulk-assignment" component={BulkAssignment} />
+          <ProtectedRoute path="/admin/profile" component={AdminProfile} />
+          <ProtectedRoute path="/admin/settings" component={AdminSettings} />
           
           {/* Protected Candidate Routes */}
           <ProtectedRoute path="/candidate" component={CandidateDashboard} />

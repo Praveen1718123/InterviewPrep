@@ -9,11 +9,46 @@ import session from "express-session";
 import createMemoryStore from "memorystore";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
-import { hashPassword } from "./auth";
+import { scrypt, randomBytes, timingSafeEqual } from "crypto";
+import { promisify } from "util";
 
 const { Pool } = pg;
 import connectPg from "connect-pg-simple";
 import { eq, and } from "drizzle-orm";
+
+// Define password hashing functions locally to avoid circular dependencies
+const scryptAsync = promisify(scrypt);
+
+// Export this function for use in routes.ts
+export async function hashPasswordLocal(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
+}
+
+// For comparing passwords - export to avoid using the one from auth.ts
+export async function comparePasswordsLocal(supplied: string, stored: string) {
+  if (!stored || !stored.includes('.')) {
+    console.error('Invalid stored password format');
+    return false;
+  }
+  
+  const [hashed, salt] = stored.split(".");
+  
+  if (!hashed || !salt) {
+    console.error('Missing hash or salt');
+    return false;
+  }
+  
+  try {
+    const hashedBuf = Buffer.from(hashed, "hex");
+    const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+    return timingSafeEqual(hashedBuf, suppliedBuf);
+  } catch (error) {
+    console.error('Error comparing passwords:', error);
+    return false;
+  }
+}
 
 const MemoryStore = createMemoryStore(session);
 const PostgresSessionStore = connectPg(session);
@@ -89,7 +124,7 @@ export class MemStorage implements IStorage {
       if (!existingAdmin) {
         await this.createUser({
           username: "admin",
-          password: await hashPassword("admin123"),
+          password: await hashPasswordLocal("admin123"),
           email: "admin@example.com",
           fullName: "Admin User",
           role: "admin",
@@ -102,7 +137,7 @@ export class MemStorage implements IStorage {
       if (!existingCandidate) {
         await this.createUser({
           username: "candidate",
-          password: await hashPassword("candidate123"),
+          password: await hashPasswordLocal("candidate123"),
           email: "candidate@example.com",
           fullName: "Test Candidate",
           role: "candidate",
@@ -466,7 +501,7 @@ export class PostgresStorage implements IStorage {
       if (!existingAdmin) {
         await this.createUser({
           username: "admin",
-          password: await hashPassword("admin123"), // Manually hash password
+          password: await hashPasswordLocal("admin123"), // Manually hash password
           email: "admin@example.com",
           fullName: "Admin User",
           role: "admin",
@@ -480,7 +515,7 @@ export class PostgresStorage implements IStorage {
       if (!existingCandidate) {
         await this.createUser({
           username: "candidate", 
-          password: await hashPassword("candidate123"), // Manually hash password
+          password: await hashPasswordLocal("candidate123"), // Manually hash password
           email: "candidate@example.com",
           fullName: "Test Candidate",
           role: "candidate",

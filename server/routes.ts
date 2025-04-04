@@ -1,7 +1,7 @@
 import type { Express, Response as ExpressResponse } from "express";
 import { createServer, type Server } from "http";
-import { setupAuth, hashPassword } from "./auth";
-import { storage } from "./storage";
+import { setupAuth } from "./auth";
+import { storage, hashPasswordLocal } from "./storage";
 import { 
   insertAssessmentSchema, 
   insertCandidateAssessmentSchema, 
@@ -104,7 +104,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If password is being updated, hash it
       let hashedPassword;
       if (password) {
-        hashedPassword = await hashPassword(password);
+        hashedPassword = await hashPasswordLocal(password);
       }
       
       // Update user
@@ -600,7 +600,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post("/api/admin/candidates/status", isAdmin, async (req, res) => {
+  app.post("/api/admin/candidates/batch", isAdmin, async (req, res) => {
     try {
       const { candidateIds, status } = req.body;
       
@@ -609,13 +609,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (!status || !status.trim()) {
-        return res.status(400).json({ message: "Status is required" });
+        return res.status(400).json({ message: "Batch name is required" });
       }
       
       const results = [];
       const errors = [];
       
-      // Process each candidate status update
+      // Process each candidate batch update
       for (const candidateId of candidateIds) {
         try {
           // Check if candidate exists
@@ -625,9 +625,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             continue;
           }
           
-          // Update candidate status
+          // Update candidate batch
           const updatedCandidate = await storage.updateUser(candidateId, {
-            status: status.trim()
+            batch: status.trim()
           });
           
           results.push(updatedCandidate);
@@ -644,7 +644,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         errors 
       });
     } catch (error) {
-      res.status(500).json({ message: "Error updating candidate status" });
+      res.status(500).json({ message: "Error updating candidate batch" });
     }
   });
   
@@ -705,6 +705,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(200).json({ message: "Credentials sent successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to send credentials" });
+    }
+  });
+
+  // Admin profile update endpoint
+  app.put("/api/admin/profile", isAdmin, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const { username, email, currentPassword, newPassword } = req.body;
+      
+      // Get existing user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Check for username uniqueness if it's being changed
+      if (username && username !== user.username) {
+        const existingUserWithUsername = await storage.getUserByUsername(username);
+        if (existingUserWithUsername && existingUserWithUsername.id !== userId) {
+          return res.status(400).json({ message: "Username already exists" });
+        }
+      }
+      
+      // Check for email uniqueness if it's being changed
+      if (email && email !== user.email) {
+        const existingUserWithEmail = await storage.getUserByEmail(email);
+        if (existingUserWithEmail && existingUserWithEmail.id !== userId) {
+          return res.status(400).json({ message: "Email already exists" });
+        }
+      }
+      
+      // If password is being updated, verify current password and hash new password
+      let hashedPassword;
+      if (newPassword && currentPassword) {
+        const passwordMatches = await comparePasswords(currentPassword, user.password);
+        
+        if (!passwordMatches) {
+          return res.status(400).json({ message: "Current password is incorrect" });
+        }
+        
+        hashedPassword = await hashPassword(newPassword);
+      }
+      
+      // Update user
+      const updatedUser = await storage.updateUser(userId, {
+        username: username || user.username,
+        email: email || user.email,
+        password: hashedPassword || user.password,
+      });
+      
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = updatedUser;
+      
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ message: "Error updating profile" });
     }
   });
 
