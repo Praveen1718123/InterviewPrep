@@ -20,11 +20,65 @@ export default function Profile() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add profile update logic here
-    toast({
-      title: "Success",
-      description: "Profile updated successfully",
-    });
+
+    // Validate passwords if attempting to change
+    if (formData.newPassword || formData.confirmPassword || formData.currentPassword) {
+      if (formData.newPassword !== formData.confirmPassword) {
+        toast({
+          title: "Error",
+          description: "New passwords do not match",
+          variant: "destructive"
+        });
+        return;
+      }
+      if (!formData.currentPassword) {
+        toast({
+          title: "Error", 
+          description: "Current password is required to change password",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
+    try {
+      const response = await fetch('/api/admin/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+
+      // Reset password fields
+      setFormData(prev => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      }));
+
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update profile",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
