@@ -35,6 +35,7 @@ export interface IStorage {
   createAssessment(assessment: InsertAssessment): Promise<Assessment>;
   getAssessment(id: number): Promise<Assessment | undefined>;
   getAssessments(): Promise<Assessment[]>;
+  updateAssessment(id: number, assessmentData: Partial<Assessment>): Promise<Assessment>;
 
   // Candidate Assessment operations
   assignAssessment(assignment: InsertCandidateAssessment): Promise<CandidateAssessment>;
@@ -216,6 +217,20 @@ export class MemStorage implements IStorage {
 
   async getAssessments(): Promise<Assessment[]> {
     return Array.from(this.assessments.values());
+  }
+  
+  async updateAssessment(id: number, assessmentData: Partial<Assessment>): Promise<Assessment> {
+    const existingAssessment = await this.getAssessment(id);
+    if (!existingAssessment) {
+      throw new Error("Assessment not found");
+    }
+
+    const updatedAssessment = {
+      ...existingAssessment,
+      ...assessmentData,
+    };
+    this.assessments.set(id, updatedAssessment);
+    return updatedAssessment;
   }
 
   // Candidate Assessment operations
@@ -563,6 +578,20 @@ export class PostgresStorage implements IStorage {
 
   async getAssessments(): Promise<Assessment[]> {
     return await this.db.select().from(assessments);
+  }
+  
+  async updateAssessment(id: number, assessmentData: Partial<Assessment>): Promise<Assessment> {
+    const existingAssessment = await this.getAssessment(id);
+    if (!existingAssessment) {
+      throw new Error("Assessment not found");
+    }
+
+    const result = await this.db.update(assessments)
+      .set(assessmentData)
+      .where(eq(assessments.id, id))
+      .returning();
+
+    return result[0];
   }
 
   // Candidate Assessment operations

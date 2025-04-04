@@ -40,7 +40,7 @@ const generateId = () => uuidv4();
 export default function EditAssessment() {
   const { id } = useParams();
   const [location, navigate] = useLocation();
-  const assessmentId = parseInt(id);
+  const assessmentId = id ? parseInt(id) : 0;
   const { toast } = useToast();
   
   // Get the tab from the URL query parameter
@@ -57,7 +57,8 @@ export default function EditAssessment() {
   // Fetch assessment details
   const { data: assessment, isLoading, error } = useQuery<any>({
     queryKey: ['/api/admin/assessments', assessmentId],
-    enabled: !isNaN(assessmentId)
+    enabled: !isNaN(assessmentId),
+    refetchOnWindowFocus: false
   });
 
   useEffect(() => {
