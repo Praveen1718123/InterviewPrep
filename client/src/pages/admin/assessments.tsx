@@ -224,7 +224,7 @@ export default function AdminAssessments() {
                                   <Link href={`/admin/assessments/${assessment.id}/edit`}>
                                     <DropdownMenuItem>Edit Assessment</DropdownMenuItem>
                                   </Link>
-                                  <Link href={`/admin/assessments/${assessment.id}/questions`}>
+                                  <Link href={`/admin/assessments/${assessment.id}/edit?tab=questions`}>
                                     <DropdownMenuItem>Manage Questions</DropdownMenuItem>
                                   </Link>
                                   <DropdownMenuItem onClick={() => window.location.href=`/admin/assessments/${assessment.id}/assign`}>
