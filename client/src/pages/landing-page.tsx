@@ -8,8 +8,8 @@ export default function LandingPage() {
       <header className="container mx-auto py-4 px-4 md:px-6 flex justify-between items-center">
         <div className="flex items-center">
           <img 
-            src="/assets/switchbee-logo.png" 
-            alt="Switchbee Solution LLP" 
+            src="/assets/Asset 1.svg" 
+            alt="Company Logo" 
             className="h-16" 
           />
         </div>
