@@ -53,20 +53,43 @@ export function setupAuth(app: Express) {
     resave: true,
     saveUninitialized: true,
     store: storage.sessionStore,
+    name: 'switchbee.sid', // Set a custom cookie name
     cookie: {
       httpOnly: true,
       secure: false, // Set to false in development
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'lax'
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: 'none', // Allow cross-origin cookies
+      path: '/' // Ensure cookie is accessible from all paths
     }
   };
   
   console.log("Session store initialized:", !!storage.sessionStore);
 
   app.set("trust proxy", 1);
+  
+  // Debug middleware to log cookies
+  app.use((req, res, next) => {
+    console.log('Request cookies:', req.headers.cookie);
+    next();
+  });
+  
   app.use(session(sessionSettings));
+  
+  // Debug middleware to log session after session middleware
+  app.use((req: any, res, next) => {
+    console.log('Session ID after session middleware:', req.sessionID);
+    console.log('Session data:', req.session);
+    next();
+  });
+  
   app.use(passport.initialize());
   app.use(passport.session());
+  
+  // Debug middleware to log user after passport middleware
+  app.use((req: any, res, next) => {
+    console.log('User after passport middleware:', req.user ? `ID: ${req.user.id}, Username: ${req.user.username}` : 'Not authenticated');
+    next();
+  });
 
   passport.use(
     new LocalStrategy(async (username, password, done) => {

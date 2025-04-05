@@ -1,4 +1,4 @@
-import type { Express, Response as ExpressResponse } from "express";
+import type { Express, Request, Response as ExpressResponse } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth, hashPassword, comparePasswords } from "./auth";
 import { storage, hashPasswordLocal } from "./storage";
@@ -12,6 +12,7 @@ import {
 } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { pool } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize storage (create tables and seed data if needed)
@@ -20,6 +21,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add test route to verify server is responding
   app.get('/api/test', (req, res) => {
     res.json({ status: 'ok', message: 'API is working' });
+  });
+  
+  // Debug endpoint to check session and database
+  app.get('/api/debug/session', async (req: Request, res) => {
+    try {
+      // Get session data from database
+      const result = await pool.query(
+        'SELECT sid, sess, expire FROM session WHERE sid = $1',
+        [req.sessionID]
+      );
+      
+      const sessionData = result.rows.length > 0 ? result.rows[0] : null;
+      const sessionDbData = sessionData ? JSON.parse(sessionData.sess) : null;
+      
+      res.json({
+        sessionID: req.sessionID,
+        isAuthenticated: req.isAuthenticated(),
+        user: req.user || null,
+        cookies: req.headers.cookie,
+        sessionInDb: sessionData !== null,
+        sessionDbData
+      });
+    } catch (error) {
+      console.error('Error retrieving session debug info:', error);
+      res.status(500).json({ error: 'Failed to retrieve debug information' });
+    }
   });
   
   // Sets up /api/register, /api/login, /api/logout, /api/user
