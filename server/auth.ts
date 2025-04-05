@@ -48,22 +48,33 @@ export async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
+  // Set a longer Secret and explicitly configure session
+  const SESSION_SECRET = process.env.SESSION_SECRET || "switchbee-assessment-platform-longer-secret-key-for-session-security";
+  
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "interview-prep-platform-secret",
-    resave: true,
-    saveUninitialized: true,
+    name: 'switchbee.sid', // A specific name for our cookie
+    secret: SESSION_SECRET,
+    resave: true, // Forces the session to be saved back to the store
+    saveUninitialized: true, // Forces a session that is "uninitialized" to be saved to the store
     store: storage.sessionStore,
     cookie: {
-      httpOnly: true,
-      secure: false, // Set to false in development
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'lax'
+      path: '/',
+      httpOnly: true, // Prevents client-side JS from reading the cookie
+      secure: false, // For development - set to true in production with HTTPS
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days - longer session
+      sameSite: 'lax' // Cross-site cookie policy
     }
   };
   
-  console.log("Session store initialized:", !!storage.sessionStore);
+  console.log("Session configuration:", {
+    store: !!storage.sessionStore,
+    cookie: {
+      secure: sessionSettings.cookie?.secure,
+      sameSite: sessionSettings.cookie?.sameSite
+    }
+  });
 
-  app.set("trust proxy", 1);
+  app.set("trust proxy", 1); // trust first proxy - important for secure cookies
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());

@@ -483,11 +483,19 @@ export class PostgresStorage implements IStorage {
     // Use the imported pool from db.ts to avoid creating multiple connections
     this.db = drizzle(pool);
 
-    // Initialize session store with the imported pool
+    // Setup PostgresSessionStore with proper configuration
+    const PostgresSessionStore = connectPg(session);
+    
+    // Initialize session store with the imported pool and detailed configuration
     this.sessionStore = new PostgresSessionStore({
       pool,
+      tableName: 'session', // Default table name
       createTableIfMissing: true,
+      errorLog: console.error,
+      schemaName: 'public'
     });
+    
+    console.log("PostgreSQL session store initialized");
   }
 
   async initializeStorage(): Promise<void> {
