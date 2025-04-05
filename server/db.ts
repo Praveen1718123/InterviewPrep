@@ -11,23 +11,50 @@ const connectionConfig = {
   database: 'switchbee',
   // SSL disabled for development
   ssl: false,
-  // Additional connection resilience options
-  connectionTimeoutMillis: 5000, // 5 seconds
-  idleTimeoutMillis: 30000, // 30 seconds
-  max: 20 // maximum number of clients in the pool
+  // Enhanced connection resilience options
+  connectionTimeoutMillis: 10000, // 10 seconds timeout for connection attempts
+  idleTimeoutMillis: 60000, // 60 seconds before idle clients are closed
+  max: 10, // maximum number of clients in the pool (reduced to prevent overloading)
+  min: 2, // minimum number of clients to keep active
+  statement_timeout: 30000, // 30 second timeout on statements
+  query_timeout: 30000, // 30 second timeout on queries
+  allowExitOnIdle: true, // Allow closing the pool during shutdown
+  application_name: 'switchbee-assessment-platform' // App name for tracking in database logs
 };
 
 // Create a resilient pool with error handling
 export const pool = new pg.Pool(connectionConfig);
 
-// Add error handler to prevent crashes
+// Enhanced error handling to prevent crashes and restart connections
 pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
+  console.error('PostgreSQL pool error:', err);
+  console.log('Attempting to recover from database error...');
+  
+  // Attempt to reconnect by creating a new client
+  // This is just a test - the pool will handle reconnections automatically
+  pool.connect()
+    .then(client => {
+      console.log('Successfully reconnected to the database');
+      client.release();
+    })
+    .catch(err => {
+      console.error('Failed to reconnect to the database:', err);
+    });
 });
 
-// Log connection info
-pool.on('connect', () => {
-  console.log('Connected to PostgreSQL database');
+// Log connection info and test the connection
+pool.on('connect', (client) => {
+  console.log(`Connected to PostgreSQL database (${connectionConfig.host}:${connectionConfig.port}/${connectionConfig.database})`);
+  
+  // Add listener for notices from the database server
+  client.on('notice', (msg) => {
+    console.log('PostgreSQL Notice:', msg.message);
+  });
+});
+
+// Log connection removal
+pool.on('remove', () => {
+  console.log('Client removed from pool');
 });
 
 // Export the drizzle instance

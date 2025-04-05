@@ -7,19 +7,29 @@ import cors from "cors";
 
 const app = express();
 
-// Configure CORS to allow credentials
+// Configure CORS to allow credentials - using a dynamic origin validator for development flexibility
 app.use(cors({
-  origin: true, // Allow requests from any origin in development
+  origin: function(origin, callback) {
+    // In development, we'll accept any origin or no origin (like Postman)
+    return callback(null, true);
+  },
   credentials: true, // Important: Allow cookies to be sent with requests
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cookie', 'Origin', 'Accept'],
+  exposedHeaders: ['Set-Cookie'],
+  maxAge: 86400 // Cache the preflight response for 24 hours
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser()); // Add cookie parser to help with cookie handling
 
+// Add headers for better security and cookie handling
 app.use((req, res, next) => {
+  // Add security and cookie-related headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
   const start = Date.now();
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;

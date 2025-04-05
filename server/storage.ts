@@ -483,13 +483,30 @@ export class PostgresStorage implements IStorage {
     // Use the imported db instance from db.ts to avoid creating multiple connections
     this.db = db;
 
-    // Initialize session store with the imported pool
+    // Initialize session store with the imported pool and enhanced configuration
     const PostgresSessionStore = connectPg(session);
-    this.sessionStore = new PostgresSessionStore({
-      pool,
-      createTableIfMissing: true,
-      tableName: 'session' // Explicit table name
-    });
+    
+    console.log("Initializing PostgreSQL session store...");
+    try {
+      this.sessionStore = new PostgresSessionStore({
+        pool,
+        createTableIfMissing: true,
+        tableName: 'session', // Explicit table name
+        schemaName: 'public', // Explicit schema
+        pruneSessionInterval: 60, // Prune expired sessions every 60 seconds
+        errorLog: (err) => console.error('PostgreSQL session store error:', err),
+      });
+      console.log("PostgreSQL session store initialized successfully");
+    } catch (error) {
+      console.error("Failed to initialize PostgreSQL session store:", error);
+      
+      // Fallback to memory store in case of failure
+      console.warn("Falling back to in-memory session store");
+      const MemoryStore = createMemoryStore(session);
+      this.sessionStore = new MemoryStore({
+        checkPeriod: 86400000 // prune expired entries every 24h
+      });
+    }
     
     console.log("PostgreSQL Storage initialized with database connection");
   }

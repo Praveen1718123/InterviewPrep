@@ -49,21 +49,27 @@ export async function comparePasswords(supplied: string, stored: string) {
 
 export function setupAuth(app: Express) {
   const inProduction = process.env.NODE_ENV === 'production';
+  const isReplit = !!process.env.REPL_ID;
+  
+  // Determine cookie settings based on environment
+  const cookieSettings = {
+    httpOnly: true,
+    secure: false, // Must be false for HTTP in development
+    // Extensive expiration for debugging
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days for testing
+    sameSite: 'lax' as 'lax' | 'strict' | 'none', // Most compatible setting
+    path: '/'
+  };
   
   // For development with non-HTTPS, we must use these settings
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "interview-prep-platform-secret",
     resave: true,
     saveUninitialized: true,
+    rolling: true, // Reset expiration time with each request
     store: storage.sessionStore,
     name: 'switchbee.sid', // Custom cookie name
-    cookie: {
-      httpOnly: true,
-      secure: false, // Must be false for non-HTTPS connections in development
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      sameSite: 'none', // Allow cross-site cookies for development
-      path: '/' // Ensure cookie is accessible from all paths
-    }
+    cookie: cookieSettings
   };
   
   console.log("Session store initialized:", !!storage.sessionStore);
@@ -169,6 +175,8 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
+    console.log("Login attempt with body:", { username: req.body.username, passwordLength: req.body.password?.length });
+    
     passport.authenticate("local", (err: any, user: User | undefined, info: any) => {
       if (err) {
         console.error("Authentication error:", err);
@@ -188,19 +196,11 @@ export function setupAuth(app: Express) {
         }
         
         console.log(`POST /api/login - Login successful, Session ID: ${req.sessionID}`);
-        console.log(`POST /api/login - User in request: ${user.username}, ID: ${user.id}`);
+        console.log(`POST /api/login - User in request: ${user.username}, ID: ${user.id}, Role: ${user.role}`);
         
-        // Force setting the session cookie explicitly
-        const cookieOptions = {
-          httpOnly: true,
-          secure: false,
-          maxAge: 7 * 24 * 60 * 60 * 1000,
-          sameSite: 'none' as const, // Allow cross-site cookies for development
-          path: '/'
-        };
-        
-        // Set user data in session to make it persist
-        (req.session as any).passport = { user: user.id };
+        // Add timestamp for debugging
+        const loginTime = new Date().toISOString();
+        (req.session as any).loginTime = loginTime;
         
         // Save the session explicitly to ensure it's properly stored
         req.session.save((saveErr) => {
@@ -209,14 +209,42 @@ export function setupAuth(app: Express) {
             return res.status(500).json({ message: "Failed to create session" });
           }
           
-          console.log("Session saved successfully");
-          console.log("Setting cookie for session ID:", req.sessionID);
+          console.log("Session saved successfully with ID:", req.sessionID);
           
-          // Set the cookie explicitly
-          res.cookie('switchbee.sid', req.sessionID, cookieOptions);
+          // Enhanced logging
+          console.log("Session data:", req.session);
           
-          // Return user data
-          res.status(200).json(user);
+          // Check if the session store is working by fetching the session directly
+          try {
+            const store = storage.sessionStore as any;
+            if (store && typeof store.get === 'function') {
+              store.get(req.sessionID, (err: any, session: any) => {
+                if (err) {
+                  console.error("Error retrieving session from store:", err);
+                } else if (!session) {
+                  console.error("Session not found in store immediately after save!");
+                } else {
+                  console.log("Session verified in store:", session);
+                }
+              });
+            }
+          } catch (storeErr) {
+            console.error("Error checking session store:", storeErr);
+          }
+          
+          // Return user data with session ID for debugging
+          res.status(200).json({
+            id: user.id,
+            username: user.username,
+            role: user.role,
+            email: user.email,
+            fullName: user.fullName,
+            // Debug information
+            _debug: {
+              sessionId: req.sessionID,
+              loginTime
+            }
+          });
         });
       });
     })(req, res, next);
@@ -232,14 +260,49 @@ export function setupAuth(app: Express) {
   app.get("/api/user", (req, res) => {
     console.log("GET /api/user - Session ID:", req.sessionID);
     console.log("GET /api/user - Is authenticated:", req.isAuthenticated());
+    console.log("GET /api/user - Session data:", req.session);
+    console.log("GET /api/user - Cookies:", req.headers.cookie);
+    
+    // For debugging - try to look up the session manually
+    try {
+      const store = storage.sessionStore as any;
+      if (store && typeof store.get === 'function') {
+        store.get(req.sessionID, (err: any, session: any) => {
+          if (err) {
+            console.error("Error retrieving session from store during /api/user:", err);
+          } else if (!session) {
+            console.error("Session not found in store during /api/user call!");
+          } else {
+            console.log("Session retrieved from store during /api/user:", session);
+          }
+        });
+      }
+    } catch (storeErr) {
+      console.error("Error checking session store during /api/user:", storeErr);
+    }
     
     if (!req.isAuthenticated()) {
       console.log("GET /api/user - Authentication failed");
-      return res.status(401).send();
+      return res.status(401).json({ 
+        error: "Not authenticated",
+        _debug: {
+          sessionId: req.sessionID,
+          hasSession: !!req.session,
+          time: new Date().toISOString()
+        }
+      });
     }
     
     console.log(`GET /api/user - User: ${req.user!.username}, ID: ${req.user!.id}, Role: ${req.user!.role}`);
-    res.json(req.user);
+    
+    // Return the user data with some debug info
+    res.json({
+      ...req.user,
+      _debug: {
+        sessionId: req.sessionID,
+        time: new Date().toISOString()
+      }
+    });
   });
 
   // Middleware to check if user is admin

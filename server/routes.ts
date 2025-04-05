@@ -25,19 +25,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Debug endpoint to check session and database
   app.get('/api/debug/session', async (req: Request, res) => {
+    console.log("=== DEBUG SESSION ENDPOINT CALLED ===");
+    console.log("Request headers:", req.headers);
+    
     try {
+      // First check database connection directly
+      console.log("Testing direct database connection...");
+      try {
+        const dbCheckResult = await pool.query('SELECT NOW() as time');
+        console.log("Direct DB connection successful:", dbCheckResult.rows[0].time);
+      } catch (dbError) {
+        console.error("Direct DB connection failed:", dbError);
+      }
+      
       // Get session data from database
+      console.log("Fetching session data for ID:", req.sessionID);
       const result = await pool.query(
         'SELECT sid, sess, expire FROM session WHERE sid = $1',
         [req.sessionID]
       );
       
       const sessionData = result.rows.length > 0 ? result.rows[0] : null;
+      console.log("Session found in DB:", sessionData !== null);
+      
       const sessionDbData = sessionData ? JSON.parse(sessionData.sess) : null;
       
       // Get all active sessions for debugging
+      console.log("Fetching all active sessions...");
       const allSessionsResult = await pool.query(
-        'SELECT sid, sess, expire FROM session LIMIT 10'
+        'SELECT sid, sess, expire FROM session ORDER BY expire DESC LIMIT 10'
       );
       
       const allSessions = allSessionsResult.rows.map(row => ({
@@ -46,23 +62,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
         data: JSON.parse(row.sess)
       }));
       
+      console.log(`Found ${allSessions.length} active sessions`);
+      
+      // Debug request object
+      console.log("Session middleware data:", {
+        sessionID: req.sessionID,
+        isAuthenticated: req.isAuthenticated(),
+        hasUser: !!req.user
+      });
+      
       res.json({
+        requestId: Math.random().toString(36).substr(2, 9), // Random ID to identify this specific request
+        time: new Date().toISOString(),
         sessionID: req.sessionID,
         isAuthenticated: req.isAuthenticated(),
         user: req.user || null,
         cookies: req.headers.cookie,
         sessionInDb: sessionData !== null,
         sessionDbData,
-        allSessions
+        allSessions,
+        nodeEnv: process.env.NODE_ENV || 'development'
       });
     } catch (error) {
       console.error('Error retrieving session debug info:', error);
-      res.status(500).json({ error: 'Failed to retrieve debug information' });
+      res.status(500).json({ error: 'Failed to retrieve debug information', details: String(error) });
     }
   });
   
-  // Simple ping endpoint to test session persistence
+  // Create special test user
+  app.post('/api/debug/create-test-user', async (req, res) => {
+    try {
+      const { username, password, role } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
+      }
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.json({ 
+          message: 'User already exists',
+          user: {
+            id: existingUser.id,
+            username: existingUser.username,
+            role: existingUser.role
+          }
+        });
+      }
+      
+      // Create the user
+      const hashedPassword = await hashPassword(password);
+      const user = await storage.createUser({
+        username,
+        password: hashedPassword,
+        email: `${username}@test.com`,
+        fullName: `Test ${username.charAt(0).toUpperCase() + username.slice(1)}`,
+        role: role || 'candidate',
+        batch: null
+      });
+      
+      res.json({
+        message: 'Test user created successfully',
+        user: {
+          id: user.id,
+          username: user.username,
+          role: user.role
+        }
+      });
+    } catch (error) {
+      console.error('Error creating test user:', error);
+      res.status(500).json({ error: 'Failed to create test user', details: String(error) });
+    }
+  });
+  
+  // Enhanced ping endpoint to test session persistence
   app.get('/api/ping', (req, res) => {
+    console.log('Ping - Cookies:', req.headers.cookie);
+    console.log('Ping - Session ID:', req.sessionID);
+    console.log('Ping - Authenticated:', req.isAuthenticated());
+    console.log('Ping - Session before modification:', JSON.stringify(req.session));
+    
     // Increment a counter in the session to prove it's persisting
     const sessionData = req.session as any; // Use any to bypass TypeScript for session data
     if (!sessionData.pingCount) {
@@ -70,19 +150,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     sessionData.pingCount++;
     
+    // Set request time to track session persistence
+    sessionData.lastPingTime = new Date().toISOString();
+    
+    // Always set a non-passport value to check if general session data persists
+    sessionData.testKey = 'test-value-' + Math.floor(Math.random() * 1000);
+    
+    console.log('Ping - Modified session data:', JSON.stringify(sessionData));
+    
     // Save the session explicitly
     req.session.save((err) => {
       if (err) {
-        console.error('Error saving ping count:', err);
+        console.error('Error saving ping session:', err);
         return res.status(500).json({ error: 'Failed to save session' });
       }
+      
+      console.log('Ping - Session saved successfully');
+      
+      // Set the cookie explicitly to ensure it's sent
+      res.cookie('switchbee.sid', req.sessionID, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        sameSite: 'lax',
+        path: '/'
+      });
       
       res.json({
         pong: true,
         pingCount: sessionData.pingCount,
+        lastPingTime: sessionData.lastPingTime,
+        testKey: sessionData.testKey,
         sessionID: req.sessionID,
         isAuthenticated: req.isAuthenticated(),
-        user: req.user || null
+        user: req.user ? {
+          id: req.user.id,
+          username: req.user.username,
+          role: req.user.role
+        } : null
       });
     });
   });
@@ -443,8 +548,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (originalIds.size !== newIds.size) {
         console.error("Question count mismatch in reordering");
-        console.error("Original IDs:", [...originalIds]);
-        console.error("New IDs:", [...newIds]);
+        console.error("Original IDs count:", originalIds.size);
+        console.error("New IDs count:", newIds.size);
       }
       
       console.log("Updating assessment with reordered questions");
