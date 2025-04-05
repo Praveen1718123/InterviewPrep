@@ -9,60 +9,61 @@ export function ProtectedRoute({
   path: string;
   component: React.ComponentType<any>;
 }) {
-  const [location] = useLocation();
-  
-  return (
-    <Route path={path}>
-      {() => {
-        try {
-          const { user, isLoading } = useAuth();
-          const adminRoute = path.startsWith("/admin");
+  try {
+    const { user, isLoading } = useAuth();
+    const [location] = useLocation();
 
-          // Debug info
-          console.log("Protected route access:", {
-            path,
-            isLoading,
-            userExists: !!user,
-            userRole: user?.role,
-            adminRoute
-          });
+    const adminRoute = path.startsWith("/admin");
 
-          // Show loading spinner while checking auth status
-          if (isLoading) {
-            return (
-              <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            );
-          }
+    if (isLoading) {
+      return (
+        <Route path={path}>
+          <div className="flex items-center justify-center min-h-screen">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </Route>
+      );
+    }
 
-          // Redirect to login if no user
-          if (!user) {
-            console.log("No authenticated user, redirecting to /auth");
-            return <Redirect to="/auth" />;
-          }
+    if (!user) {
+      return (
+        <Route path={path}>
+          <Redirect to="/auth" />
+        </Route>
+      );
+    }
 
-          // Redirect candidate trying to access admin routes
-          if (adminRoute && user.role !== "admin") {
-            console.log("Non-admin trying to access admin route, redirecting to /");
-            return <Redirect to="/" />;
-          }
+    // Check if admin route but user is not admin
+    if (adminRoute && user.role !== "admin") {
+      return (
+        <Route path={path}>
+          <Redirect to="/" />
+        </Route>
+      );
+    }
 
-          // Redirect admin on candidate home page to admin dashboard
-          if (!adminRoute && user.role === "admin" && location === "/") {
-            console.log("Admin on home page, redirecting to /admin");
-            return <Redirect to="/admin" />;
-          }
+    // Check if candidate route but user is admin, redirect to admin dashboard
+    if (!adminRoute && user.role === "admin" && location === "/") {
+      return (
+        <Route path={path}>
+          <Redirect to="/admin" />
+        </Route>
+      );
+    }
 
-          // Render the protected component
-          console.log("Authorized access granted to:", path);
-          return <Component />;
-        } catch (error) {
-          // Fallback for auth context errors
-          console.error("Auth context error:", error);
-          return <Redirect to="/auth" />;
-        }
-      }}
-    </Route>
-  );
+    // Explicitly rendering the component to ensure proper typing
+    return (
+      <Route path={path}>
+        <Component />
+      </Route>
+    );
+  } catch (error) {
+    // Fallback for when the auth context is not available
+    console.error("Auth context error:", error);
+    return (
+      <Route path={path}>
+        <Redirect to="/auth" />
+      </Route>
+    );
+  }
 }
