@@ -61,7 +61,7 @@ export function setupAuth(app: Express) {
       httpOnly: true,
       secure: false, // Must be false for non-HTTPS connections in development
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      sameSite: 'lax', 
+      sameSite: 'none', // Allow cross-site cookies for development
       path: '/' // Ensure cookie is accessible from all paths
     }
   };
@@ -195,7 +195,7 @@ export function setupAuth(app: Express) {
           httpOnly: true,
           secure: false,
           maxAge: 7 * 24 * 60 * 60 * 1000,
-          sameSite: 'lax' as const,
+          sameSite: 'none' as const, // Allow cross-site cookies for development
           path: '/'
         };
         

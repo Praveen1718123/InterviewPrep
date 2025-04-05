@@ -11,7 +11,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
-import { pool } from "./db";
+import { pool, db } from "./db";
 import connectPg from "connect-pg-simple";
 import { eq, and } from "drizzle-orm";
 
@@ -480,14 +480,18 @@ export class PostgresStorage implements IStorage {
   sessionStore: any;
 
   constructor() {
-    // Use the imported pool from db.ts to avoid creating multiple connections
-    this.db = drizzle(pool);
+    // Use the imported db instance from db.ts to avoid creating multiple connections
+    this.db = db;
 
     // Initialize session store with the imported pool
+    const PostgresSessionStore = connectPg(session);
     this.sessionStore = new PostgresSessionStore({
       pool,
       createTableIfMissing: true,
+      tableName: 'session' // Explicit table name
     });
+    
+    console.log("PostgreSQL Storage initialized with database connection");
   }
 
   async initializeStorage(): Promise<void> {
