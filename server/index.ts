@@ -3,8 +3,18 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { Server } from "http";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 const app = express();
+
+// Configure CORS to allow credentials
+app.use(cors({
+  origin: true, // Allow requests from any origin in development
+  credentials: true, // Important: Allow cookies to be sent with requests
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser()); // Add cookie parser to help with cookie handling

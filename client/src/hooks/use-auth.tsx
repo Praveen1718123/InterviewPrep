@@ -27,10 +27,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch('/api/user');
+        const res = await fetch('/api/user', {
+          credentials: 'include',  // Important for sending cookies with the request
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
         if (res.ok) {
           const userData = await res.json();
           setUser(userData);
+        } else {
+          console.log('User not authenticated:', res.status);
         }
       } catch (err) {
         console.error('Error fetching user:', err);

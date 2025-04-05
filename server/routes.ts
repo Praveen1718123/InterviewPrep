@@ -64,10 +64,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Simple ping endpoint to test session persistence
   app.get('/api/ping', (req, res) => {
     // Increment a counter in the session to prove it's persisting
-    if (!req.session.pingCount) {
-      req.session.pingCount = 0;
+    const sessionData = req.session as any; // Use any to bypass TypeScript for session data
+    if (!sessionData.pingCount) {
+      sessionData.pingCount = 0;
     }
-    req.session.pingCount++;
+    sessionData.pingCount++;
     
     // Save the session explicitly
     req.session.save((err) => {
@@ -78,7 +79,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         pong: true,
-        pingCount: req.session.pingCount,
+        pingCount: sessionData.pingCount,
         sessionID: req.sessionID,
         isAuthenticated: req.isAuthenticated(),
         user: req.user || null
