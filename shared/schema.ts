@@ -24,7 +24,7 @@ export const assessments = pgTable("assessments", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
-  type: text("type", { enum: ["mcq", "fill-in-blanks", "video"] }).notNull(),
+  type: text("type", { enum: ["mcq", "fill-in-blanks", "video", "brief-answers"] }).notNull(),
   createdBy: integer("created_by").notNull(), // Admin user ID
   questions: json("questions").notNull(), // Array of questions
   timeLimit: integer("time_limit"), // Total time limit in minutes for the whole assessment
@@ -82,6 +82,13 @@ export const videoQuestionSchema = z.object({
   timeLimit: z.number().int(), // In seconds
 });
 
+export const briefAnswerQuestionSchema = z.object({
+  id: z.string(),
+  text: z.string(),
+  expectedAnswerLength: z.number().int().optional(), // Guideline for answer length in characters
+  timeLimit: z.number().int().optional(), // Time limit in seconds
+});
+
 // Response types
 export const mcqResponseSchema = z.object({
   questionId: z.string(),
@@ -98,6 +105,11 @@ export const videoResponseSchema = z.object({
   videoUrl: z.string(),
 });
 
+export const briefAnswerResponseSchema = z.object({
+  questionId: z.string(),
+  answer: z.string(),
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -111,7 +123,9 @@ export type CandidateAssessment = typeof candidateAssessments.$inferSelect;
 export type MCQQuestion = z.infer<typeof mcqQuestionSchema>;
 export type FillInBlanksQuestion = z.infer<typeof fillInBlanksQuestionSchema>;
 export type VideoQuestion = z.infer<typeof videoQuestionSchema>;
+export type BriefAnswerQuestion = z.infer<typeof briefAnswerQuestionSchema>;
 
 export type MCQResponse = z.infer<typeof mcqResponseSchema>;
 export type FillInBlanksResponse = z.infer<typeof fillInBlanksResponseSchema>;
 export type VideoResponse = z.infer<typeof videoResponseSchema>;
+export type BriefAnswerResponse = z.infer<typeof briefAnswerResponseSchema>;

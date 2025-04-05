@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { MCQQuestion, FillInBlanksQuestion, VideoQuestion } from "@shared/schema";
+import { MCQQuestion, FillInBlanksQuestion, VideoQuestion, BriefAnswerQuestion } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
@@ -559,6 +559,80 @@ export default function EditAssessment() {
     );
   };
 
+  // Brief Answer Question Form
+  const BriefAnswerQuestionForm = ({ onSubmit, initialData = null }: { onSubmit: (data: any) => void, initialData?: any }) => {
+    const [questionText, setQuestionText] = useState(initialData?.text || "");
+    const [timeLimit, setTimeLimit] = useState(initialData?.timeLimit || 180);
+
+    const handleSubmit = () => {
+      if (!questionText.trim()) {
+        toast({
+          title: "Error",
+          description: "Question text is required",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (timeLimit <= 0) {
+        toast({
+          title: "Error",
+          description: "Time limit must be greater than 0",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const question: BriefAnswerQuestion = {
+        id: initialData?.id || generateId(),
+        text: questionText,
+        timeLimit
+      };
+
+      onSubmit(question);
+    };
+
+    return (
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="question">Question</Label>
+          <Textarea 
+            id="question" 
+            value={questionText} 
+            onChange={(e) => setQuestionText(e.target.value)}
+            className="min-h-[100px]"
+            placeholder="Enter the question for the brief answer response"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="timeLimit">Time Limit (seconds)</Label>
+          <Input 
+            id="timeLimit" 
+            type="number" 
+            value={timeLimit} 
+            onChange={(e) => setTimeLimit(parseInt(e.target.value))}
+            placeholder="Time limit in seconds"
+            min="1"
+          />
+        </div>
+
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => initialData ? setIsEditingQuestion(false) : setIsAddingQuestion(false)}
+          >
+            Cancel
+          </Button>
+          <Button type="button" onClick={handleSubmit}>
+            {initialData ? "Update Question" : "Add Question"}
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   // Handle adding a new question
   const handleAddQuestion = (questionData: any) => {
     addQuestionMutation.mutate(questionData);
@@ -726,6 +800,9 @@ export default function EditAssessment() {
                             {assessment?.type === "video" && (
                               <VideoQuestionForm onSubmit={handleAddQuestion} />
                             )}
+                            {assessment?.type === "brief-answer" && (
+                              <BriefAnswerQuestionForm onSubmit={handleAddQuestion} />
+                            )}
                           </DialogContent>
                         </Dialog>
                       </>
@@ -794,6 +871,9 @@ export default function EditAssessment() {
                                     {assessment?.type === "video" && currentQuestion && (
                                       <VideoQuestionForm onSubmit={handleEditQuestion} initialData={currentQuestion} />
                                     )}
+                                    {assessment?.type === "brief-answer" && currentQuestion && (
+                                      <BriefAnswerQuestionForm onSubmit={handleEditQuestion} initialData={currentQuestion} />
+                                    )}
                                   </DialogContent>
                                 </Dialog>
                                 
@@ -858,6 +938,13 @@ export default function EditAssessment() {
                                   </li>
                                 ))}
                               </ul>
+                            </div>
+                          )}
+                          
+                          {assessment?.type === "brief-answer" && (
+                            <div>
+                              <div className="font-medium mb-1">Response Type:</div>
+                              <p className="text-gray-700">Brief written answer required</p>
                             </div>
                           )}
                           

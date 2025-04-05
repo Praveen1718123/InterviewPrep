@@ -47,7 +47,7 @@ import { v4 as uuidv4 } from "uuid";
 const createAssessmentSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().optional(),
-  type: z.enum(["mcq", "fill-in-blanks", "video"]),
+  type: z.enum(["mcq", "fill-in-blanks", "video", "brief-answer"]),
   questions: z.array(
     z.object({
       id: z.string().default(() => uuidv4()),
@@ -130,7 +130,7 @@ export default function CreateAssessment() {
     if (value === form.getValues("type")) return;
     
     // Reset questions when changing type
-    form.setValue("type", value as "mcq" | "fill-in-blanks" | "video");
+    form.setValue("type", value as "mcq" | "fill-in-blanks" | "video" | "brief-answer");
     form.setValue("questions", []);
     setQuestionType(value);
     
@@ -168,6 +168,14 @@ export default function CreateAssessment() {
           timeLimit: 120, // 2 minutes
         },
       ]);
+    } else if (value === "brief-answer") {
+      form.setValue("questions", [
+        {
+          id: uuidv4(),
+          text: "",
+          timeLimit: 180, // 3 minutes
+        },
+      ]);
     }
   };
 
@@ -202,13 +210,24 @@ export default function CreateAssessment() {
         text: "",
         timeLimit: 120, // 2 minutes
       });
+    } else if (type === "brief-answer") {
+      appendQuestion({
+        id: uuidv4(),
+        text: "",
+        timeLimit: 180, // 3 minutes
+      });
     }
   };
 
   // Parse blanks from text (for Fill-in-Blanks)
   const parseBlanks = (text: string, questionIndex: number) => {
     const blankPattern = /\[\[(.*?)\]\]/g;
-    const matches = [...text.matchAll(blankPattern)];
+    // Instead of using matchAll, use exec in a loop (better compatibility)
+    let match;
+    const matches = [];
+    while ((match = blankPattern.exec(text)) !== null) {
+      matches.push(match);
+    }
     
     // Create blank fields if they don't exist
     const currentBlanks = form.getValues(`questions.${questionIndex}.blanks`) || [];
@@ -321,12 +340,14 @@ export default function CreateAssessment() {
                             <SelectItem value="mcq">Multiple Choice Questions</SelectItem>
                             <SelectItem value="fill-in-blanks">Fill-in-the-Blanks</SelectItem>
                             <SelectItem value="video">Video Interview</SelectItem>
+                            <SelectItem value="brief-answer">Brief Answer</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormDescription>
                           {field.value === "mcq" && "Create multiple-choice questions with one correct answer."}
                           {field.value === "fill-in-blanks" && "Create questions with text blanks that candidates need to fill in."}
                           {field.value === "video" && "Create questions that candidates will answer via recorded video."}
+                          {field.value === "brief-answer" && "Create questions that candidates will answer with short text responses."}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -528,6 +549,34 @@ export default function CreateAssessment() {
                                   </FormControl>
                                   <FormDescription>
                                     How long candidates have to answer this question (in seconds)
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )}
+                          
+                          {/* Brief Answer Time Limit */}
+                          {form.getValues("type") === "brief-answer" && (
+                            <FormField
+                              control={form.control}
+                              name={`questions.${questionIndex}.timeLimit`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Time Limit (seconds)</FormLabel>
+                                  <FormControl>
+                                    <div className="flex items-center">
+                                      <Input 
+                                        type="number"
+                                        min={10}
+                                        {...field}
+                                        onChange={(e) => field.onChange(parseInt(e.target.value) || 180)}
+                                      />
+                                      <Clock className="ml-2 h-4 w-4 text-gray-400" />
+                                    </div>
+                                  </FormControl>
+                                  <FormDescription>
+                                    How long candidates have to provide their brief answer (in seconds)
                                   </FormDescription>
                                   <FormMessage />
                                 </FormItem>
