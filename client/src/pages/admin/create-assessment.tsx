@@ -70,7 +70,7 @@ const createAssessmentSchema = z.object({
       // For Video
       timeLimit: z.number().int().min(10, "Time limit must be at least 10 seconds").optional(),
     })
-  ),
+  ).min(1, "At least one question is required"),
 });
 
 type FormValues = z.infer<typeof createAssessmentSchema>;
@@ -279,9 +279,16 @@ export default function CreateAssessment() {
   const onSubmit = (data: FormValues) => {
     console.log("Submitting assessment:", data);
     
+    // Clean up form data to only include the questions that have been added
+    // This prevents validation errors for unused questions
+    const cleanedData = {
+      ...data,
+      questions: data.questions.slice(0, questions.length)
+    };
+    
     // Do basic validation without conditional logic that might affect hooks
     const basicValidation = () => {
-      if (!data.title.trim()) {
+      if (!cleanedData.title.trim()) {
         toast({
           title: "Validation Error",
           description: "Assessment title is required",
@@ -290,7 +297,7 @@ export default function CreateAssessment() {
         return false;
       }
       
-      if (data.questions.length === 0) {
+      if (cleanedData.questions.length === 0) {
         toast({
           title: "Validation Error",
           description: "Assessment must have at least one question",
@@ -303,7 +310,7 @@ export default function CreateAssessment() {
     };
     
     if (basicValidation()) {
-      createAssessmentMutation.mutate(data);
+      createAssessmentMutation.mutate(cleanedData);
     }
   };
 
