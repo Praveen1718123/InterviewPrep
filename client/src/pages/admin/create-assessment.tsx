@@ -109,21 +109,22 @@ export default function CreateAssessment() {
     name: "questions",
   });
 
-  // Options field array (for MCQ)
-  const getOptionsFieldArray = (questionIndex: number) => {
+  // Pre-initialize the field arrays for each question
+  const optionsFieldArrays = questions.map((_, index) => {
+    // Options field array (for MCQ)
     return useFieldArray({
       control: form.control,
-      name: `questions.${questionIndex}.options` as const,
+      name: `questions.${index}.options` as const,
     });
-  };
-
-  // Blanks field array (for Fill-in-Blanks)
-  const getBlanksFieldArray = (questionIndex: number) => {
+  });
+  
+  const blanksFieldArrays = questions.map((_, index) => {
+    // Blanks field array (for Fill-in-Blanks)
     return useFieldArray({
       control: form.control,
-      name: `questions.${questionIndex}.blanks` as const,
+      name: `questions.${index}.blanks` as const,
     });
-  };
+  });
 
   // Handle assessment type change
   const handleTypeChange = (value: string) => {
@@ -432,7 +433,7 @@ export default function CreateAssessment() {
                             <div className="space-y-4">
                               <p className="text-sm font-medium">Answer Options</p>
                               
-                              {getOptionsFieldArray(questionIndex).fields.map((option, optionIndex) => (
+                              {optionsFieldArrays[questionIndex]?.fields.map((option, optionIndex) => (
                                 <div key={option.id} className="flex items-start gap-2">
                                   <FormField
                                     control={form.control}
@@ -467,14 +468,14 @@ export default function CreateAssessment() {
                                     )}
                                   />
                                   
-                                  {getOptionsFieldArray(questionIndex).fields.length > 2 && (
+                                  {optionsFieldArrays[questionIndex]?.fields.length > 2 && (
                                     <Button
                                       type="button"
                                       size="sm"
                                       variant="ghost"
                                       className="h-9 w-9 p-0 text-red-500"
                                       onClick={() => {
-                                        getOptionsFieldArray(questionIndex).remove(optionIndex);
+                                        optionsFieldArrays[questionIndex]?.remove(optionIndex);
                                       }}
                                     >
                                       <Trash2 className="h-4 w-4" />
@@ -489,7 +490,7 @@ export default function CreateAssessment() {
                                 size="sm"
                                 className="flex items-center"
                                 onClick={() => {
-                                  getOptionsFieldArray(questionIndex).append({
+                                  optionsFieldArrays[questionIndex]?.append({
                                     id: uuidv4(),
                                     text: "",
                                   });
