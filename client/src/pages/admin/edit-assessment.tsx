@@ -72,14 +72,21 @@ export default function EditAssessment() {
   // Add question mutation
   const addQuestionMutation = useMutation({
     mutationFn: async (questionData: any) => {
+      console.log("Adding question:", questionData);
       const response = await apiRequest(
         "POST", 
         `/api/admin/assessments/${assessmentId}/questions`,
         questionData
       );
-      return response.json();
+      try {
+        return await response.json();
+      } catch (e) {
+        // If response is not JSON, just return success
+        return { success: true };
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Question added successfully, response:", data);
       queryClient.invalidateQueries({queryKey: ['/api/admin/assessments', assessmentId]});
       setIsAddingQuestion(false);
       toast({
@@ -88,6 +95,7 @@ export default function EditAssessment() {
       });
     },
     onError: (error) => {
+      console.error("Add question error:", error);
       toast({
         title: "Error",
         description: "Failed to add question: " + error.message,
@@ -116,6 +124,7 @@ export default function EditAssessment() {
       });
     },
     onError: (error) => {
+      console.error("Update question error:", error);
       toast({
         title: "Error",
         description: "Failed to update question: " + error.message,
@@ -127,12 +136,21 @@ export default function EditAssessment() {
   // Delete question mutation
   const deleteQuestionMutation = useMutation({
     mutationFn: async (questionId: string) => {
-      await apiRequest(
+      console.log("Deleting question with ID:", questionId);
+      const response = await apiRequest(
         "DELETE", 
         `/api/admin/assessments/${assessmentId}/questions/${questionId}`
       );
+      // Try to parse the response as JSON if available
+      try {
+        return await response.json();
+      } catch (e) {
+        // If response is not JSON, just return success
+        return { success: true };
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Question deleted successfully, response:", data);
       queryClient.invalidateQueries({queryKey: ['/api/admin/assessments', assessmentId]});
       toast({
         title: "Success",
@@ -140,6 +158,7 @@ export default function EditAssessment() {
       });
     },
     onError: (error) => {
+      console.error("Delete question error:", error);
       toast({
         title: "Error",
         description: "Failed to delete question: " + error.message,
@@ -547,6 +566,7 @@ export default function EditAssessment() {
 
   // Handle editing a question
   const handleEditQuestion = (questionData: any) => {
+    console.log("Editing question:", questionData);
     updateQuestionMutation.mutate({
       questionId: questionData.id,
       questionData: questionData

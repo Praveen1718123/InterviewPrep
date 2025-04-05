@@ -288,20 +288,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/assessments/:id/questions", isAdmin, async (req, res) => {
     try {
       const assessmentId = parseInt(req.params.id);
+      console.log(`Adding question to assessment ${assessmentId}`);
+      console.log("Request body:", req.body);
+      
+      // Check if the request body has the necessary properties
+      if (!req.body || !req.body.text) {
+        console.error("Invalid question data. Missing required fields");
+        return res.status(400).json({ message: "Invalid question data. Question text is required." });
+      }
+      
+      // Get the assessment
       const assessment = await storage.getAssessment(assessmentId);
       if (!assessment) {
+        console.error(`Assessment ${assessmentId} not found`);
         return res.status(404).json({ message: "Assessment not found" });
       }
 
       // Ensure questions is initialized as an array
       const currentQuestions = Array.isArray(assessment.questions) ? assessment.questions : [];
+      console.log(`Assessment has ${currentQuestions.length} questions before adding new one`);
       
-      const questions = [...currentQuestions, { ...req.body, id: crypto.randomUUID() }];
+      // Generate a UUID for the question if it doesn't have one
+      const newQuestionId = req.body.id || crypto.randomUUID();
+      console.log(`Using question ID: ${newQuestionId}`);
+      
+      // Create the new question array with the added question
+      const questions = [...currentQuestions, { ...req.body, id: newQuestionId }];
+      console.log(`New questions array has ${questions.length} questions`);
+      
+      // Update the assessment
+      console.log("Updating assessment with new question");
       const updated = await storage.updateAssessment(assessmentId, { questions });
+      console.log("Assessment updated successfully");
+      
       res.json(updated);
     } catch (error) {
       console.error("Error adding question:", error);
-      res.status(500).json({ message: "Error adding question" });
+      res.status(500).json({ message: "Error adding question", error: String(error) });
     }
   });
 
@@ -311,23 +334,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const assessmentId = parseInt(req.params.id);
       const questionId = req.params.questionId;
       
+      console.log(`Updating question ${questionId} in assessment ${assessmentId}`);
+      console.log("Request body:", req.body);
+      
       const assessment = await storage.getAssessment(assessmentId);
       if (!assessment) {
+        console.error(`Assessment ${assessmentId} not found`);
         return res.status(404).json({ message: "Assessment not found" });
       }
       
       // Ensure questions is initialized as an array
       const currentQuestions = Array.isArray(assessment.questions) ? assessment.questions : [];
+      console.log("Current questions count:", currentQuestions.length);
       
-      const questions = currentQuestions.map((q: any) => 
-        q.id === questionId ? { ...req.body, id: questionId } : q
-      );
+      // Find the question index
+      const questionIndex = currentQuestions.findIndex((q: any) => q.id === questionId);
+      if (questionIndex === -1) {
+        console.error(`Question ${questionId} not found in assessment ${assessmentId}`);
+        return res.status(404).json({ message: "Question not found in this assessment" });
+      }
       
+      // Create updated questions array
+      const questions = [...currentQuestions]; // Clone the array
+      questions[questionIndex] = { ...req.body, id: questionId }; // Update the specific question
+      
+      console.log("Updating assessment with modified questions array");
       const updated = await storage.updateAssessment(assessmentId, { questions });
+      console.log("Assessment updated successfully");
+      
       res.json(updated);
     } catch (error) {
       console.error("Error updating question:", error);
-      res.status(500).json({ message: "Error updating question" });
+      res.status(500).json({ message: "Error updating question", error: String(error) });
     }
   });
 
@@ -337,20 +375,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const assessmentId = parseInt(req.params.id);
       const questionId = req.params.questionId;
       
+      console.log(`Deleting question ${questionId} from assessment ${assessmentId}`);
+      
       const assessment = await storage.getAssessment(assessmentId);
       if (!assessment) {
+        console.error(`Assessment ${assessmentId} not found for question deletion`);
         return res.status(404).json({ message: "Assessment not found" });
       }
       
       // Ensure questions is initialized as an array
       const currentQuestions = Array.isArray(assessment.questions) ? assessment.questions : [];
+      console.log(`Assessment has ${currentQuestions.length} questions before deletion`);
+      
+      // Check if the question exists
+      const questionExists = currentQuestions.some((q: any) => q.id === questionId);
+      if (!questionExists) {
+        console.error(`Question ${questionId} not found in assessment ${assessmentId}`);
+        return res.status(404).json({ message: "Question not found in this assessment" });
+      }
       
       const questions = currentQuestions.filter((q: any) => q.id !== questionId);
+      console.log(`Filtered to ${questions.length} questions after removing question ${questionId}`);
+      
+      console.log("Updating assessment after question deletion");
       const updated = await storage.updateAssessment(assessmentId, { questions });
+      console.log("Assessment updated successfully after question deletion");
+      
       res.json(updated);
     } catch (error) {
       console.error("Error deleting question:", error);
-      res.status(500).json({ message: "Error deleting question" });
+      res.status(500).json({ message: "Error deleting question", error: String(error) });
     }
   });
 
@@ -358,22 +412,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/assessments/:id/questions/reorder", isAdmin, async (req, res) => {
     try {
       const assessmentId = parseInt(req.params.id);
+      console.log(`Reordering questions for assessment ${assessmentId}`);
+      
       const { questions } = req.body;
+      console.log(`Received ${questions ? questions.length : 0} questions for reordering`);
       
       if (!Array.isArray(questions)) {
+        console.error("Questions must be an array");
         return res.status(400).json({ message: "Questions must be an array" });
       }
       
       const assessment = await storage.getAssessment(assessmentId);
       if (!assessment) {
+        console.error(`Assessment ${assessmentId} not found for reordering`);
         return res.status(404).json({ message: "Assessment not found" });
       }
 
+      console.log("Original questions count:", 
+        Array.isArray(assessment.questions) ? assessment.questions.length : 0);
+      console.log("New questions order count:", questions.length);
+
+      // Verify all question IDs are present in the new order
+      const originalIds = new Set(
+        Array.isArray(assessment.questions) 
+          ? assessment.questions.map((q: any) => q.id) 
+          : []
+      );
+      
+      const newIds = new Set(questions.map((q: any) => q.id));
+      
+      if (originalIds.size !== newIds.size) {
+        console.error("Question count mismatch in reordering");
+        console.error("Original IDs:", [...originalIds]);
+        console.error("New IDs:", [...newIds]);
+      }
+      
+      console.log("Updating assessment with reordered questions");
       const updated = await storage.updateAssessment(assessmentId, { questions });
+      console.log("Assessment updated successfully after reordering");
+      
       res.json(updated);
     } catch (error) {
       console.error("Error reordering questions:", error);
-      res.status(500).json({ message: "Error reordering questions" });
+      res.status(500).json({ message: "Error reordering questions", error: String(error) });
     }
   });
 
