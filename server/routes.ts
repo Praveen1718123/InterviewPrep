@@ -35,18 +35,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sessionData = result.rows.length > 0 ? result.rows[0] : null;
       const sessionDbData = sessionData ? JSON.parse(sessionData.sess) : null;
       
+      // Get all active sessions for debugging
+      const allSessionsResult = await pool.query(
+        'SELECT sid, sess, expire FROM session LIMIT 10'
+      );
+      
+      const allSessions = allSessionsResult.rows.map(row => ({
+        sid: row.sid,
+        expire: row.expire,
+        data: JSON.parse(row.sess)
+      }));
+      
       res.json({
         sessionID: req.sessionID,
         isAuthenticated: req.isAuthenticated(),
         user: req.user || null,
         cookies: req.headers.cookie,
         sessionInDb: sessionData !== null,
-        sessionDbData
+        sessionDbData,
+        allSessions
       });
     } catch (error) {
       console.error('Error retrieving session debug info:', error);
       res.status(500).json({ error: 'Failed to retrieve debug information' });
     }
+  });
+  
+  // Simple ping endpoint to test session persistence
+  app.get('/api/ping', (req, res) => {
+    // Increment a counter in the session to prove it's persisting
+    if (!req.session.pingCount) {
+      req.session.pingCount = 0;
+    }
+    req.session.pingCount++;
+    
+    // Save the session explicitly
+    req.session.save((err) => {
+      if (err) {
+        console.error('Error saving ping count:', err);
+        return res.status(500).json({ error: 'Failed to save session' });
+      }
+      
+      res.json({
+        pong: true,
+        pingCount: req.session.pingCount,
+        sessionID: req.sessionID,
+        isAuthenticated: req.isAuthenticated(),
+        user: req.user || null
+      });
+    });
   });
   
   // Sets up /api/register, /api/login, /api/logout, /api/user

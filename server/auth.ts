@@ -56,9 +56,9 @@ export function setupAuth(app: Express) {
     name: 'switchbee.sid', // Set a custom cookie name
     cookie: {
       httpOnly: true,
-      secure: false, // Set to false in development
+      secure: false, // Must be false for non-HTTPS connections
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      sameSite: 'none', // Allow cross-origin cookies
+      sameSite: 'lax', // Changed from 'none' as 'none' requires secure:true
       path: '/' // Ensure cookie is accessible from all paths
     }
   };
@@ -169,14 +169,30 @@ export function setupAuth(app: Express) {
     console.log(`POST /api/login - Login successful, Session ID: ${req.sessionID}`);
     console.log(`POST /api/login - User in request: ${req.user!.username}, ID: ${req.user!.id}`);
     
+    // Force setting the session cookie explicitly
+    const cookieOptions = {
+      httpOnly: true,
+      secure: false,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      sameSite: 'lax' as const,
+      path: '/'
+    };
+    
     // Save the session explicitly to ensure it's properly stored
     req.session.save((err) => {
       if (err) {
         console.error("Error saving session:", err);
+        return res.status(500).json({ message: "Failed to create session" });
       } else {
         console.log("Session saved successfully");
+        console.log("Setting cookie for session ID:", req.sessionID);
+        
+        // Set the cookie explicitly
+        res.cookie('switchbee.sid', req.sessionID, cookieOptions);
+        
+        // Return user data
+        res.status(200).json(req.user);
       }
-      res.status(200).json(req.user);
     });
   });
 
