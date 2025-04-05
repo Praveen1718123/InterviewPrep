@@ -111,7 +111,7 @@ export default function CreateAssessment() {
 
   // Use a fixed number of field arrays based on the maximum number of questions
   // This ensures we call the same number of hooks on every render
-  const MAX_QUESTIONS = 20; // Reasonable upper limit
+  const MAX_QUESTIONS = 100; // Higher limit to accommodate more questions
   
   const optionsFieldArrays = [...Array(MAX_QUESTIONS)].map((_, index) => {
     // Options field array (for MCQ)
@@ -275,9 +275,36 @@ export default function CreateAssessment() {
     },
   });
 
-  // Submit form
+  // Submit form (simplified to avoid hooks issues)
   const onSubmit = (data: FormValues) => {
-    createAssessmentMutation.mutate(data);
+    console.log("Submitting assessment:", data);
+    
+    // Do basic validation without conditional logic that might affect hooks
+    const basicValidation = () => {
+      if (!data.title.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Assessment title is required",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      if (data.questions.length === 0) {
+        toast({
+          title: "Validation Error",
+          description: "Assessment must have at least one question",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      return true;
+    };
+    
+    if (basicValidation()) {
+      createAssessmentMutation.mutate(data);
+    }
   };
 
   return (
