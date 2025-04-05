@@ -109,8 +109,11 @@ export default function CreateAssessment() {
     name: "questions",
   });
 
-  // Pre-initialize the field arrays for each question
-  const optionsFieldArrays = questions.map((_, index) => {
+  // Use a fixed number of field arrays based on the maximum number of questions
+  // This ensures we call the same number of hooks on every render
+  const MAX_QUESTIONS = 20; // Reasonable upper limit
+  
+  const optionsFieldArrays = [...Array(MAX_QUESTIONS)].map((_, index) => {
     // Options field array (for MCQ)
     return useFieldArray({
       control: form.control,
@@ -118,7 +121,7 @@ export default function CreateAssessment() {
     });
   });
   
-  const blanksFieldArrays = questions.map((_, index) => {
+  const blanksFieldArrays = [...Array(MAX_QUESTIONS)].map((_, index) => {
     // Blanks field array (for Fill-in-Blanks)
     return useFieldArray({
       control: form.control,
