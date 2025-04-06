@@ -780,13 +780,13 @@ export default function EditAssessment() {
                           <AlignJustify className="h-4 w-4 mr-2" />
                           Reorder
                         </Button>
+                        <Button onClick={() => setIsAddingQuestion(true)}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Question
+                        </Button>
+                        
+                        {/* Separate Dialog Component */}
                         <Dialog open={isAddingQuestion} onOpenChange={setIsAddingQuestion}>
-                          <DialogTrigger asChild>
-                            <Button>
-                              <Plus className="h-4 w-4 mr-2" />
-                              Add Question
-                            </Button>
-                          </DialogTrigger>
                           <DialogContent className="max-w-2xl">
                             <DialogHeader>
                               <DialogTitle>Add New Question</DialogTitle>
@@ -838,26 +838,27 @@ export default function EditAssessment() {
                               </>
                             ) : (
                               <>
-                                <Dialog open={isEditingQuestion && currentQuestion?.id === question.id} 
-                                       onOpenChange={(open) => {
-                                         if (!open) {
-                                           setIsEditingQuestion(false);
-                                           setCurrentQuestion(null);
-                                         }
-                                       }}
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => {
+                                    setCurrentQuestion(question);
+                                    setIsEditingQuestion(true);
+                                  }}
                                 >
-                                  <DialogTrigger asChild>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="sm" 
-                                      onClick={() => {
-                                        setCurrentQuestion(question);
-                                        setIsEditingQuestion(true);
-                                      }}
-                                    >
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                  </DialogTrigger>
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                
+                                {/* Separate Edit Dialog */}
+                                <Dialog 
+                                  open={isEditingQuestion && currentQuestion?.id === question.id} 
+                                  onOpenChange={(open) => {
+                                    if (!open) {
+                                      setIsEditingQuestion(false);
+                                      setCurrentQuestion(null);
+                                    }
+                                  }}
+                                >
                                   <DialogContent className="max-w-2xl">
                                     <DialogHeader>
                                       <DialogTitle>Edit Question</DialogTitle>

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function AdminAssessments() {
   const { toast } = useToast();
@@ -38,7 +39,7 @@ export default function AdminAssessments() {
   });
 
   // Filter assessments
-  const filteredAssessments = assessments
+  const filteredAssessments = Array.isArray(assessments)
     ? assessments.filter((assessment: any) => {
         // Filter by search term
         const searchMatch = 
@@ -75,45 +76,184 @@ export default function AdminAssessments() {
   };
 
   // Handle delete
+  const deleteMutation = useMutation({
+    mutationFn: async (assessmentId: number) => {
+      const response = await apiRequest(
+        "DELETE", 
+        `/api/admin/assessments/${assessmentId}`
+      );
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ["/api/admin/assessments"]});
+      toast({
+        title: "Success",
+        description: "Assessment deleted successfully",
+      });
+    },
+    onError: (error: { message: string }) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete assessment: " + error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleDelete = (id: number) => {
-    // In a real app, this would be an API call
-    toast({
-      title: "Assessment deleted",
-      description: "The assessment has been successfully deleted.",
-    });
+    if (window.confirm("Are you sure you want to delete this assessment? This action cannot be undone.")) {
+      toast({
+        title: "Deleting Assessment",
+        description: "The assessment is being deleted. Please wait."
+      });
+      deleteMutation.mutate(id);
+    }
   };
 
+  // Duplicate an assessment
+  const duplicateMutation = useMutation({
+    mutationFn: async (assessmentId: number) => {
+      const response = await apiRequest(
+        "POST", 
+        `/api/admin/assessments/${assessmentId}/duplicate`
+      );
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ["/api/admin/assessments"]});
+      toast({
+        title: "Success",
+        description: "Assessment duplicated successfully",
+      });
+    },
+    onError: (error: { message: string }) => {
+      toast({
+        title: "Error",
+        description: "Failed to duplicate assessment: " + error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleDuplicate = (id: number) => {
-    // Implement duplicate functionality here.  This would typically involve an API call.
-    console.log("Duplicating assessment:", id);
     toast({
       title: "Duplicating Assessment",
       description: "The assessment is being duplicated. Please wait."
-    })
+    });
+    duplicateMutation.mutate(id);
   };
 
+  // Export assessment questions
   const handleExport = (id: number) => {
-    // Implement export functionality here. This would typically involve an API call to download a file.
-    console.log("Exporting assessment questions:", id);
+    // Direct download approach
+    window.open(`/api/admin/assessments/${id}/export`, '_blank');
+    
     toast({
       title: "Exporting Questions",
-      description: "The questions are being exported. Please wait."
-    })
+      description: "Your download should begin shortly."
+    });
   };
 
+  // Import assessment questions
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [importAssessmentId, setImportAssessmentId] = useState<number | null>(null);
+  
+  const importMutation = useMutation({
+    mutationFn: async ({ assessmentId, questions }: { assessmentId: number, questions: any[] }) => {
+      const response = await apiRequest(
+        "POST", 
+        `/api/admin/assessments/${assessmentId}/import`,
+        { questions }
+      );
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ["/api/admin/assessments"]});
+      toast({
+        title: "Success",
+        description: "Questions imported successfully",
+      });
+      setImportAssessmentId(null);
+    },
+    onError: (error: { message: string }) => {
+      toast({
+        title: "Error",
+        description: "Failed to import questions: " + error.message,
+        variant: "destructive",
+      });
+      setImportAssessmentId(null);
+    }
+  });
+
   const handleImport = (id: number) => {
-    // Implement import functionality here. This would typically involve a file upload and API call.
-    console.log("Importing questions to assessment:", id);
+    setImportAssessmentId(id);
+    // Trigger file input click
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+  
+  // Define the error handler types
+  const handleMutationError = (error: { message: string }) => {
     toast({
-      title: "Importing Questions",
-      description: "The questions are being imported. Please wait."
-    })
+      title: "Error",
+      description: "Failed to import questions: " + error.message,
+      variant: "destructive",
+    });
+    setImportAssessmentId(null);
+  };
+  
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !importAssessmentId) {
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string);
+        if (Array.isArray(data.questions)) {
+          toast({
+            title: "Importing Questions",
+            description: `Importing ${data.questions.length} questions. Please wait.`
+          });
+          importMutation.mutate({ 
+            assessmentId: importAssessmentId, 
+            questions: data.questions 
+          });
+        } else {
+          toast({
+            title: "Invalid File Format",
+            description: "The uploaded file does not contain a valid questions array.",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to parse the uploaded file. Make sure it's a valid JSON.",
+          variant: "destructive"
+        });
+      }
+    };
+    reader.readAsText(file);
+    // Reset file input
+    event.target.value = '';
   };
 
 
   return (
     <DashboardLayout title="Assessments">
       <div className="max-w-7xl mx-auto">
+        {/* Hidden file input for importing questions */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          accept=".json"
+          onChange={handleFileUpload}
+        />
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
