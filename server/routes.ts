@@ -433,6 +433,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get assignments by assessment ID
+  app.get("/api/admin/assessment/:id/assignments", isAdmin, async (req, res) => {
+    try {
+      const assessmentId = parseInt(req.params.id);
+      if (isNaN(assessmentId)) {
+        return res.status(400).json({ message: "Invalid assessment ID" });
+      }
+      
+      // Get all assignments for this assessment
+      const assignments = await storage.getAssignmentsByAssessmentId(assessmentId);
+      
+      // Enhance assignments with candidate data
+      const enhancedAssignments = [];
+      for (const assignment of assignments) {
+        const candidate = await storage.getUser(assignment.candidateId);
+        if (candidate) {
+          // Remove password from candidate data
+          const { password, ...candidateWithoutPassword } = candidate;
+          
+          enhancedAssignments.push({
+            ...assignment,
+            candidate: candidateWithoutPassword
+          });
+        }
+      }
+      
+      res.json(enhancedAssignments);
+    } catch (error) {
+      console.error("Error fetching assessment assignments:", error);
+      res.status(500).json({ message: "Error fetching assessment assignments" });
+    }
+  });
+  
   // Update question
   app.put("/api/admin/assessments/:id/questions/:questionId", isAdmin, async (req, res) => {
     try {

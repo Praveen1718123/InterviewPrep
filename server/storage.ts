@@ -70,12 +70,13 @@ export interface IStorage {
   getAssessment(id: number): Promise<Assessment | undefined>;
   getAssessments(): Promise<Assessment[]>;
   updateAssessment(id: number, assessmentData: Partial<Assessment>): Promise<Assessment>;
-
+  
   // Candidate Assessment operations
   assignAssessment(assignment: InsertCandidateAssessment): Promise<CandidateAssessment>;
   getCandidateAssignments(candidateId: number): Promise<CandidateAssessment[]>;
   getCandidateAssessments(candidateId: number): Promise<any[]>; // With assessment details
   getCandidateAssignment(candidateId: number, assessmentId: number): Promise<any | undefined>;
+  getAssignmentsByAssessmentId(assessmentId: number): Promise<CandidateAssessment[]>; // Get assignments by assessment ID
   startAssessment(candidateAssessmentId: number, candidateId: number): Promise<CandidateAssessment>;
   submitMCQResponses(candidateAssessmentId: number, candidateId: number, responses: MCQResponse[]): Promise<CandidateAssessment>;
   submitFillInBlanksResponses(candidateAssessmentId: number, candidateId: number, responses: FillInBlanksResponse[]): Promise<CandidateAssessment>;
@@ -330,6 +331,12 @@ export class MemStorage implements IStorage {
       ...assignment,
       assessment
     };
+  }
+  
+  async getAssignmentsByAssessmentId(assessmentId: number): Promise<CandidateAssessment[]> {
+    return Array.from(this.candidateAssessments.values()).filter(
+      (assignment) => assignment.assessmentId === assessmentId,
+    );
   }
 
   async startAssessment(candidateAssessmentId: number, candidateId: number): Promise<CandidateAssessment> {
@@ -712,6 +719,11 @@ export class PostgresStorage implements IStorage {
       ...assignment,
       assessment
     };
+  }
+  
+  async getAssignmentsByAssessmentId(assessmentId: number): Promise<CandidateAssessment[]> {
+    return await this.db.select().from(candidateAssessments)
+      .where(eq(candidateAssessments.assessmentId, assessmentId));
   }
 
   async startAssessment(candidateAssessmentId: number, candidateId: number): Promise<CandidateAssessment> {
