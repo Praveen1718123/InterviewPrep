@@ -51,21 +51,20 @@ export function setupAuth(app: Express) {
   const inProduction = process.env.NODE_ENV === 'production';
   const isReplit = !!process.env.REPL_ID;
   
-  // Determine cookie settings based on environment - using settings appropriate for local development
+  // Determine cookie settings based on environment
   const cookieSettings = {
     httpOnly: true,
-    secure: false, // Set to false for HTTP in local development
-    // Extensive expiration for debugging
+    secure: false, // Keep false for Replit HTTP environment
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days for login sessions
-    sameSite: 'lax' as 'lax' | 'strict' | 'none', // 'lax' works best for local development
+    sameSite: 'lax' as 'lax' | 'strict' | 'none', // 'lax' works best for Replit
     path: '/'
   };
   
-  // Session configuration optimized for cross-domain support
+  // Session configuration optimized for Replit environment
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "interview-prep-platform-secret",
     resave: true,
-    saveUninitialized: false, // Only save if we have data
+    saveUninitialized: true, // Save even uninitialized sessions for Replit
     rolling: true, // Reset expiration time with each request
     store: storage.sessionStore,
     name: 'switchbee.sid', // Custom cookie name

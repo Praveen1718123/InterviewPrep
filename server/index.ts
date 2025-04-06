@@ -10,14 +10,16 @@ import cors from "cors";
 
 const app = express();
 
-// Configure CORS to allow credentials - with a more permissive configuration for development
+// Configure CORS for Replit environment
 app.use(cors({
-  origin: true, // Allow any origin in development
-  credentials: true, // Critical: Allow cookies to be sent with requests
+  origin: (origin, callback) => {
+    callback(null, true); // Allow any origin in Replit
+  },
+  credentials: true, // Critical: Allow credentials
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cookie', 'Origin', 'Accept'],
   exposedHeaders: ['Set-Cookie'],
-  maxAge: 86400 // Cache the preflight response for 24 hours
+  maxAge: 86400 // Cache preflight for 24 hours
 }));
 
 app.use(express.json());
