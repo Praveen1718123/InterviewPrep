@@ -1164,45 +1164,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Add a question to an assessment endpoint
-  app.post("/api/admin/assessments/:id/questions", isAdmin, async (req, res) => {
-    try {
-      const assessmentId = parseInt(req.params.id);
-      const questionData = req.body;
-      
-      console.log(`Adding question to assessment ${assessmentId}:`, questionData);
-      
-      if (!questionData || !questionData.id || !questionData.text) {
-        return res.status(400).json({ message: "Invalid question data provided." });
-      }
-      
-      // Get the assessment
-      const assessment = await storage.getAssessment(assessmentId);
-      if (!assessment) {
-        console.error(`Assessment ${assessmentId} not found for adding question`);
-        return res.status(404).json({ message: "Assessment not found" });
-      }
-      
-      // Add the new question to the existing questions
-      const existingQuestions = (assessment.questions || []) as any[];
-      const updatedQuestions = [...existingQuestions, questionData];
-      
-      // Update the assessment with the new questions
-      const updatedAssessment = await storage.updateAssessment(assessmentId, {
-        questions: updatedQuestions
-      });
-      
-      console.log(`Successfully added question to assessment ${assessmentId}`);
-      res.status(201).json({ 
-        success: true, 
-        message: "Question added successfully",
-        assessment: updatedAssessment
-      });
-    } catch (error) {
-      console.error("Error adding question:", error);
-      res.status(500).json({ message: "Error adding question", error: String(error) });
-    }
-  });
+  // The Add question endpoint is already defined above (line ~393)
   
   // Update a question in an assessment endpoint
   app.put("/api/admin/assessments/:id/questions/:questionId", isAdmin, async (req, res) => {
