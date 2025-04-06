@@ -51,24 +51,25 @@ export function setupAuth(app: Express) {
   const inProduction = process.env.NODE_ENV === 'production';
   const isReplit = !!process.env.REPL_ID;
   
-  // Determine cookie settings based on environment
+  // Determine cookie settings based on environment - using cross-origin friendly settings
   const cookieSettings = {
     httpOnly: true,
-    secure: false, // Must be false for HTTP in development
+    secure: true, // Must be true when sameSite is 'none', even in development
     // Extensive expiration for debugging
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days for testing
-    sameSite: 'lax' as 'lax' | 'strict' | 'none', // Most compatible setting
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days for login sessions
+    sameSite: 'none' as 'lax' | 'strict' | 'none', // For cross-origin requests
     path: '/'
   };
   
-  // For development with non-HTTPS, we must use these settings
+  // Session configuration optimized for cross-domain support
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "interview-prep-platform-secret",
     resave: true,
-    saveUninitialized: true,
+    saveUninitialized: false, // Only save if we have data
     rolling: true, // Reset expiration time with each request
     store: storage.sessionStore,
     name: 'switchbee.sid', // Custom cookie name
+    proxy: true, // Trust the reverse proxy when setting secure cookies
     cookie: cookieSettings
   };
   

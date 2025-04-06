@@ -7,13 +7,10 @@ import cors from "cors";
 
 const app = express();
 
-// Configure CORS to allow credentials - using a dynamic origin validator for development flexibility
+// Configure CORS to allow credentials - with a more permissive configuration for development
 app.use(cors({
-  origin: function(origin, callback) {
-    // In development, we'll accept any origin or no origin (like Postman)
-    return callback(null, true);
-  },
-  credentials: true, // Important: Allow cookies to be sent with requests
+  origin: true, // Allow any origin in development
+  credentials: true, // Critical: Allow cookies to be sent with requests
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cookie', 'Origin', 'Accept'],
   exposedHeaders: ['Set-Cookie'],
