@@ -70,6 +70,7 @@ export interface IStorage {
   getAssessment(id: number): Promise<Assessment | undefined>;
   getAssessments(): Promise<Assessment[]>;
   updateAssessment(id: number, assessmentData: Partial<Assessment>): Promise<Assessment>;
+  deleteAssessment(id: number): Promise<void>;
   
   // Candidate Assessment operations
   assignAssessment(assignment: InsertCandidateAssessment): Promise<CandidateAssessment>;
@@ -270,6 +271,19 @@ export class MemStorage implements IStorage {
     };
     this.assessments.set(id, updatedAssessment);
     return updatedAssessment;
+  }
+  
+  async deleteAssessment(id: number): Promise<void> {
+    const existingAssessment = await this.getAssessment(id);
+    if (!existingAssessment) {
+      throw new Error("Assessment not found");
+    }
+    
+    // Delete the assessment
+    this.assessments.delete(id);
+    
+    // Note: In a real implementation, we might also clean up related records
+    // such as candidate assessment assignments
   }
 
   // Candidate Assessment operations
@@ -656,6 +670,17 @@ export class PostgresStorage implements IStorage {
       .returning();
 
     return result[0];
+  }
+  
+  async deleteAssessment(id: number): Promise<void> {
+    const existingAssessment = await this.getAssessment(id);
+    if (!existingAssessment) {
+      throw new Error("Assessment not found");
+    }
+    
+    // Delete the assessment
+    await this.db.delete(assessments)
+      .where(eq(assessments.id, id));
   }
 
   // Candidate Assessment operations

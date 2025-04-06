@@ -1097,6 +1097,280 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Duplicate assessment endpoint
+  app.post("/api/admin/assessments/:id/duplicate", isAdmin, async (req, res) => {
+    try {
+      const assessmentId = parseInt(req.params.id);
+      console.log(`Duplicating assessment ${assessmentId}`);
+      
+      // Get the original assessment
+      const originalAssessment = await storage.getAssessment(assessmentId);
+      if (!originalAssessment) {
+        console.error(`Assessment ${assessmentId} not found for duplication`);
+        return res.status(404).json({ message: "Assessment not found" });
+      }
+      
+      // Create a copy of the assessment with "(Copy)" added to the title
+      const newAssessment = await storage.createAssessment({
+        title: `${originalAssessment.title} (Copy)`,
+        description: originalAssessment.description,
+        type: originalAssessment.type,
+        timeLimit: originalAssessment.timeLimit,
+        questions: originalAssessment.questions as any, // Cast to any to avoid type issues
+        createdBy: req.user!.id
+      });
+      
+      console.log(`Successfully duplicated assessment ${assessmentId} to new assessment ${newAssessment.id}`);
+      res.status(201).json({ 
+        success: true, 
+        message: "Assessment duplicated successfully", 
+        assessment: newAssessment 
+      });
+    } catch (error) {
+      console.error("Error duplicating assessment:", error);
+      res.status(500).json({ message: "Error duplicating assessment", error: String(error) });
+    }
+  });
+  
+  // Export assessment questions endpoint
+  app.get("/api/admin/assessments/:id/export", isAdmin, async (req, res) => {
+    try {
+      const assessmentId = parseInt(req.params.id);
+      console.log(`Exporting questions for assessment ${assessmentId}`);
+      
+      // Get the assessment
+      const assessment = await storage.getAssessment(assessmentId);
+      if (!assessment) {
+        console.error(`Assessment ${assessmentId} not found for export`);
+        return res.status(404).json({ message: "Assessment not found" });
+      }
+      
+      // Create the export file with questions
+      const exportData = {
+        assessmentTitle: assessment.title,
+        assessmentType: assessment.type,
+        questions: assessment.questions || []
+      };
+      
+      // Set headers for file download
+      res.setHeader('Content-Disposition', `attachment; filename="assessment-${assessmentId}-questions.json"`);
+      res.setHeader('Content-Type', 'application/json');
+      
+      // Send the file
+      res.status(200).json(exportData);
+    } catch (error) {
+      console.error("Error exporting assessment questions:", error);
+      res.status(500).json({ message: "Error exporting questions", error: String(error) });
+    }
+  });
+  
+  // Add a question to an assessment endpoint
+  app.post("/api/admin/assessments/:id/questions", isAdmin, async (req, res) => {
+    try {
+      const assessmentId = parseInt(req.params.id);
+      const questionData = req.body;
+      
+      console.log(`Adding question to assessment ${assessmentId}:`, questionData);
+      
+      if (!questionData || !questionData.id || !questionData.text) {
+        return res.status(400).json({ message: "Invalid question data provided." });
+      }
+      
+      // Get the assessment
+      const assessment = await storage.getAssessment(assessmentId);
+      if (!assessment) {
+        console.error(`Assessment ${assessmentId} not found for adding question`);
+        return res.status(404).json({ message: "Assessment not found" });
+      }
+      
+      // Add the new question to the existing questions
+      const existingQuestions = (assessment.questions || []) as any[];
+      const updatedQuestions = [...existingQuestions, questionData];
+      
+      // Update the assessment with the new questions
+      const updatedAssessment = await storage.updateAssessment(assessmentId, {
+        questions: updatedQuestions
+      });
+      
+      console.log(`Successfully added question to assessment ${assessmentId}`);
+      res.status(201).json({ 
+        success: true, 
+        message: "Question added successfully",
+        assessment: updatedAssessment
+      });
+    } catch (error) {
+      console.error("Error adding question:", error);
+      res.status(500).json({ message: "Error adding question", error: String(error) });
+    }
+  });
+  
+  // Update a question in an assessment endpoint
+  app.put("/api/admin/assessments/:id/questions/:questionId", isAdmin, async (req, res) => {
+    try {
+      const assessmentId = parseInt(req.params.id);
+      const questionId = req.params.questionId;
+      const questionData = req.body;
+      
+      console.log(`Updating question ${questionId} in assessment ${assessmentId}`);
+      
+      if (!questionData || !questionData.id || !questionData.text) {
+        return res.status(400).json({ message: "Invalid question data provided." });
+      }
+      
+      // Get the assessment
+      const assessment = await storage.getAssessment(assessmentId);
+      if (!assessment) {
+        console.error(`Assessment ${assessmentId} not found for updating question`);
+        return res.status(404).json({ message: "Assessment not found" });
+      }
+      
+      // Find and replace the question
+      const existingQuestions = (assessment.questions || []) as any[];
+      const questionIndex = existingQuestions.findIndex((q: any) => q.id === questionId);
+      
+      if (questionIndex === -1) {
+        console.error(`Question ${questionId} not found in assessment ${assessmentId}`);
+        return res.status(404).json({ message: "Question not found in assessment" });
+      }
+      
+      // Replace the question at the found index
+      const updatedQuestions = [...existingQuestions];
+      updatedQuestions[questionIndex] = questionData;
+      
+      // Update the assessment with the updated questions
+      const updatedAssessment = await storage.updateAssessment(assessmentId, {
+        questions: updatedQuestions
+      });
+      
+      console.log(`Successfully updated question ${questionId} in assessment ${assessmentId}`);
+      res.status(200).json({ 
+        success: true, 
+        message: "Question updated successfully",
+        assessment: updatedAssessment
+      });
+    } catch (error) {
+      console.error("Error updating question:", error);
+      res.status(500).json({ message: "Error updating question", error: String(error) });
+    }
+  });
+  
+  // Delete a question from an assessment endpoint
+  app.delete("/api/admin/assessments/:id/questions/:questionId", isAdmin, async (req, res) => {
+    try {
+      const assessmentId = parseInt(req.params.id);
+      const questionId = req.params.questionId;
+      
+      console.log(`Deleting question ${questionId} from assessment ${assessmentId}`);
+      
+      // Get the assessment
+      const assessment = await storage.getAssessment(assessmentId);
+      if (!assessment) {
+        console.error(`Assessment ${assessmentId} not found for deleting question`);
+        return res.status(404).json({ message: "Assessment not found" });
+      }
+      
+      // Filter out the question to be deleted
+      const existingQuestions = (assessment.questions || []) as any[];
+      const updatedQuestions = existingQuestions.filter((q: any) => q.id !== questionId);
+      
+      if (existingQuestions.length === updatedQuestions.length) {
+        console.error(`Question ${questionId} not found in assessment ${assessmentId}`);
+        return res.status(404).json({ message: "Question not found in assessment" });
+      }
+      
+      // Update the assessment with the filtered questions
+      const updatedAssessment = await storage.updateAssessment(assessmentId, {
+        questions: updatedQuestions
+      });
+      
+      console.log(`Successfully deleted question ${questionId} from assessment ${assessmentId}`);
+      res.status(200).json({ 
+        success: true, 
+        message: "Question deleted successfully",
+        assessment: updatedAssessment
+      });
+    } catch (error) {
+      console.error("Error deleting question:", error);
+      res.status(500).json({ message: "Error deleting question", error: String(error) });
+    }
+  });
+  
+  // Reorder questions in an assessment endpoint
+  app.put("/api/admin/assessments/:id/questions/reorder", isAdmin, async (req, res) => {
+    try {
+      const assessmentId = parseInt(req.params.id);
+      const { questions } = req.body;
+      
+      console.log(`Reordering questions for assessment ${assessmentId}`);
+      
+      if (!Array.isArray(questions)) {
+        return res.status(400).json({ message: "Invalid request format. Expected array of questions." });
+      }
+      
+      // Get the assessment
+      const assessment = await storage.getAssessment(assessmentId);
+      if (!assessment) {
+        console.error(`Assessment ${assessmentId} not found for reordering`);
+        return res.status(404).json({ message: "Assessment not found" });
+      }
+      
+      // Update the assessment with the reordered questions
+      const updatedAssessment = await storage.updateAssessment(assessmentId, {
+        questions
+      });
+      
+      console.log(`Successfully reordered questions for assessment ${assessmentId}`);
+      res.status(200).json({ 
+        success: true, 
+        message: "Questions reordered successfully",
+        assessment: updatedAssessment
+      });
+    } catch (error) {
+      console.error("Error reordering questions:", error);
+      res.status(500).json({ message: "Error reordering questions", error: String(error) });
+    }
+  });
+  
+  // Import questions to assessment endpoint
+  app.post("/api/admin/assessments/:id/import", isAdmin, async (req, res) => {
+    try {
+      const assessmentId = parseInt(req.params.id);
+      const { questions } = req.body;
+      
+      console.log(`Importing questions for assessment ${assessmentId}`);
+      
+      if (!Array.isArray(questions)) {
+        return res.status(400).json({ message: "Invalid request format. Expected array of questions." });
+      }
+      
+      // Get the assessment
+      const assessment = await storage.getAssessment(assessmentId);
+      if (!assessment) {
+        console.error(`Assessment ${assessmentId} not found for import`);
+        return res.status(404).json({ message: "Assessment not found" });
+      }
+      
+      // Add the imported questions to the existing questions
+      const existingQuestions = (assessment.questions || []) as any[];
+      const updatedQuestions = [...existingQuestions, ...questions];
+      
+      // Update the assessment with the new questions
+      const updatedAssessment = await storage.updateAssessment(assessmentId, {
+        questions: updatedQuestions
+      });
+      
+      console.log(`Successfully imported ${questions.length} questions to assessment ${assessmentId}`);
+      res.status(200).json({ 
+        success: true, 
+        message: `Successfully imported ${questions.length} questions`,
+        assessment: updatedAssessment
+      });
+    } catch (error) {
+      console.error("Error importing questions:", error);
+      res.status(500).json({ message: "Error importing questions", error: String(error) });
+    }
+  });
+  
   // Delete assessment endpoint
   app.delete("/api/admin/assessments/:id", isAdmin, async (req, res) => {
     try {
@@ -1120,9 +1394,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // In a real app, we would delete the assessment from the database
-      // For now, just return success
-      res.status(200).json({ success: true, message: "Assessment deleted successfully" });
+      // Delete the assessment from the database
+      try {
+        await storage.deleteAssessment(assessmentId);
+        res.status(200).json({ success: true, message: "Assessment deleted successfully" });
+      } catch (deleteError) {
+        console.error("Error during assessment deletion:", deleteError);
+        res.status(500).json({ message: "Error deleting assessment", error: String(deleteError) });
+      }
     } catch (error) {
       console.error("Error deleting assessment:", error);
       res.status(500).json({ message: "Error deleting assessment", error: String(error) });
