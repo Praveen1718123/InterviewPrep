@@ -51,13 +51,13 @@ export function setupAuth(app: Express) {
   const inProduction = process.env.NODE_ENV === 'production';
   const isReplit = !!process.env.REPL_ID;
   
-  // Determine cookie settings based on environment - using cross-origin friendly settings
+  // Determine cookie settings based on environment - using settings appropriate for local development
   const cookieSettings = {
     httpOnly: true,
-    secure: true, // Must be true when sameSite is 'none', even in development
+    secure: false, // Set to false for HTTP in local development
     // Extensive expiration for debugging
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days for login sessions
-    sameSite: 'none' as 'lax' | 'strict' | 'none', // For cross-origin requests
+    sameSite: 'lax' as 'lax' | 'strict' | 'none', // 'lax' works best for local development
     path: '/'
   };
   
