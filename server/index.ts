@@ -82,10 +82,10 @@ app.use((req, res, next) => {
       serveStatic(app);
     }
   
-    // ALWAYS serve the app on port 5000
+    // ALWAYS serve the app on port 5000 for Replit to work
     // this serves both the API and the client.
     // It is the only port that is not firewalled.
-    const port = process.env.PORT || 5000;
+    const port = parseInt(process.env.PORT || '5000');
     
     // Use a simpler listener configuration for local development
     server.listen(port, () => {
