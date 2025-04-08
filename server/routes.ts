@@ -8,7 +8,8 @@ import {
   mcqResponseSchema,
   fillInBlanksResponseSchema,
   videoResponseSchema,
-  insertUserSchema
+  insertUserSchema,
+  insertBatchSchema
 } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
@@ -119,7 +120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: `${username}@test.com`,
         fullName: `Test ${username.charAt(0).toUpperCase() + username.slice(1)}`,
         role: role || 'candidate',
-        batch: null
+        batchId: null
       });
       
       res.json({
@@ -927,14 +928,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/batches", isAdmin, async (req, res) => {
     try {
+      const batchData = insertBatchSchema.parse(req.body);
+      const batch = await storage.createBatch(batchData.name);
+      res.status(201).json(batch);
+    } catch (error) {
+      handleZodError(error, res);
+    }
+  });
+  
+  app.get("/api/admin/batches/:id", isAdmin, async (req, res) => {
+    try {
+      const batchId = parseInt(req.params.id);
+      if (isNaN(batchId)) {
+        return res.status(400).json({ message: "Invalid batch ID" });
+      }
+      
+      const batch = await storage.getBatch(batchId);
+      if (!batch) {
+        return res.status(404).json({ message: "Batch not found" });
+      }
+      
+      res.json(batch);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching batch" });
+    }
+  });
+  
+  app.put("/api/admin/batches/:id", isAdmin, async (req, res) => {
+    try {
+      const batchId = parseInt(req.params.id);
+      if (isNaN(batchId)) {
+        return res.status(400).json({ message: "Invalid batch ID" });
+      }
+      
       const { name } = req.body;
       if (!name || !name.trim()) {
         return res.status(400).json({ message: "Batch name is required" });
       }
-      await storage.createBatch(name.trim());
-      res.status(201).json({ message: "Batch created successfully" });
+      
+      const batch = await storage.updateBatch(batchId, { name: name.trim() });
+      if (!batch) {
+        return res.status(404).json({ message: "Batch not found" });
+      }
+      
+      res.json(batch);
     } catch (error) {
-      res.status(500).json({ message: "Error creating batch" });
+      res.status(500).json({ message: "Error updating batch" });
+    }
+  });
+  
+  app.delete("/api/admin/batches/:id", isAdmin, async (req, res) => {
+    try {
+      const batchId = parseInt(req.params.id);
+      if (isNaN(batchId)) {
+        return res.status(400).json({ message: "Invalid batch ID" });
+      }
+      
+      await storage.deleteBatch(batchId);
+      res.status(200).json({ message: "Batch deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting batch" });
     }
   });
 
@@ -966,9 +1019,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
             continue;
           }
           
+          // Get the batch id from name
+          const existingBatches = await storage.getBatches();
+          const batch = existingBatches.find(b => b.name === batchName.trim());
+          
+          let batchId = null;
+          if (batch) {
+            batchId = batch.id;
+          } else {
+            // Create the batch if it doesn't exist
+            const newBatch = await storage.createBatch(batchName.trim());
+            batchId = newBatch.id;
+          }
+          
           // Update candidate batch
           const updatedCandidate = await storage.updateUser(candidateId, {
-            batch: batchName.trim()
+            batchId: batchId
           });
           
           results.push(updatedCandidate);
@@ -989,16 +1055,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post("/api/admin/candidates/batch", isAdmin, async (req, res) => {
+  app.post("/api/admin/candidates/batch-status", isAdmin, async (req, res) => {
     try {
-      const { candidateIds, status } = req.body;
+      const { candidateIds, batchId } = req.body;
       
       if (!Array.isArray(candidateIds) || candidateIds.length === 0) {
         return res.status(400).json({ message: "candidateIds must be a non-empty array" });
       }
       
-      if (!status || !status.trim()) {
-        return res.status(400).json({ message: "Batch name is required" });
+      if (batchId === undefined) {
+        return res.status(400).json({ message: "Batch ID is required" });
       }
       
       const results = [];
@@ -1016,7 +1082,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Update candidate batch
           const updatedCandidate = await storage.updateUser(candidateId, {
-            batch: status.trim()
+            batchId: batchId
           });
           
           results.push(updatedCandidate);

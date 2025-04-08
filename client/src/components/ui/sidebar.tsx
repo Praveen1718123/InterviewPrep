@@ -39,10 +39,15 @@ export function Sidebar({ className }: SidebarProps) {
         { href: "/feedback", label: "Feedback", icon: <MessageSquare className="mr-3 h-5 w-5" /> },
       ];
 
-  const accountItems = [
-    { href: "/profile", label: "Profile", icon: <User className="mr-3 h-5 w-5" /> },
-    { href: "/settings", label: "Settings", icon: <Settings className="mr-3 h-5 w-5" /> },
-  ];
+  const accountItems = isAdmin 
+    ? [
+        { href: "/admin/profile", label: "Profile", icon: <User className="mr-3 h-5 w-5" /> },
+        { href: "/admin/settings", label: "Settings", icon: <Settings className="mr-3 h-5 w-5" /> },
+      ]
+    : [
+        { href: "/profile", label: "Profile", icon: <User className="mr-3 h-5 w-5" /> },
+        { href: "/settings", label: "Settings", icon: <Settings className="mr-3 h-5 w-5" /> },
+      ];
 
   const handleLogout = () => {
     logoutMutation.mutate();

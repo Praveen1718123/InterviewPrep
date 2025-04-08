@@ -2,6 +2,18 @@ import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzl
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Batches model
+export const batches = pgTable("batches", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertBatchSchema = createInsertSchema(batches).omit({
+  id: true,
+  createdAt: true,
+});
+
 // User model
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -10,7 +22,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   fullName: text("full_name").notNull(),
   role: text("role", { enum: ["admin", "candidate"] }).notNull().default("candidate"),
-  batch: text("batch"),
+  batchId: integer("batch_id").references(() => batches.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -111,6 +123,9 @@ export const briefAnswerResponseSchema = z.object({
 });
 
 // Types
+export type InsertBatch = z.infer<typeof insertBatchSchema>;
+export type Batch = typeof batches.$inferSelect;
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
@@ -129,3 +144,32 @@ export type MCQResponse = z.infer<typeof mcqResponseSchema>;
 export type FillInBlanksResponse = z.infer<typeof fillInBlanksResponseSchema>;
 export type VideoResponse = z.infer<typeof videoResponseSchema>;
 export type BriefAnswerResponse = z.infer<typeof briefAnswerResponseSchema>;
+
+// Define relations
+import { relations } from "drizzle-orm";
+
+export const batchesRelations = relations(batches, ({ many }) => ({
+  users: many(users),
+}));
+
+export const usersRelations = relations(users, ({ one }) => ({
+  batch: one(batches, {
+    fields: [users.batchId],
+    references: [batches.id],
+  }),
+}));
+
+export const assessmentsRelations = relations(assessments, ({ many }) => ({
+  candidateAssessments: many(candidateAssessments),
+}));
+
+export const candidateAssessmentsRelations = relations(candidateAssessments, ({ one }) => ({
+  assessment: one(assessments, {
+    fields: [candidateAssessments.assessmentId],
+    references: [assessments.id],
+  }),
+  candidate: one(users, {
+    fields: [candidateAssessments.candidateId],
+    references: [users.id],
+  }),
+}));

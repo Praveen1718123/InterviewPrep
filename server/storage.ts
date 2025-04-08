@@ -3,7 +3,7 @@ import {
   Assessment, InsertAssessment, 
   CandidateAssessment, InsertCandidateAssessment, 
   MCQResponse, FillInBlanksResponse, VideoResponse,
-  users, assessments, candidateAssessments
+  users, assessments, candidateAssessments, batches, Batch
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -62,8 +62,11 @@ export interface IStorage {
   updateUser(id: number, userData: Partial<User>): Promise<User>;
   deleteUser(id: number): Promise<void>;
   getCandidates(): Promise<User[]>;
-  getBatches(): Promise<string[]>; // Added getBatches function
-  createBatch(name: string): Promise<{ name: string }>; // Added createBatch function
+  getBatches(): Promise<Batch[]>;
+  createBatch(name: string): Promise<Batch>;
+  getBatch(id: number): Promise<Batch | undefined>;
+  updateBatch(id: number, data: Partial<Batch>): Promise<Batch>;
+  deleteBatch(id: number): Promise<void>;
 
   // Assessment operations
   createAssessment(assessment: InsertAssessment): Promise<Assessment>;
@@ -129,7 +132,7 @@ export class MemStorage implements IStorage {
           email: "admin@example.com",
           fullName: "Admin User",
           role: "admin",
-          batch: null
+          batchId: null
         });
       }
 
@@ -142,7 +145,7 @@ export class MemStorage implements IStorage {
           email: "candidate@example.com",
           fullName: "Test Candidate",
           role: "candidate",
-          batch: null
+          batchId: null
         });
       }
     } catch (error) {
@@ -175,7 +178,7 @@ export class MemStorage implements IStorage {
       id, 
       createdAt,
       role: insertUser.role || "candidate",
-      batch: insertUser.batch || null
+      batchId: insertUser.batchId || null
     };
     this.users.set(id, user);
     return user;
@@ -219,20 +222,67 @@ export class MemStorage implements IStorage {
     );
   }
 
-  async getBatches(): Promise<string[]> { // Added getBatches implementation
-    const batches = new Set<string>();
-    // Convert to array and then iterate to avoid the MapIterator error
-    const userArray = Array.from(this.users.values());
-    for (const user of userArray) {
-      if (user.batch) {
-        batches.add(user.batch);
-      }
-    }
-    return Array.from(batches);
+  // Batch-related operations for MemStorage
+  private batches: Map<number, Batch> = new Map();
+  private batchIdCounter: number = 1;
+
+  async getBatches(): Promise<Batch[]> {
+    return Array.from(this.batches.values());
   }
 
-  async createBatch(name: string): Promise<{ name: string }> { // Added createBatch implementation
-    return { name };
+  async createBatch(name: string): Promise<Batch> {
+    // Check if batch with this name already exists
+    const existingBatch = Array.from(this.batches.values()).find(b => b.name === name);
+    if (existingBatch) {
+      return existingBatch;
+    }
+    
+    // Create new batch
+    const id = this.batchIdCounter++;
+    const batch: Batch = {
+      id,
+      name,
+      createdAt: new Date()
+    };
+    this.batches.set(id, batch);
+    return batch;
+  }
+  
+  async getBatch(id: number): Promise<Batch | undefined> {
+    return this.batches.get(id);
+  }
+  
+  async updateBatch(id: number, data: Partial<Batch>): Promise<Batch> {
+    const existingBatch = await this.getBatch(id);
+    if (!existingBatch) {
+      throw new Error("Batch not found");
+    }
+    
+    const updatedBatch = {
+      ...existingBatch,
+      ...data
+    };
+    this.batches.set(id, updatedBatch);
+    return updatedBatch;
+  }
+  
+  async deleteBatch(id: number): Promise<void> {
+    const existingBatch = await this.getBatch(id);
+    if (!existingBatch) {
+      throw new Error("Batch not found");
+    }
+    
+    // Update users in this batch to have null batchId
+    const userArray = Array.from(this.users.values());
+    for (const user of userArray) {
+      if (user.batchId === id) {
+        const updatedUser = { ...user, batchId: null };
+        this.users.set(user.id, updatedUser);
+      }
+    }
+    
+    // Delete the batch
+    this.batches.delete(id);
   }
 
   // Assessment operations
@@ -545,7 +595,7 @@ export class PostgresStorage implements IStorage {
           email: "admin@example.com",
           fullName: "Admin User",
           role: "admin",
-          batch: null
+          batchId: null
         });
         console.log("Admin user created");
       }
@@ -559,7 +609,7 @@ export class PostgresStorage implements IStorage {
           email: "candidate@example.com",
           fullName: "Test Candidate",
           role: "candidate",
-          batch: null
+          batchId: null
         });
         console.log("Candidate user created");
       }
@@ -627,14 +677,57 @@ export class PostgresStorage implements IStorage {
     return await this.db.select().from(users).where(eq(users.role, "candidate"));
   }
 
-  async getBatches(): Promise<string[]> { // Added getBatches implementation for Postgres
-    // Using SQL query directly through the pool
-    const result = await pool.query('SELECT DISTINCT batch FROM users WHERE batch IS NOT NULL ORDER BY batch');
-    return result.rows.map((row: any) => row.batch as string);
+  async getBatches(): Promise<Batch[]> {
+    // Using the batches table through Drizzle ORM
+    const result = await this.db.select().from(batches).orderBy(batches.name);
+    return result;
   }
 
-  async createBatch(name: string): Promise<{ name: string }> { // Added createBatch implementation for Postgres
-    return { name };
+  async createBatch(name: string): Promise<Batch> {
+    // First check if the batch already exists
+    const existingBatch = await this.db.select().from(batches).where(eq(batches.name, name));
+    
+    if (existingBatch.length > 0) {
+      return existingBatch[0];
+    }
+    
+    // Create new batch if it doesn't exist
+    const result = await this.db.insert(batches).values({
+      name,
+      createdAt: new Date()
+    }).returning();
+    
+    return result[0];
+  }
+  
+  async getBatch(id: number): Promise<Batch | undefined> {
+    const result = await this.db.select().from(batches).where(eq(batches.id, id));
+    return result[0];
+  }
+  
+  async updateBatch(id: number, data: Partial<Batch>): Promise<Batch> {
+    const existingBatch = await this.getBatch(id);
+    if (!existingBatch) {
+      throw new Error("Batch not found");
+    }
+    
+    const result = await this.db.update(batches)
+      .set(data)
+      .where(eq(batches.id, id))
+      .returning();
+    
+    return result[0];
+  }
+  
+  async deleteBatch(id: number): Promise<void> {
+    // First update all users in this batch to have null batchId
+    await this.db.update(users)
+      .set({ batchId: null })
+      .where(eq(users.batchId, id));
+    
+    // Then delete the batch
+    await this.db.delete(batches)
+      .where(eq(batches.id, id));
   }
 
   // Assessment operations
