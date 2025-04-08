@@ -54,21 +54,20 @@ export function setupAuth(app: Express) {
   // Determine cookie settings based on environment
   const cookieSettings = {
     httpOnly: true,
-    secure: false, // Keep false for Replit HTTP environment
+    secure: false, // Must be false for non-HTTPS Replit environment
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days for login sessions
-    sameSite: 'lax' as 'lax' | 'strict' | 'none', // 'lax' works best for Replit
+    sameSite: 'lax' as 'lax' | 'strict' | 'none',
     path: '/'
   };
   
   // Session configuration optimized for Replit environment
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "interview-prep-platform-secret",
-    resave: true,
-    saveUninitialized: true, // Save even uninitialized sessions for Replit
+    resave: false,
+    saveUninitialized: false, 
     rolling: true, // Reset expiration time with each request
     store: storage.sessionStore,
-    name: 'switchbee.sid', // Custom cookie name
-    proxy: true, // Trust the reverse proxy when setting secure cookies
+    name: 'connect.sid', // Use standard name for better compatibility
     cookie: cookieSettings
   };
   

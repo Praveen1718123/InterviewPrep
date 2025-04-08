@@ -11,16 +11,17 @@ import cors from "cors";
 const app = express();
 
 // Configure CORS for Replit environment
-app.use(cors({
-  origin: (origin, callback) => {
-    callback(null, true); // Allow any origin in Replit
-  },
-  credentials: true, // Critical: Allow credentials
+const corsOptions = {
+  origin: true, // Allow any origin in Replit
+  credentials: true, // Critical for cookie-based auth
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cookie', 'Origin', 'Accept'],
   exposedHeaders: ['Set-Cookie'],
   maxAge: 86400 // Cache preflight for 24 hours
-}));
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
