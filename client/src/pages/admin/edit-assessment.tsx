@@ -50,9 +50,19 @@ export default function EditAssessment() {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
   const [isEditingQuestion, setIsEditingQuestion] = useState(false);
+  const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
   const [isReordering, setIsReordering] = useState(false);
   const [reorderedQuestions, setReorderedQuestions] = useState<any[]>([]);
+  const [editForm, setEditForm] = useState<{
+    title: string;
+    description: string;
+    timeLimit: number | null;
+  }>({
+    title: '',
+    description: '',
+    timeLimit: null
+  });
 
   // Fetch assessment details
   const { data: assessment, isLoading, error } = useQuery<any>({
@@ -62,8 +72,17 @@ export default function EditAssessment() {
   });
 
   useEffect(() => {
-    if (assessment?.questions) {
-      setReorderedQuestions([...assessment.questions]);
+    if (assessment) {
+      if (assessment.questions) {
+        setReorderedQuestions([...assessment.questions]);
+      }
+      
+      // Initialize edit form with assessment data
+      setEditForm({
+        title: assessment.title || '',
+        description: assessment.description || '',
+        timeLimit: assessment.timeLimit || null
+      });
     }
     // Add debug logging
     console.log("Assessment data:", assessment);
@@ -193,6 +212,54 @@ export default function EditAssessment() {
       });
     }
   });
+  
+  // Update assessment details mutation
+  const updateAssessmentMutation = useMutation({
+    mutationFn: async (assessmentData: any) => {
+      const response = await apiRequest(
+        "PUT", 
+        `/api/admin/assessments/${assessmentId}`,
+        assessmentData
+      );
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ['/api/admin/assessments', assessmentId]});
+      setIsEditingDetails(false);
+      toast({
+        title: "Success",
+        description: "Assessment details updated successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update assessment details: " + error.message,
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Handler for clicking the Edit Details button
+  const handleEditDetailsClick = () => {
+    setIsEditingDetails(true);
+  };
+  
+  // Handler for submitting updated assessment details
+  const handleUpdateDetails = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editForm.title.trim()) {
+      toast({
+        title: "Error",
+        description: "Assessment title is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    updateAssessmentMutation.mutate(editForm);
+  };
 
   // MCQ Question Form
   const MCQQuestionForm = ({ onSubmit, initialData = null }: { onSubmit: (data: any) => void, initialData?: any }) => {
@@ -719,42 +786,121 @@ export default function EditAssessment() {
           <TabsContent value="details">
             <Card>
               <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Basic Information</h3>
-                    <div className="space-y-3">
+                {/* Add edit mode state */}
+                {isEditingDetails ? (
+                  <form onSubmit={handleUpdateDetails}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <span className="text-sm font-medium text-gray-500">Title:</span>
-                        <p>{assessment?.title}</p>
+                        <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="title">Title</Label>
+                            <Input 
+                              id="title" 
+                              value={editForm.title} 
+                              onChange={(e) => setEditForm({...editForm, title: e.target.value})}
+                              placeholder="Assessment title"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="description">Description</Label>
+                            <Textarea 
+                              id="description" 
+                              value={editForm.description} 
+                              onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                              placeholder="Assessment description"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="timeLimit">Time Limit (minutes)</Label>
+                            <Input 
+                              id="timeLimit" 
+                              type="number" 
+                              value={editForm.timeLimit || ''} 
+                              onChange={(e) => setEditForm({...editForm, timeLimit: parseInt(e.target.value) || null})}
+                              placeholder="Leave empty for no limit"
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
                       </div>
                       <div>
-                        <span className="text-sm font-medium text-gray-500">Description:</span>
-                        <p>{assessment?.description || "No description"}</p>
+                        <h3 className="text-lg font-semibold mb-4">Assessment Info</h3>
+                        <div className="space-y-3">
+                          <div>
+                            <span className="text-sm font-medium text-gray-500">Assessment Type:</span>
+                            <p className="capitalize">{assessment?.type}</p>
+                            <p className="text-xs text-gray-500 mt-1">(Assessment type cannot be changed)</p>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-gray-500">Total Questions:</span>
+                            <p>{assessment?.questions?.length || 0}</p>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-gray-500">Created At:</span>
+                            <p>{assessment?.createdAt ? new Date(assessment.createdAt).toLocaleDateString() : ''}</p>
+                          </div>
+                        </div>
+                        <div className="mt-8 flex justify-end space-x-3">
+                          <Button type="button" variant="outline" onClick={() => setIsEditingDetails(false)}>
+                            Cancel
+                          </Button>
+                          <Button type="submit">
+                            Save Changes
+                          </Button>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-sm font-medium text-gray-500">Type:</span>
-                        <p className="capitalize">{assessment?.type}</p>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-lg font-semibold">Basic Information</h3>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleEditDetailsClick}
+                        >
+                          <Edit className="h-4 w-4 mr-1" /> Edit
+                        </Button>
                       </div>
-                      <div>
-                        <span className="text-sm font-medium text-gray-500">Time Limit:</span>
-                        <p>{assessment?.timeLimit ? `${assessment.timeLimit} minutes` : "No time limit"}</p>
+                      <div className="space-y-3">
+                        <div>
+                          <span className="text-sm font-medium text-gray-500">Title:</span>
+                          <p>{assessment?.title}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-gray-500">Description:</span>
+                          <p>{assessment?.description || "No description"}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-gray-500">Type:</span>
+                          <p className="capitalize">{assessment?.type}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-gray-500">Time Limit:</span>
+                          <p>{assessment?.timeLimit ? `${assessment.timeLimit} minutes` : "No time limit"}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Questions</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <span className="text-sm font-medium text-gray-500">Total Questions:</span>
+                          <p>{assessment?.questions?.length || 0}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-gray-500">Created At:</span>
+                          <p>{assessment?.createdAt ? new Date(assessment.createdAt).toLocaleDateString() : ''}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Questions</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <span className="text-sm font-medium text-gray-500">Total Questions:</span>
-                        <p>{assessment?.questions?.length || 0}</p>
-                      </div>
-                      <div>
-                        <span className="text-sm font-medium text-gray-500">Created At:</span>
-                        <p>{assessment?.createdAt ? new Date(assessment.createdAt).toLocaleDateString() : ''}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
