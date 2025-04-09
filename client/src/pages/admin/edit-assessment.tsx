@@ -264,7 +264,12 @@ export default function EditAssessment() {
   // MCQ Question Form
   const MCQQuestionForm = ({ onSubmit, initialData = null }: { onSubmit: (data: any) => void, initialData?: any }) => {
     const [options, setOptions] = useState<{id: string, text: string}[]>(
-      initialData?.options || [{id: generateId(), text: ""}]
+      initialData?.options || [
+        {id: generateId(), text: ""}, 
+        {id: generateId(), text: ""}, 
+        {id: generateId(), text: ""}, 
+        {id: generateId(), text: ""}
+      ]
     );
     const [correctOptionId, setCorrectOptionId] = useState<string | null>(initialData?.correctOptionId || null);
     const [questionText, setQuestionText] = useState(initialData?.text || "");
@@ -334,6 +339,7 @@ export default function EditAssessment() {
         timeLimit: timeLimit > 0 ? timeLimit : undefined
       };
 
+      console.log("Submitting MCQ question:", question);
       onSubmit(question);
     };
 
@@ -420,7 +426,10 @@ export default function EditAssessment() {
   const FillInBlanksQuestionForm = ({ onSubmit, initialData = null }: { onSubmit: (data: any) => void, initialData?: any }) => {
     const [questionText, setQuestionText] = useState(initialData?.text || "");
     const [blanks, setBlanks] = useState<{id: string, correctAnswer: string}[]>(
-      initialData?.blanks || [{id: generateId(), correctAnswer: ""}]
+      initialData?.blanks || [
+        {id: generateId(), correctAnswer: ""}, 
+        {id: generateId(), correctAnswer: ""}
+      ]
     );
     const [timeLimit, setTimeLimit] = useState(initialData?.timeLimit || 120);
 
@@ -475,6 +484,7 @@ export default function EditAssessment() {
         timeLimit: timeLimit > 0 ? timeLimit : undefined
       };
 
+      console.log("Submitting fill-in-blanks question:", question);
       onSubmit(question);
     };
 
@@ -582,6 +592,7 @@ export default function EditAssessment() {
         timeLimit
       };
 
+      console.log("Submitting video question:", question);
       onSubmit(question);
     };
 
@@ -656,6 +667,7 @@ export default function EditAssessment() {
         timeLimit
       };
 
+      console.log("Submitting brief answer question:", question);
       onSubmit(question);
     };
 
@@ -702,6 +714,8 @@ export default function EditAssessment() {
 
   // Handle adding a new question
   const handleAddQuestion = (questionData: any) => {
+    console.log("handleAddQuestion called with data:", questionData);
+    console.log("Assessment ID:", assessmentId);
     addQuestionMutation.mutate(questionData);
   };
 
