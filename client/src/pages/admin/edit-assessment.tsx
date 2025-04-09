@@ -950,7 +950,54 @@ export default function EditAssessment() {
                           <DialogContent className="max-w-2xl">
                             <DialogHeader>
                               <DialogTitle>Add New Question</DialogTitle>
+                              <DialogDescription>
+                                Create a new <span className="capitalize font-medium">{assessment?.type}</span> question for this assessment. 
+                                {assessment?.type === "mcq" && " Include multiple options and mark the correct answer."}
+                                {assessment?.type === "fill-in-blanks" && " Use {{blank}} in your text to indicate blank spaces."}
+                                {assessment?.type === "video" && " Candidates will record video responses to this question."}
+                                {assessment?.type === "brief-answer" && " Candidates will provide written responses to this question."}
+                              </DialogDescription>
                             </DialogHeader>
+                            
+                            <div className="bg-amber-50 p-3 rounded-md border border-amber-200 mb-4 text-sm">
+                              <div className="flex items-start">
+                                <Info className="h-5 w-5 text-amber-500 mr-2 mt-0.5 flex-shrink-0" />
+                                <div>
+                                  <p className="font-medium text-amber-800">Question Tips:</p>
+                                  <ul className="list-disc pl-5 mt-1 text-amber-700 space-y-1">
+                                    {assessment?.type === "mcq" && (
+                                      <>
+                                        <li>Create clear, concise questions with one correct answer</li>
+                                        <li>Include 4+ options to properly test knowledge</li>
+                                        <li>Avoid ambiguous wording</li>
+                                      </>
+                                    )}
+                                    {assessment?.type === "fill-in-blanks" && (
+                                      <>
+                                        <li>Mark blank spots with {{blank}} pattern in your text</li>
+                                        <li>Provide the correct answers in order</li>
+                                        <li>Keep blanks focused on key concepts</li>
+                                      </>
+                                    )}
+                                    {assessment?.type === "video" && (
+                                      <>
+                                        <li>Ask open-ended questions that require demonstration</li>
+                                        <li>Set an appropriate time limit for responses</li>
+                                        <li>Clearly state what should be included in the answer</li>
+                                      </>
+                                    )}
+                                    {assessment?.type === "brief-answer" && (
+                                      <>
+                                        <li>Frame questions that require specific knowledge</li>
+                                        <li>Indicate expected answer length when appropriate</li>
+                                        <li>Set a reasonable time limit for responses</li>
+                                      </>
+                                    )}
+                                  </ul>
+                                </div>
+                              </div>
+                            </div>
+                            
                             {assessment?.type === "mcq" && (
                               <MCQQuestionForm onSubmit={handleAddQuestion} />
                             )}
