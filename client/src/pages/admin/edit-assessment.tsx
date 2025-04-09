@@ -1121,10 +1121,39 @@ export default function EditAssessment() {
                     <div className="text-center py-12 bg-gray-50 rounded-lg">
                       <h3 className="text-lg font-medium text-gray-600 mb-2">No Questions Yet</h3>
                       <p className="text-gray-500 mb-4">Start adding questions to your assessment.</p>
-                      <Button onClick={() => setIsAddingQuestion(true)}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add First Question
-                      </Button>
+                      <div className="flex flex-col gap-3 items-center">
+                        <Button 
+                          onClick={() => {
+                            console.log("Opening add question dialog for:", assessment.type);
+                            setIsAddingQuestion(true);
+                          }}
+                          className="w-full max-w-xs"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add First Question
+                        </Button>
+                        
+                        <div className="flex gap-3 mt-2">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => navigate(`/admin/assessments`)}
+                            size="sm"
+                          >
+                            Back to Assessments
+                          </Button>
+                          
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setActiveTab("details")} 
+                            size="sm"
+                          >
+                            Edit Assessment Details
+                          </Button>
+                        </div>
+                        <div className="mt-4 text-sm text-gray-500">
+                          <p>Assessment Type: <span className="font-medium capitalize">{assessment.type}</span></p>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
