@@ -5,14 +5,15 @@ import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Plus, Trash, ArrowUp, ArrowDown, AlignJustify, Edit } from "lucide-react";
+import { Loader2, Plus, Trash, ArrowUp, ArrowDown, AlignJustify, Edit, Info } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
   DialogFooter,
-  DialogTrigger 
+  DialogTrigger,
+  DialogDescription
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -940,10 +941,7 @@ export default function EditAssessment() {
                           <AlignJustify className="h-4 w-4 mr-2" />
                           Reorder
                         </Button>
-                        <Button onClick={() => {
-                          console.log("Opening add question dialog for assessment type:", assessment.type);
-                          setIsAddingQuestion(true);
-                        }}>
+                        <Button onClick={() => setIsAddingQuestion(true)}>
                           <Plus className="h-4 w-4 mr-2" />
                           Add Question
                         </Button>
@@ -977,7 +975,7 @@ export default function EditAssessment() {
                                     )}
                                     {assessment?.type === "fill-in-blanks" && (
                                       <>
-                                        <li>Mark blank spots with {{blank}} pattern in your text</li>
+                                        <li>Mark blank spots with {"{"}{"{"}"blank"{"}"}{"}"} pattern in your text</li>
                                         <li>Provide the correct answers in order</li>
                                         <li>Keep blanks focused on key concepts</li>
                                       </>
@@ -1001,16 +999,16 @@ export default function EditAssessment() {
                               </div>
                             </div>
                             
-                            {assessment && assessment.type === "mcq" && (
+                            {assessment?.type === "mcq" && (
                               <MCQQuestionForm onSubmit={handleAddQuestion} />
                             )}
-                            {assessment && assessment.type === "fill-in-blanks" && (
+                            {assessment?.type === "fill-in-blanks" && (
                               <FillInBlanksQuestionForm onSubmit={handleAddQuestion} />
                             )}
-                            {assessment && assessment.type === "video" && (
+                            {assessment?.type === "video" && (
                               <VideoQuestionForm onSubmit={handleAddQuestion} />
                             )}
-                            {assessment && assessment.type === "brief-answer" && (
+                            {assessment?.type === "brief-answer" && (
                               <BriefAnswerQuestionForm onSubmit={handleAddQuestion} />
                             )}
                           </DialogContent>
@@ -1071,8 +1069,52 @@ export default function EditAssessment() {
                                 >
                                   <DialogContent className="max-w-2xl">
                                     <DialogHeader>
-                                      <DialogTitle>Edit Question</DialogTitle>
+                                      <DialogTitle>Edit Question #{index + 1}</DialogTitle>
+                                      <DialogDescription>
+                                        Update this <span className="capitalize font-medium">{assessment?.type}</span> question. 
+                                        Your changes will be saved immediately when you click the Update button.
+                                      </DialogDescription>
                                     </DialogHeader>
+                                    
+                                    <div className="bg-blue-50 p-3 rounded-md border border-blue-200 mb-4 text-sm">
+                                      <div className="flex items-start">
+                                        <Info className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" />
+                                        <div>
+                                          <p className="font-medium text-blue-800">Editing Tips:</p>
+                                          <ul className="list-disc pl-5 mt-1 text-blue-700 space-y-1">
+                                            {assessment?.type === "mcq" && (
+                                              <>
+                                                <li>Ensure your question text is clear and precise</li>
+                                                <li>Check that one option is marked as correct</li>
+                                                <li>Use realistic but incorrect options for distractors</li>
+                                              </>
+                                            )}
+                                            {assessment?.type === "fill-in-blanks" && (
+                                              <>
+                                                <li>Verify that {"{"}{"{"}"blank"{"}"}{"}"} markers are correctly placed</li>
+                                                <li>Make sure correct answers are properly ordered</li> 
+                                                <li>Use precise wording for expected answers</li>
+                                              </>
+                                            )}
+                                            {assessment?.type === "video" && (
+                                              <>
+                                                <li>Set appropriate time limits for the complexity</li>
+                                                <li>Make sure questions are clear about expectations</li>
+                                                <li>Provide enough context for quality responses</li>
+                                              </>
+                                            )}
+                                            {assessment?.type === "brief-answer" && (
+                                              <>
+                                                <li>Refine wording to prompt specific answer types</li>
+                                                <li>Consider adjusting time limits if needed</li>
+                                                <li>Include relevant context in the question text</li>
+                                              </>
+                                            )}
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
                                     {assessment?.type === "mcq" && currentQuestion && (
                                       <MCQQuestionForm onSubmit={handleEditQuestion} initialData={currentQuestion} />
                                     )}
