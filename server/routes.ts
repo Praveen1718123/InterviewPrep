@@ -394,8 +394,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/assessments/:id/questions", isAdmin, async (req, res) => {
     try {
       const assessmentId = parseInt(req.params.id);
-      console.log(`Adding question to assessment ${assessmentId}`);
-      console.log("Request body:", req.body);
+      console.log(`===== Adding question to assessment ${assessmentId} =====`);
+      console.log("Request body:", JSON.stringify(req.body, null, 2));
       
       // Check if the request body has the necessary properties
       if (!req.body || !req.body.text) {
@@ -419,13 +419,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Using question ID: ${newQuestionId}`);
       
       // Create the new question array with the added question
-      const questions = [...currentQuestions, { ...req.body, id: newQuestionId }];
+      const questionToAdd = { ...req.body, id: newQuestionId };
+      console.log("Question to add:", JSON.stringify(questionToAdd, null, 2).substring(0, 300) + '...');
+      
+      const questions = [...currentQuestions, questionToAdd];
       console.log(`New questions array has ${questions.length} questions`);
       
       // Update the assessment
       console.log("Updating assessment with new question");
       const updated = await storage.updateAssessment(assessmentId, { questions });
-      console.log("Assessment updated successfully");
+      console.log("Assessment updated successfully with ID:", assessmentId);
       
       res.json(updated);
     } catch (error) {

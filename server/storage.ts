@@ -757,11 +757,35 @@ export class PostgresStorage implements IStorage {
       throw new Error("Assessment not found");
     }
 
+    // Handle special case for questions array
+    if (assessmentData.questions) {
+      console.log("Updating questions to:", JSON.stringify(assessmentData.questions).substring(0, 100) + '...');
+    }
+
+    // Create a clean update object manually to avoid TypeScript errors
+    const updateObject: Record<string, any> = {};
+    
+    // Copy each property individually
+    if (assessmentData.title !== undefined) updateObject.title = assessmentData.title;
+    if (assessmentData.description !== undefined) updateObject.description = assessmentData.description;
+    if (assessmentData.type !== undefined) updateObject.type = assessmentData.type;
+    if (assessmentData.createdBy !== undefined) updateObject.createdBy = assessmentData.createdBy;
+    if (assessmentData.timeLimit !== undefined) updateObject.timeLimit = assessmentData.timeLimit;
+    
+    // Make sure questions are explicitly set in the update
+    if (assessmentData.questions) {
+      console.log("Setting questions in update object");
+      updateObject.questions = assessmentData.questions;
+    }
+    
+    console.log("Update object:", Object.keys(updateObject));
+    
     const result = await this.db.update(assessments)
-      .set(assessmentData)
+      .set(updateObject)
       .where(eq(assessments.id, id))
       .returning();
 
+    console.log("Assessment updated successfully with ID:", id);
     return result[0];
   }
   
