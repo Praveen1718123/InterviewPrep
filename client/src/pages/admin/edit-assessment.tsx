@@ -501,7 +501,7 @@ export default function EditAssessment() {
             value={questionText} 
             onChange={(e) => setQuestionText(e.target.value)}
             className="min-h-[100px]"
-            placeholder="Example: The HTTP protocol works on port {'{{'}'blank{'}}'} and HTTPS works on port {'{{'}'blank{'}}'}.">
+            placeholder="Example: The HTTP protocol works on port {{blank}} and HTTPS works on port {{blank}}."
           />
         </div>
 
@@ -954,7 +954,7 @@ export default function EditAssessment() {
                               <DialogDescription>
                                 Create a new <span className="capitalize font-medium">{assessment?.type}</span> question for this assessment. 
                                 {assessment?.type === "mcq" && " Include multiple options and mark the correct answer."}
-                                {assessment?.type === "fill-in-blanks" && " Use {'{{'}'blank{'}}'} in your text to indicate blank spaces."}
+                                {assessment?.type === "fill-in-blanks" && " Use {{blank}} in your text to indicate blank spaces."}
                                 {assessment?.type === "video" && " Candidates will record video responses to this question."}
                                 {assessment?.type === "brief-answer" && " Candidates will provide written responses to this question."}
                               </DialogDescription>
