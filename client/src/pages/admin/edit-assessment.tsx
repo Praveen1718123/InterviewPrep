@@ -69,6 +69,8 @@ export default function EditAssessment() {
   const { data: assessment, isLoading, error } = useQuery<any>({
     queryKey: ['/api/admin/assessments', assessmentId],
     enabled: !isNaN(assessmentId),
+    retry: 3, // Retry failed requests up to 3 times
+    staleTime: 60000, // Consider data fresh for 1 minute
     refetchOnWindowFocus: false
   });
 
@@ -979,7 +981,22 @@ export default function EditAssessment() {
                         </Button>
                         
                         {/* Separate Dialog Component */}
-                        <Dialog open={isAddingQuestion} onOpenChange={setIsAddingQuestion}>
+                        <Dialog 
+                          open={isAddingQuestion && !!assessment} 
+                          onOpenChange={(open) => {
+                            // Only allow opening if assessment data is loaded
+                            if (open && !assessment) {
+                              console.error("Cannot open dialog - assessment data not loaded");
+                              toast({
+                                title: "Error",
+                                description: "Assessment data not loaded. Please try again.",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            setIsAddingQuestion(open);
+                          }}
+                        >
                           <DialogContent className="max-w-2xl">
                             <DialogHeader>
                               <DialogTitle>Add New Question</DialogTitle>
@@ -1031,24 +1048,44 @@ export default function EditAssessment() {
                               </div>
                             </div>
                             
-                            {!assessment?.type ? (
-                              <div className="p-4 text-center">
-                                <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                                <p>Loading assessment type...</p>
-                              </div>
-                            ) : assessment.type === "mcq" ? (
-                              <MCQQuestionForm onSubmit={handleAddQuestion} />
-                            ) : assessment.type === "fill-in-blanks" ? (
-                              <FillInBlanksQuestionForm onSubmit={handleAddQuestion} />
-                            ) : assessment.type === "video" ? (
-                              <VideoQuestionForm onSubmit={handleAddQuestion} />
-                            ) : assessment.type === "brief-answer" ? (
-                              <BriefAnswerQuestionForm onSubmit={handleAddQuestion} />
-                            ) : (
-                              <div className="p-4 text-center text-red-500">
-                                <p>Unknown assessment type: {assessment.type}</p>
-                              </div>
-                            )}
+                            {(() => {
+                              // Self-invoking function to provide better control over rendering
+                              // This avoids potential race conditions in the assessment type check
+                              if (!assessment) {
+                                return (
+                                  <div className="p-4 text-center">
+                                    <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                                    <p>Loading assessment data...</p>
+                                  </div>
+                                );
+                              }
+                              
+                              if (!assessment.type) {
+                                return (
+                                  <div className="p-4 text-center">
+                                    <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                                    <p>Loading assessment type...</p>
+                                  </div>
+                                );
+                              }
+                              
+                              switch (assessment.type) {
+                                case "mcq":
+                                  return <MCQQuestionForm onSubmit={handleAddQuestion} />;
+                                case "fill-in-blanks":
+                                  return <FillInBlanksQuestionForm onSubmit={handleAddQuestion} />;
+                                case "video":
+                                  return <VideoQuestionForm onSubmit={handleAddQuestion} />;
+                                case "brief-answer":
+                                  return <BriefAnswerQuestionForm onSubmit={handleAddQuestion} />;
+                                default:
+                                  return (
+                                    <div className="p-4 text-center text-red-500">
+                                      <p>Unknown assessment type: {assessment.type}</p>
+                                    </div>
+                                  );
+                              }
+                            })()}
                           </DialogContent>
                         </Dialog>
                       </>
@@ -1097,8 +1134,17 @@ export default function EditAssessment() {
                                 
                                 {/* Separate Edit Dialog */}
                                 <Dialog 
-                                  open={isEditingQuestion && currentQuestion?.id === question.id} 
+                                  open={isEditingQuestion && !!assessment && currentQuestion?.id === question.id} 
                                   onOpenChange={(open) => {
+                                    if (open && (!assessment || !currentQuestion)) {
+                                      console.error("Cannot open edit dialog - data not fully loaded");
+                                      toast({
+                                        title: "Error",
+                                        description: "Question data not fully loaded. Please try again.",
+                                        variant: "destructive",
+                                      });
+                                      return;
+                                    }
                                     if (!open) {
                                       setIsEditingQuestion(false);
                                       setCurrentQuestion(null);
@@ -1261,6 +1307,11 @@ export default function EditAssessment() {
                         <Button 
                           onClick={() => {
                             console.log("Opening add question dialog for:", assessment?.type);
+                            console.log("Full assessment data:", assessment);
+                            if (!assessment) {
+                              console.error("Assessment data is not loaded yet!");
+                              return;
+                            }
                             setIsAddingQuestion(true);
                           }}
                           className="w-full max-w-xs"

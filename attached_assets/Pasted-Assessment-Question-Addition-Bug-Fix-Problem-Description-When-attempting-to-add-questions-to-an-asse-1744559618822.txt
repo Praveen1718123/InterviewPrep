@@ -1,0 +1,63 @@
+Assessment Question Addition Bug Fix
+Problem Description
+When attempting to add questions to an assessment after an attempt has been made, only an empty popup is displayed instead of the question creation interface. We need to:
+
+Fix the existing "Add Question" functionality under assessments > edit assessments
+Implement similar functionality for creating questions during the initial assessment creation
+
+Technical Requirements
+Bug Fix for Existing Functionality
+
+Debug why the popup is empty when trying to add questions to an existing assessment
+Ensure the question creation form loads properly in the popup
+Handle any state management issues that might be causing the empty popup
+
+Implementation for New Functionality
+
+Add a "Create Questions" section during the initial assessment creation flow
+Reuse existing question creation components to maintain consistency
+Ensure state is properly managed between assessment creation and question creation
+
+Approach
+
+Examine the current implementation:
+
+Check the component that renders the empty popup
+Verify if data is being passed correctly to the popup
+Look for any conditional rendering that might be failing
+
+
+Fix the empty popup issue:
+
+Ensure question form components are imported correctly
+Verify that necessary props are passed to the popup component
+Add error handling and logging to identify any runtime issues
+
+
+Implement question creation during assessment creation:
+
+Add a step in the assessment creation workflow for adding questions
+Reuse the fixed question creation components
+Create a proper state management solution to store temporary questions before assessment submission
+
+
+
+Code Structure
+Focus on these files:
+
+src/components/assessments/EditAssessment.js (or similar) - Fix the popup issue
+src/components/assessments/CreateAssessment.js (or similar) - Add new functionality
+src/components/questions/QuestionForm.js (or similar) - Ensure it works in both contexts
+
+Testing Scenarios
+
+Edit an existing assessment with attempts and add new questions
+Create a new assessment and add questions during creation
+Verify questions are saved correctly in both scenarios
+Test edge cases (no questions, many questions, different question types)
+
+Implementation Notes
+
+Use React state or context API for managing temporary questions during creation
+Consider implementing a reusable questions management module that works in both contexts
+Add appropriate error handling and user feedback for a smooth experience
