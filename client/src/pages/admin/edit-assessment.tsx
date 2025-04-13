@@ -5,7 +5,7 @@ import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Plus, Trash, ArrowUp, ArrowDown, AlignJustify, Edit, Info } from "lucide-react";
+import { Loader2, Plus, Trash, ArrowUp, ArrowDown, AlignJustify, Edit, Info, X } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
@@ -1081,12 +1081,12 @@ export default function EditAssessment() {
                       </CardContent>
                     </Card>
                   </div>
-                )
-                      </>
-                    )}
-                  </div>
-                </div>
-
+                )}
+              </CardContent>
+            </Card>
+            
+            <Card className="mt-6">
+              <CardContent className="p-6">
                 <div className="space-y-4">
                   {assessment?.questions && assessment.questions.length > 0 ? (
                     (isReordering ? reorderedQuestions : assessment.questions).map((question: any, index: number) => (
