@@ -52,24 +52,43 @@ export function setupAuth(app: Express) {
   const isReplit = !!process.env.REPL_ID;
   
   // Determine cookie settings based on environment
+  const isSecure = process.env.NODE_ENV === 'production' && !process.env.REPL_ID;
+  
+  // Special settings for Replit environment
   const cookieSettings = {
     httpOnly: true,
-    secure: false, // Must be false for non-HTTPS Replit environment
+    secure: isSecure, // Only use secure cookies in production outside Replit
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days for login sessions
     sameSite: 'lax' as 'lax' | 'strict' | 'none',
     path: '/'
   };
   
+  console.log("Cookie settings:", {
+    httpOnly: cookieSettings.httpOnly,
+    secure: cookieSettings.secure,
+    sameSite: cookieSettings.sameSite,
+    path: cookieSettings.path,
+    maxAge: cookieSettings.maxAge
+  });
+  
   // Session configuration optimized for Replit environment
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "interview-prep-platform-secret",
-    resave: false,
-    saveUninitialized: false, 
+    resave: true, // Changed to true to ensure session is saved on every request
+    saveUninitialized: true, // Changed to true to create session for all requests
     rolling: true, // Reset expiration time with each request
     store: storage.sessionStore,
-    name: 'connect.sid', // Use standard name for better compatibility
+    name: 'switchbee.sid', // Unique name to avoid conflicts
     cookie: cookieSettings
   };
+  
+  console.log("Using session settings:", {
+    secret: sessionSettings.secret ? "********" : "none",
+    resave: sessionSettings.resave,
+    saveUninitialized: sessionSettings.saveUninitialized,
+    store: !!sessionSettings.store,
+    name: sessionSettings.name
+  });
   
   console.log("Session store initialized:", !!storage.sessionStore);
 

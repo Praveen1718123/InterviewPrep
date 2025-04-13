@@ -757,17 +757,19 @@ export class PostgresStorage implements IStorage {
     
     if (assessment.questions) {
       if (Array.isArray(assessment.questions)) {
-        console.log(`PostgresStorage: Assessment has ${assessment.questions.length} questions (array)`);
+        console.log(`PostgresStorage: Assessment has ${(assessment.questions as any[]).length} questions (array)`);
       } else {
         console.log(`PostgresStorage: Questions is not an array, it's a ${typeof assessment.questions}`);
         // Try to parse or convert questions if it's a string
         try {
           if (typeof assessment.questions === 'string') {
-            assessment.questions = JSON.parse(assessment.questions);
-            console.log(`PostgresStorage: Successfully parsed questions string to array with ${assessment.questions.length} items`);
+            assessment.questions = JSON.parse(assessment.questions as string);
+            console.log(`PostgresStorage: Successfully parsed questions string to array with ${(assessment.questions as any[]).length} items`);
           }
         } catch (error) {
           console.error(`PostgresStorage: Error parsing questions:`, error);
+          // Ensure we have an array even if parsing fails
+          assessment.questions = [];
         }
       }
     } else {
@@ -788,11 +790,6 @@ export class PostgresStorage implements IStorage {
       throw new Error("Assessment not found");
     }
 
-    // Handle special case for questions array
-    if (assessmentData.questions) {
-      console.log("Updating questions to:", JSON.stringify(assessmentData.questions).substring(0, 100) + '...');
-    }
-
     // Create a clean update object manually to avoid TypeScript errors
     const updateObject: Record<string, any> = {};
     
@@ -803,21 +800,79 @@ export class PostgresStorage implements IStorage {
     if (assessmentData.createdBy !== undefined) updateObject.createdBy = assessmentData.createdBy;
     if (assessmentData.timeLimit !== undefined) updateObject.timeLimit = assessmentData.timeLimit;
     
-    // Make sure questions are explicitly set in the update
+    // Handle special case for questions array
     if (assessmentData.questions) {
-      console.log("Setting questions in update object");
-      updateObject.questions = assessmentData.questions;
+      console.log("Preparing questions for database update");
+      console.log(`Questions type: ${typeof assessmentData.questions}, isArray: ${Array.isArray(assessmentData.questions)}`);
+      console.log(`Questions length: ${Array.isArray(assessmentData.questions) ? assessmentData.questions.length : 'unknown'}`);
+      
+      try {
+        // Ensure questions is properly serialized for PostgreSQL JSON column
+        if (Array.isArray(assessmentData.questions)) {
+          // For PostgreSQL, we need to stringify the array if it contains complex objects
+          const sample = assessmentData.questions.length > 0 ? assessmentData.questions[0] : null;
+          console.log("Sample question:", sample ? JSON.stringify(sample).substring(0, 100) + '...' : 'none');
+          
+          // Verify each question has an ID
+          const missingIds = assessmentData.questions.filter(q => !q.id).length;
+          if (missingIds > 0) {
+            console.warn(`${missingIds} questions are missing IDs`);
+          }
+          
+          // Set as is - PostgreSQL will handle the JSON serialization
+          updateObject.questions = assessmentData.questions;
+        } else if (typeof assessmentData.questions === 'string') {
+          // If it's already a string, try to validate it's proper JSON
+          console.log("Questions is already a string, attempting to parse to validate");
+          const parsed = JSON.parse(assessmentData.questions);
+          if (Array.isArray(parsed)) {
+            console.log(`Parsed questions string into array of ${parsed.length} items`);
+            updateObject.questions = parsed; // Use the parsed array
+          } else {
+            console.error("Questions string did not parse to an array:", typeof parsed);
+            updateObject.questions = []; // Fallback to empty array
+          }
+        } else {
+          console.error("Questions is not an array or string, setting to empty array");
+          updateObject.questions = [];
+        }
+      } catch (error) {
+        console.error("Error processing questions for database update:", error);
+        // Fallback to empty array on error
+        updateObject.questions = [];
+      }
+      
+      console.log("Final questions count for update:", 
+        Array.isArray(updateObject.questions) ? updateObject.questions.length : 'unknown');
     }
     
-    console.log("Update object:", Object.keys(updateObject));
+    console.log("Update object keys:", Object.keys(updateObject));
     
-    const result = await this.db.update(assessments)
-      .set(updateObject)
-      .where(eq(assessments.id, id))
-      .returning();
+    try {
+      const result = await this.db.update(assessments)
+        .set(updateObject)
+        .where(eq(assessments.id, id))
+        .returning();
 
-    console.log("Assessment updated successfully with ID:", id);
-    return result[0];
+      console.log("Assessment updated successfully with ID:", id);
+      
+      // Verify the update by retrieving the updated assessment
+      const verifiedAssessment = await this.getAssessment(id);
+      console.log("Verified assessment after update:", {
+        id: verifiedAssessment?.id,
+        title: verifiedAssessment?.title,
+        questionsType: verifiedAssessment?.questions ? typeof verifiedAssessment.questions : 'none',
+        questionsLength: Array.isArray(verifiedAssessment?.questions) 
+          ? verifiedAssessment.questions.length 
+          : 'unknown'
+      });
+      
+      return result[0];
+    } catch (error) {
+      const updateError = error as Error;
+      console.error("Database error during assessment update:", updateError);
+      throw new Error(`Failed to update assessment: ${updateError.message || String(updateError)}`);
+    }
   }
   
   async deleteAssessment(id: number): Promise<void> {

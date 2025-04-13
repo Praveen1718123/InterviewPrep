@@ -427,10 +427,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update the assessment
       console.log("Updating assessment with new question");
-      const updated = await storage.updateAssessment(assessmentId, { questions });
-      console.log("Assessment updated successfully with ID:", assessmentId);
       
-      res.json(updated);
+      try {
+        const updated = await storage.updateAssessment(assessmentId, { questions });
+        console.log("Assessment updated successfully with ID:", assessmentId);
+        
+        // Verify the update by fetching the assessment again
+        const verifiedAssessment = await storage.getAssessment(assessmentId);
+        if (verifiedAssessment && Array.isArray(verifiedAssessment.questions)) {
+          console.log(`Verified: Assessment now has ${verifiedAssessment.questions.length} questions`);
+          
+          // Check if our new question is in the array
+          const addedQuestion = verifiedAssessment.questions.find((q: any) => q.id === newQuestionId);
+          if (addedQuestion) {
+            console.log("Question was successfully added to the database");
+          } else {
+            console.warn("Question may not have been added correctly");
+          }
+        }
+        
+        res.json(updated);
+      } catch (updateError) {
+        console.error("Error updating assessment:", updateError);
+        res.status(500).json({ 
+          message: "Error updating assessment", 
+          error: String(updateError),
+          details: "Failed to save the question to the database"
+        });
+      }
     } catch (error) {
       console.error("Error adding question:", error);
       res.status(500).json({ message: "Error adding question", error: String(error) });
