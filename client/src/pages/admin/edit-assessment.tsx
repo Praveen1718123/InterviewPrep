@@ -975,119 +975,113 @@ export default function EditAssessment() {
                           <AlignJustify className="h-4 w-4 mr-2" />
                           Reorder
                         </Button>
-                        <Button onClick={() => setIsAddingQuestion(true)}>
+                        <Button onClick={() => {
+                          if (assessment) {
+                            setIsAddingQuestion(true);
+                          } else {
+                            toast({
+                              title: "Error",
+                              description: "Assessment data not loaded. Please try again.",
+                              variant: "destructive",
+                            });
+                          }
+                        }}>
                           <Plus className="h-4 w-4 mr-2" />
                           Add Question
                         </Button>
-                        
-                        {/* Separate Dialog Component */}
-                        <Dialog 
-                          open={isAddingQuestion && !!assessment} 
-                          onOpenChange={(open) => {
-                            // Only allow opening if assessment data is loaded
-                            if (open && !assessment) {
-                              console.error("Cannot open dialog - assessment data not loaded");
-                              toast({
-                                title: "Error",
-                                description: "Assessment data not loaded. Please try again.",
-                                variant: "destructive",
-                              });
-                              return;
-                            }
-                            setIsAddingQuestion(open);
-                          }}
-                        >
-                          <DialogContent className="max-w-2xl">
-                            <DialogHeader>
-                              <DialogTitle>Add New Question</DialogTitle>
-                              <DialogDescription>
-                                Create a new <span className="capitalize font-medium">{assessment?.type}</span> question for this assessment. 
-                                {assessment?.type === "mcq" && " Include multiple options and mark the correct answer."}
-                                {assessment?.type === "fill-in-blanks" && " Use {{blank}} in your text to indicate blank spaces."}
-                                {assessment?.type === "video" && " Candidates will record video responses to this question."}
-                                {assessment?.type === "brief-answer" && " Candidates will provide written responses to this question."}
-                              </DialogDescription>
-                            </DialogHeader>
-                            
-                            <div className="bg-amber-50 p-3 rounded-md border border-amber-200 mb-4 text-sm">
-                              <div className="flex items-start">
-                                <Info className="h-5 w-5 text-amber-500 mr-2 mt-0.5 flex-shrink-0" />
-                                <div>
-                                  <p className="font-medium text-amber-800">Question Tips:</p>
-                                  <ul className="list-disc pl-5 mt-1 text-amber-700 space-y-1">
-                                    {assessment?.type === "mcq" && (
-                                      <>
-                                        <li>Create clear, concise questions with one correct answer</li>
-                                        <li>Include 4+ options to properly test knowledge</li>
-                                        <li>Avoid ambiguous wording</li>
-                                      </>
-                                    )}
-                                    {assessment?.type === "fill-in-blanks" && (
-                                      <>
-                                        <li>Mark blank spots with {"{"}{"{"}"blank"{"}"}{"}"} pattern in your text</li>
-                                        <li>Provide the correct answers in order</li>
-                                        <li>Keep blanks focused on key concepts</li>
-                                      </>
-                                    )}
-                                    {assessment?.type === "video" && (
-                                      <>
-                                        <li>Ask open-ended questions that require demonstration</li>
-                                        <li>Set an appropriate time limit for responses</li>
-                                        <li>Clearly state what should be included in the answer</li>
-                                      </>
-                                    )}
-                                    {assessment?.type === "brief-answer" && (
-                                      <>
-                                        <li>Frame questions that require specific knowledge</li>
-                                        <li>Indicate expected answer length when appropriate</li>
-                                        <li>Set a reasonable time limit for responses</li>
-                                      </>
-                                    )}
-                                  </ul>
-                                </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Question Creation Section similar to create-assessment.tsx */}
+                {isAddingQuestion && assessment && (
+                  <div className="space-y-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold">Add New Question</h3>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setIsAddingQuestion(false)}
+                        className="text-gray-500"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    <div className="bg-amber-50 p-3 rounded-md border border-amber-200 mb-4 text-sm">
+                      <div className="flex items-start">
+                        <Info className="h-5 w-5 text-amber-500 mr-2 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="font-medium text-amber-800">Question Tips:</p>
+                          <ul className="list-disc pl-5 mt-1 text-amber-700 space-y-1">
+                            {assessment.type === "mcq" && (
+                              <>
+                                <li>Create clear, concise questions with one correct answer</li>
+                                <li>Include 4+ options to properly test knowledge</li>
+                                <li>Avoid ambiguous wording</li>
+                              </>
+                            )}
+                            {assessment.type === "fill-in-blanks" && (
+                              <>
+                                <li>Mark blank spots with {"{"}{"{"}"blank"{"}"}{"}"} pattern in your text</li>
+                                <li>Provide the correct answers in order</li>
+                                <li>Keep blanks focused on key concepts</li>
+                              </>
+                            )}
+                            {assessment.type === "video" && (
+                              <>
+                                <li>Ask open-ended questions that require demonstration</li>
+                                <li>Set an appropriate time limit for responses</li>
+                                <li>Clearly state what should be included in the answer</li>
+                              </>
+                            )}
+                            {assessment.type === "brief-answer" && (
+                              <>
+                                <li>Frame questions that require specific knowledge</li>
+                                <li>Indicate expected answer length when appropriate</li>
+                                <li>Set a reasonable time limit for responses</li>
+                              </>
+                            )}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Card>
+                      <CardContent className="p-4">
+                        {(() => {
+                          // Self-invoking function to provide better control over rendering
+                          if (!assessment.type) {
+                            return (
+                              <div className="p-4 text-center">
+                                <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                                <p>Loading assessment type...</p>
                               </div>
-                            </div>
-                            
-                            {(() => {
-                              // Self-invoking function to provide better control over rendering
-                              // This avoids potential race conditions in the assessment type check
-                              if (!assessment) {
-                                return (
-                                  <div className="p-4 text-center">
-                                    <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                                    <p>Loading assessment data...</p>
-                                  </div>
-                                );
-                              }
-                              
-                              if (!assessment.type) {
-                                return (
-                                  <div className="p-4 text-center">
-                                    <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                                    <p>Loading assessment type...</p>
-                                  </div>
-                                );
-                              }
-                              
-                              switch (assessment.type) {
-                                case "mcq":
-                                  return <MCQQuestionForm onSubmit={handleAddQuestion} />;
-                                case "fill-in-blanks":
-                                  return <FillInBlanksQuestionForm onSubmit={handleAddQuestion} />;
-                                case "video":
-                                  return <VideoQuestionForm onSubmit={handleAddQuestion} />;
-                                case "brief-answer":
-                                  return <BriefAnswerQuestionForm onSubmit={handleAddQuestion} />;
-                                default:
-                                  return (
-                                    <div className="p-4 text-center text-red-500">
-                                      <p>Unknown assessment type: {assessment.type}</p>
-                                    </div>
-                                  );
-                              }
-                            })()}
-                          </DialogContent>
-                        </Dialog>
+                            );
+                          }
+                          
+                          switch (assessment.type) {
+                            case "mcq":
+                              return <MCQQuestionForm onSubmit={handleAddQuestion} />;
+                            case "fill-in-blanks":
+                              return <FillInBlanksQuestionForm onSubmit={handleAddQuestion} />;
+                            case "video":
+                              return <VideoQuestionForm onSubmit={handleAddQuestion} />;
+                            case "brief-answer":
+                              return <BriefAnswerQuestionForm onSubmit={handleAddQuestion} />;
+                            default:
+                              return (
+                                <div className="p-4 text-center text-red-500">
+                                  <p>Unknown assessment type: {assessment.type}</p>
+                                </div>
+                              );
+                          }
+                        })()}
+                      </CardContent>
+                    </Card>
+                  </div>
+                )
                       </>
                     )}
                   </div>
