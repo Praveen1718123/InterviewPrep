@@ -1031,17 +1031,23 @@ export default function EditAssessment() {
                               </div>
                             </div>
                             
-                            {assessment?.type === "mcq" && (
+                            {!assessment?.type ? (
+                              <div className="p-4 text-center">
+                                <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                                <p>Loading assessment type...</p>
+                              </div>
+                            ) : assessment.type === "mcq" ? (
                               <MCQQuestionForm onSubmit={handleAddQuestion} />
-                            )}
-                            {assessment?.type === "fill-in-blanks" && (
+                            ) : assessment.type === "fill-in-blanks" ? (
                               <FillInBlanksQuestionForm onSubmit={handleAddQuestion} />
-                            )}
-                            {assessment?.type === "video" && (
+                            ) : assessment.type === "video" ? (
                               <VideoQuestionForm onSubmit={handleAddQuestion} />
-                            )}
-                            {assessment?.type === "brief-answer" && (
+                            ) : assessment.type === "brief-answer" ? (
                               <BriefAnswerQuestionForm onSubmit={handleAddQuestion} />
+                            ) : (
+                              <div className="p-4 text-center text-red-500">
+                                <p>Unknown assessment type: {assessment.type}</p>
+                              </div>
                             )}
                           </DialogContent>
                         </Dialog>
@@ -1147,17 +1153,23 @@ export default function EditAssessment() {
                                       </div>
                                     </div>
                                     
-                                    {assessment?.type === "mcq" && currentQuestion && (
+                                    {!assessment?.type || !currentQuestion ? (
+                                      <div className="p-4 text-center">
+                                        <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                                        <p>Loading question data...</p>
+                                      </div>
+                                    ) : assessment.type === "mcq" ? (
                                       <MCQQuestionForm onSubmit={handleEditQuestion} initialData={currentQuestion} />
-                                    )}
-                                    {assessment?.type === "fill-in-blanks" && currentQuestion && (
+                                    ) : assessment.type === "fill-in-blanks" ? (
                                       <FillInBlanksQuestionForm onSubmit={handleEditQuestion} initialData={currentQuestion} />
-                                    )}
-                                    {assessment?.type === "video" && currentQuestion && (
+                                    ) : assessment.type === "video" ? (
                                       <VideoQuestionForm onSubmit={handleEditQuestion} initialData={currentQuestion} />
-                                    )}
-                                    {assessment?.type === "brief-answer" && currentQuestion && (
+                                    ) : assessment.type === "brief-answer" ? (
                                       <BriefAnswerQuestionForm onSubmit={handleEditQuestion} initialData={currentQuestion} />
+                                    ) : (
+                                      <div className="p-4 text-center text-red-500">
+                                        <p>Unknown assessment type: {assessment.type}</p>
+                                      </div>
                                     )}
                                   </DialogContent>
                                 </Dialog>
