@@ -643,7 +643,9 @@ export default function EditAssessment() {
   const BriefAnswerQuestionForm = ({ onSubmit, initialData = null }: { onSubmit: (data: any) => void, initialData?: any }) => {
     const [questionText, setQuestionText] = useState(initialData?.text || "");
     const [timeLimit, setTimeLimit] = useState(initialData?.timeLimit || 180);
-    const [expectedLength, setExpectedLength] = useState(initialData?.expectedLength || "");
+    const [expectedAnswerLength, setExpectedAnswerLength] = useState<string>(
+      initialData?.expectedAnswerLength ? initialData.expectedAnswerLength.toString() : ""
+    );
 
     const handleSubmit = () => {
       if (!questionText.trim()) {
@@ -664,12 +666,20 @@ export default function EditAssessment() {
         return;
       }
 
+      // Create a question object that matches the schema
       const question: BriefAnswerQuestion = {
         id: initialData?.id || generateId(),
         text: questionText,
-        timeLimit,
-        expectedLength: expectedLength || undefined
+        timeLimit
       };
+
+      // Only add expectedAnswerLength if it's a valid number
+      if (expectedLength) {
+        const numLength = parseInt(expectedLength);
+        if (!isNaN(numLength) && numLength > 0) {
+          question.expectedAnswerLength = numLength;
+        }
+      }
 
       console.log("Submitting brief answer question:", question);
       onSubmit(question);
