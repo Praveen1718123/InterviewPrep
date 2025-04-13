@@ -743,8 +743,39 @@ export class PostgresStorage implements IStorage {
   }
 
   async getAssessment(id: number): Promise<Assessment | undefined> {
+    console.log(`PostgresStorage: Fetching assessment with ID ${id}`);
     const result = await this.db.select().from(assessments).where(eq(assessments.id, id));
-    return result[0];
+    
+    if (result.length === 0) {
+      console.log(`PostgresStorage: Assessment with ID ${id} not found`);
+      return undefined;
+    }
+    
+    const assessment = result[0];
+    console.log(`PostgresStorage: Found assessment with ID ${id}, title: "${assessment.title}"`);
+    console.log(`PostgresStorage: Assessment questions type: ${typeof assessment.questions}`);
+    
+    if (assessment.questions) {
+      if (Array.isArray(assessment.questions)) {
+        console.log(`PostgresStorage: Assessment has ${assessment.questions.length} questions (array)`);
+      } else {
+        console.log(`PostgresStorage: Questions is not an array, it's a ${typeof assessment.questions}`);
+        // Try to parse or convert questions if it's a string
+        try {
+          if (typeof assessment.questions === 'string') {
+            assessment.questions = JSON.parse(assessment.questions);
+            console.log(`PostgresStorage: Successfully parsed questions string to array with ${assessment.questions.length} items`);
+          }
+        } catch (error) {
+          console.error(`PostgresStorage: Error parsing questions:`, error);
+        }
+      }
+    } else {
+      console.log(`PostgresStorage: Assessment has no questions`);
+      assessment.questions = []; // Ensure questions is always an array
+    }
+    
+    return assessment;
   }
 
   async getAssessments(): Promise<Assessment[]> {
