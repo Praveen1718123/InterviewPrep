@@ -1248,7 +1248,7 @@ export default function EditAssessment() {
                       <div className="flex flex-col gap-3 items-center">
                         <Button 
                           onClick={() => {
-                            console.log("Opening add question dialog for:", assessment.type);
+                            console.log("Opening add question dialog for:", assessment?.type);
                             setIsAddingQuestion(true);
                           }}
                           className="w-full max-w-xs"
@@ -1275,7 +1275,7 @@ export default function EditAssessment() {
                           </Button>
                         </div>
                         <div className="mt-4 text-sm text-gray-500">
-                          <p>Assessment Type: <span className="font-medium capitalize">{assessment.type}</span></p>
+                          <p>Assessment Type: <span className="font-medium capitalize">{assessment?.type}</span></p>
                         </div>
                       </div>
                     </div>
