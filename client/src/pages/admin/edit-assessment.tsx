@@ -674,8 +674,8 @@ export default function EditAssessment() {
       };
 
       // Only add expectedAnswerLength if it's a valid number
-      if (expectedLength) {
-        const numLength = parseInt(expectedLength);
+      if (expectedAnswerLength) {
+        const numLength = parseInt(expectedAnswerLength);
         if (!isNaN(numLength) && numLength > 0) {
           question.expectedAnswerLength = numLength;
         }
@@ -702,12 +702,12 @@ export default function EditAssessment() {
         </div>
 
         <div>
-          <Label htmlFor="expectedLength">Expected Answer Length (optional)</Label>
+          <Label htmlFor="expectedAnswerLength">Expected Answer Length (optional)</Label>
           <Input 
-            id="expectedLength" 
-            value={expectedLength} 
-            onChange={(e) => setExpectedLength(e.target.value)}
-            placeholder="e.g., 2-3 paragraphs, 100-200 words"
+            id="expectedAnswerLength" 
+            value={expectedAnswerLength} 
+            onChange={(e) => setExpectedAnswerLength(e.target.value)}
+            placeholder="e.g., 100-200 words"
           />
           <p className="text-xs text-gray-500 mt-1">
             Provide guidance on the expected length of the response.
