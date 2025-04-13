@@ -639,9 +639,11 @@ export default function EditAssessment() {
   };
 
   // Brief Answer Question Form
+  // Brief Answer Question Form Component
   const BriefAnswerQuestionForm = ({ onSubmit, initialData = null }: { onSubmit: (data: any) => void, initialData?: any }) => {
     const [questionText, setQuestionText] = useState(initialData?.text || "");
     const [timeLimit, setTimeLimit] = useState(initialData?.timeLimit || 180);
+    const [expectedLength, setExpectedLength] = useState(initialData?.expectedLength || "");
 
     const handleSubmit = () => {
       if (!questionText.trim()) {
@@ -665,7 +667,8 @@ export default function EditAssessment() {
       const question: BriefAnswerQuestion = {
         id: initialData?.id || generateId(),
         text: questionText,
-        timeLimit
+        timeLimit,
+        expectedLength: expectedLength || undefined
       };
 
       console.log("Submitting brief answer question:", question);
@@ -683,6 +686,22 @@ export default function EditAssessment() {
             className="min-h-[100px]"
             placeholder="Enter the question for the brief answer response"
           />
+          <p className="text-xs text-gray-500 mt-1">
+            Provide a clear, specific question that requires a written response.
+          </p>
+        </div>
+
+        <div>
+          <Label htmlFor="expectedLength">Expected Answer Length (optional)</Label>
+          <Input 
+            id="expectedLength" 
+            value={expectedLength} 
+            onChange={(e) => setExpectedLength(e.target.value)}
+            placeholder="e.g., 2-3 paragraphs, 100-200 words"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Provide guidance on the expected length of the response.
+          </p>
         </div>
 
         <div>
@@ -691,10 +710,13 @@ export default function EditAssessment() {
             id="timeLimit" 
             type="number" 
             value={timeLimit} 
-            onChange={(e) => setTimeLimit(parseInt(e.target.value))}
+            onChange={(e) => setTimeLimit(parseInt(e.target.value || "0"))}
             placeholder="Time limit in seconds"
             min="1"
           />
+          <p className="text-xs text-gray-500 mt-1">
+            Recommended: 180-300 seconds (3-5 minutes) for brief answers.
+          </p>
         </div>
 
         <div className="flex justify-end space-x-2 pt-4">
