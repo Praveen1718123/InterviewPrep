@@ -195,6 +195,10 @@ export function setupAuth(app: Express) {
   app.post("/api/login", (req, res, next) => {
     console.log("Login attempt with body:", { username: req.body.username, passwordLength: req.body.password?.length });
     
+    // Add extra logging for session and cookie data before authentication
+    console.log("Pre-auth Session ID:", req.sessionID);
+    console.log("Pre-auth cookies:", req.headers.cookie);
+    
     passport.authenticate("local", (err: any, user: User | undefined, info: any) => {
       if (err) {
         console.error("Authentication error:", err);
@@ -206,65 +210,127 @@ export function setupAuth(app: Express) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
-      // Log in the user manually
-      req.login(user, (loginErr) => {
-        if (loginErr) {
-          console.error("Login error:", loginErr);
-          return next(loginErr);
-        }
-        
-        console.log(`POST /api/login - Login successful, Session ID: ${req.sessionID}`);
-        console.log(`POST /api/login - User in request: ${user.username}, ID: ${user.id}, Role: ${user.role}`);
-        
-        // Add timestamp for debugging
-        const loginTime = new Date().toISOString();
-        (req.session as any).loginTime = loginTime;
-        
-        // Save the session explicitly to ensure it's properly stored
-        req.session.save((saveErr) => {
-          if (saveErr) {
-            console.error("Error saving session:", saveErr);
-            return res.status(500).json({ message: "Failed to create session" });
+      // Clear session if it exists to avoid conflicts
+      if (req.session) {
+        console.log("Regenerating session before login...");
+        req.session.regenerate((regenerateErr) => {
+          if (regenerateErr) {
+            console.error("Session regeneration error:", regenerateErr);
+            return next(regenerateErr);
           }
           
-          console.log("Session saved successfully with ID:", req.sessionID);
+          continueWithLogin();
+        });
+      } else {
+        continueWithLogin();
+      }
+      
+      // Function to continue with login after session regeneration if needed
+      function continueWithLogin() {
+        if (!user) {
+          console.error("User object unexpectedly undefined in continueWithLogin");
+          return res.status(500).json({ message: "Authentication error" });
+        }
+      
+        console.log("Continuing with login for user:", user.username);
+        
+        // Log in the user manually
+        req.login(user as Express.User, (loginErr) => {
+          if (loginErr) {
+            console.error("Login error:", loginErr);
+            return next(loginErr);
+          }
           
-          // Enhanced logging
-          console.log("Session data:", req.session);
+          console.log(`POST /api/login - Login successful, Session ID: ${req.sessionID}`);
+          console.log(`POST /api/login - User in request:`, {
+            username: user.username,
+            id: user.id,
+            role: user.role
+          });
           
-          // Check if the session store is working by fetching the session directly
-          try {
-            const store = storage.sessionStore as any;
-            if (store && typeof store.get === 'function') {
-              store.get(req.sessionID, (err: any, session: any) => {
-                if (err) {
-                  console.error("Error retrieving session from store:", err);
-                } else if (!session) {
-                  console.error("Session not found in store immediately after save!");
-                } else {
-                  console.log("Session verified in store:", session);
+          // Add timestamp and user info to session
+          (req.session as any).loginTime = new Date().toISOString();
+          (req.session as any).userId = user.id;
+          (req.session as any).userRole = user.role;
+          
+          // Save the session explicitly to ensure it's properly stored
+          req.session.save((saveErr) => {
+            if (saveErr) {
+              console.error("Error saving session:", saveErr);
+              return res.status(500).json({ message: "Failed to create session" });
+            }
+            
+            console.log("Session saved successfully with ID:", req.sessionID);
+            console.log("Session data after save:", req.session);
+            
+            // Check if the session store is working by fetching the session directly
+            try {
+              const store = storage.sessionStore as any;
+              if (store && typeof store.get === 'function') {
+                store.get(req.sessionID, (checkErr: any, session: any) => {
+                  if (checkErr) {
+                    console.error("Error retrieving session from store:", checkErr);
+                  } else if (!session) {
+                    console.error("Session not found in store immediately after save!");
+                  } else {
+                    console.log("Session verified in store:", session);
+                  }
+                  
+                  // Set a cookie directly as a backup authentication method
+                  res.cookie('user_id', user.id.toString(), {
+                    httpOnly: true,
+                    secure: false,
+                    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+                    path: '/'
+                  });
+                  
+                  // Return user data with session ID for debugging
+                  res.status(200).json({
+                    id: user.id,
+                    username: user.username,
+                    role: user.role,
+                    email: user.email,
+                    fullName: user.fullName,
+                    // Debug information
+                    _debug: {
+                      sessionId: req.sessionID,
+                      loginTime: (req.session as any).loginTime
+                    }
+                  });
+                });
+              } else {
+                sendResponse();
+              }
+            } catch (storeErr) {
+              console.error("Error checking session store:", storeErr);
+              sendResponse();
+            }
+            
+            function sendResponse() {
+              // Set a cookie directly as a backup authentication method
+              res.cookie('user_id', user.id.toString(), {
+                httpOnly: true,
+                secure: false,
+                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+                path: '/'
+              });
+              
+              // Return user data
+              res.status(200).json({
+                id: user.id,
+                username: user.username,
+                role: user.role,
+                email: user.email,
+                fullName: user.fullName,
+                _debug: {
+                  sessionId: req.sessionID,
+                  loginTime: (req.session as any).loginTime
                 }
               });
             }
-          } catch (storeErr) {
-            console.error("Error checking session store:", storeErr);
-          }
-          
-          // Return user data with session ID for debugging
-          res.status(200).json({
-            id: user.id,
-            username: user.username,
-            role: user.role,
-            email: user.email,
-            fullName: user.fullName,
-            // Debug information
-            _debug: {
-              sessionId: req.sessionID,
-              loginTime
-            }
           });
         });
-      });
+      }
     })(req, res, next);
   });
 
@@ -275,11 +341,65 @@ export function setupAuth(app: Express) {
     });
   });
 
-  app.get("/api/user", (req, res) => {
+  app.get("/api/user", async (req, res) => {
     console.log("GET /api/user - Session ID:", req.sessionID);
     console.log("GET /api/user - Is authenticated:", req.isAuthenticated());
     console.log("GET /api/user - Session data:", req.session);
     console.log("GET /api/user - Cookies:", req.headers.cookie);
+    
+    // Check if primary authentication via session is working
+    if (req.isAuthenticated()) {
+      console.log(`GET /api/user - Session authenticated as: ${req.user!.username}, ID: ${req.user!.id}, Role: ${req.user!.role}`);
+      
+      // Return the user data with some debug info
+      return res.json({
+        ...req.user,
+        _authMethod: "session",
+        _debug: {
+          sessionId: req.sessionID,
+          time: new Date().toISOString()
+        }
+      });
+    }
+    
+    // Try backup authentication via user_id cookie
+    const cookies = req.cookies;
+    if (cookies && cookies.user_id) {
+      try {
+        console.log("GET /api/user - Attempting fallback authentication with user_id cookie:", cookies.user_id);
+        const userId = parseInt(cookies.user_id);
+        
+        if (!isNaN(userId)) {
+          const user = await storage.getUser(userId);
+          
+          if (user) {
+            console.log(`GET /api/user - Fallback authentication successful: ${user.username}, ID: ${user.id}, Role: ${user.role}`);
+            
+            // Log the user in properly for future requests
+            req.login(user, (loginErr) => {
+              if (loginErr) {
+                console.error("Error logging in user via fallback method:", loginErr);
+              } else {
+                console.log("User logged in via fallback method");
+              }
+            });
+            
+            // Return the user data with debug info
+            return res.json({
+              ...user,
+              _authMethod: "cookie_fallback",
+              _debug: {
+                sessionId: req.sessionID,
+                time: new Date().toISOString(),
+                message: "User authenticated via backup cookie method"
+              }
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error during fallback authentication:", error);
+      }
+    }
     
     // For debugging - try to look up the session manually
     try {
@@ -299,25 +419,14 @@ export function setupAuth(app: Express) {
       console.error("Error checking session store during /api/user:", storeErr);
     }
     
-    if (!req.isAuthenticated()) {
-      console.log("GET /api/user - Authentication failed");
-      return res.status(401).json({ 
-        error: "Not authenticated",
-        _debug: {
-          sessionId: req.sessionID,
-          hasSession: !!req.session,
-          time: new Date().toISOString()
-        }
-      });
-    }
-    
-    console.log(`GET /api/user - User: ${req.user!.username}, ID: ${req.user!.id}, Role: ${req.user!.role}`);
-    
-    // Return the user data with some debug info
-    res.json({
-      ...req.user,
+    // If we get here, all authentication methods have failed
+    console.log("GET /api/user - All authentication methods failed");
+    return res.status(401).json({ 
+      error: "Not authenticated",
       _debug: {
         sessionId: req.sessionID,
+        hasSession: !!req.session,
+        hasCookies: !!cookies,
         time: new Date().toISOString()
       }
     });

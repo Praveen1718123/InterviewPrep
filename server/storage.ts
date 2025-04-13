@@ -869,9 +869,9 @@ export class PostgresStorage implements IStorage {
       
       return result[0];
     } catch (error) {
-      const updateError = error as Error;
-      console.error("Database error during assessment update:", updateError);
-      throw new Error(`Failed to update assessment: ${updateError.message || String(updateError)}`);
+      console.error("Database error during assessment update:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to update assessment: ${errorMessage}`);
     }
   }
   
