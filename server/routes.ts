@@ -377,8 +377,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If we're here, isAdmin middleware has already confirmed req.user exists
       const assessmentData = insertAssessmentSchema.parse({
         ...req.body,
-        createdBy: req.user!.id,
-        questions: [] // Initialize questions as an empty array
+        createdBy: req.user!.id
+        // Do not override questions here; use whatever is in req.body.questions
       });
       const assessment = await storage.createAssessment(assessmentData);
       res.status(201).json(assessment);
