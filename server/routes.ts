@@ -282,7 +282,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Hash the password if a new one is provided
       let hashedPassword: string | undefined;
       if (newPassword && newPassword.trim()) {
-        hashedPassword = await hashPassword(newPassword);
+        hashedPassword = await hashPasswordLocal(newPassword);
+      }
+
+      // Validate batchId if provided
+      if (batchId !== undefined && batchId !== null) {
+        // Check if batch exists
+        const batch = await storage.getBatch(batchId);
+        if (!batch) {
+          return res.status(400).json({ message: "Specified batch does not exist" });
+        }
       }
 
       // Build the update object, keeping existing values for fields not provided
@@ -955,20 +964,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Batch management endpoints
   app.get("/api/admin/batches", isAdmin, async (req, res) => {
     try {
+      console.log("Fetching all batches");
       const batches = await storage.getBatches();
+      console.log("Batches fetched:", batches);
       res.json(batches);
     } catch (error) {
+      console.error("Error fetching batches:", error);
       res.status(500).json({ message: "Error fetching batches" });
     }
   });
 
   app.post("/api/admin/batches", isAdmin, async (req, res) => {
     try {
-      const batchData = insertBatchSchema.parse(req.body);
-      const batch = await storage.createBatch(batchData.name);
-      res.status(201).json(batch);
+      console.log("Creating new batch with data:", req.body);
+      // Create batch directly with name
+      if (typeof req.body.name === 'string') {
+        const batch = await storage.createBatch(req.body.name);
+        console.log("Batch created:", batch);
+        res.status(201).json(batch);
+      } else {
+        res.status(400).json({ message: "Batch name is required" });
+      }
     } catch (error) {
-      handleZodError(error, res);
+      console.error("Error creating batch:", error);
+      res.status(500).json({ message: "Error creating batch" });
     }
   });
   
