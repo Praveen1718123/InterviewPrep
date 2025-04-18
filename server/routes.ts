@@ -408,6 +408,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update an existing assessment's details
+  app.put("/api/admin/assessments/:id", isAdmin, async (req, res) => {
+    try {
+      const assessmentId = parseInt(req.params.id);
+      if (isNaN(assessmentId)) {
+        return res.status(400).json({ message: "Invalid assessment ID" });
+      }
+
+      // Fetch the assessment to ensure it exists
+      const assessment = await storage.getAssessment(assessmentId);
+      if (!assessment) {
+        return res.status(404).json({ message: "Assessment not found" });
+      }
+
+      const { title, description, timeLimit } = req.body;
+      if (!title || !title.toString().trim()) {
+        return res.status(400).json({ message: "Assessment title is required" });
+      }
+
+      // Prepare fields for update (use existing values if some fields are missing)
+      const updatedFields: any = {};
+      updatedFields.title = title.toString().trim();
+      // Description can be empty string if not provided
+      updatedFields.description = description !== undefined ? description.toString() : (assessment.description || "");
+      if (timeLimit !== undefined) {
+        // If provided, ensure timeLimit is a number (or parseable to number)
+        const parsedTime = parseInt(timeLimit);
+        if (isNaN(parsedTime)) {
+          return res.status(400).json({ message: "Time limit must be a number" });
+        }
+        updatedFields.timeLimit = parsedTime;
+      } else {
+        // If not provided, keep existing time limit
+        updatedFields.timeLimit = assessment.timeLimit;
+      }
+
+      const updatedAssessment = await storage.updateAssessment(assessmentId, updatedFields);
+      return res.json(updatedAssessment);
+    } catch (error) {
+      console.error("Error updating assessment:", error);
+      return res.status(500).json({ message: "Error updating assessment" });
+    }
+  });
+
   // Add question to assessment
   app.post("/api/admin/assessments/:id/questions", isAdmin, async (req, res) => {
     try {
