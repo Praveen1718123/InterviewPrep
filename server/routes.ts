@@ -235,64 +235,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Update candidate
+  // Update an existing candidate's details
   app.patch("/api/admin/candidates/:id", isAdmin, async (req, res) => {
     try {
       const candidateId = parseInt(req.params.id);
       if (isNaN(candidateId)) {
         return res.status(400).json({ message: "Invalid candidate ID" });
       }
-      
-      // Get existing candidate
+
+      // Fetch the candidate to update
       const existingCandidate = await storage.getUser(candidateId);
       if (!existingCandidate) {
         return res.status(404).json({ message: "Candidate not found" });
       }
-      
-      // If this is not a candidate account, prevent modification
       if (existingCandidate.role !== "candidate") {
-        return res.status(403).json({ message: "Can only modify candidate accounts" });
+        return res.status(403).json({ message: "Can only update candidate accounts" });
       }
-      
-      const { username, email, password, ...updateData } = req.body;
-      
-      // Check for username uniqueness if it's being changed
+
+      // Prepare updated fields, keeping current values for any unspecified fields
+      const { username, email, fullName, password: newPassword, batchId } = req.body;
+      // Enforce required fields are not empty
+      if (username && !username.trim()) {
+        return res.status(400).json({ message: "Username cannot be empty" });
+      }
+      if (email && !email.trim()) {
+        return res.status(400).json({ message: "Email cannot be empty" });
+      }
+      if (fullName && !fullName.trim()) {
+        return res.status(400).json({ message: "Full name cannot be empty" });
+      }
+
+      // Check for uniqueness if username or email are being changed
       if (username && username !== existingCandidate.username) {
-        const existingUserWithUsername = await storage.getUserByUsername(username);
-        if (existingUserWithUsername && existingUserWithUsername.id !== candidateId) {
+        const conflictUser = await storage.getUserByUsername(username);
+        if (conflictUser && conflictUser.id !== candidateId) {
           return res.status(400).json({ message: "Username already exists" });
         }
       }
-      
-      // Check for email uniqueness if it's being changed
       if (email && email !== existingCandidate.email) {
-        const existingUserWithEmail = await storage.getUserByEmail(email);
-        if (existingUserWithEmail && existingUserWithEmail.id !== candidateId) {
+        const conflictEmailUser = await storage.getUserByEmail(email);
+        if (conflictEmailUser && conflictEmailUser.id !== candidateId) {
           return res.status(400).json({ message: "Email already exists" });
         }
       }
-      
-      // If password is being updated, hash it
-      let hashedPassword;
-      if (password) {
-        hashedPassword = await hashPasswordLocal(password);
+
+      // Hash the password if a new one is provided
+      let hashedPassword: string | undefined;
+      if (newPassword && newPassword.trim()) {
+        hashedPassword = await hashPassword(newPassword);
       }
-      
-      // Update user
-      const updatedUser = await storage.updateUser(candidateId, {
-        username: username || existingCandidate.username,
-        email: email || existingCandidate.email,
-        password: hashedPassword || existingCandidate.password,
-        ...updateData,
-      });
-      
-      // Remove password from response
-      const { password: _, ...userWithoutPassword } = updatedUser;
-      
-      res.json(userWithoutPassword);
+
+      // Build the update object, keeping existing values for fields not provided
+      const updatedData = {
+        username: username?.trim() ?? existingCandidate.username,
+        email: email?.trim() ?? existingCandidate.email,
+        fullName: fullName?.trim() ?? existingCandidate.fullName,
+        password: hashedPassword ?? existingCandidate.password,
+        batchId: batchId !== undefined ? batchId : existingCandidate.batchId,
+        role: existingCandidate.role  // ensure role remains unchanged
+      };
+
+      const updatedUser = await storage.updateUser(candidateId, updatedData);
+      // Exclude password before sending back response
+      const { password, ...userWithoutPassword } = updatedUser;
+      return res.json(userWithoutPassword);
     } catch (error) {
       console.error("Error updating candidate:", error);
-      res.status(500).json({ message: "Error updating candidate" });
+      return res.status(500).json({ message: "Error updating candidate" });
     }
   });
   

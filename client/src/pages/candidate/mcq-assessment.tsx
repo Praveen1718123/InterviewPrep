@@ -109,7 +109,7 @@ export default function MCQAssessment() {
         title: "Assessment Submitted",
         description: "Your responses have been recorded successfully.",
       });
-      setLocation("/");
+      setLocation(`/candidate/fill-blanks-assessment/${id}`);
     },
     onError: (error: Error) => {
       toast({
@@ -273,16 +273,24 @@ export default function MCQAssessment() {
 
               
               <RadioGroup
-                value={(responses && responses[currentQuestionIndex]?.selectedOptionId) || ""}
-                onValueChange={handleResponseChange}
-                className="space-y-3"
+                value={
+                  responses.find((r) => r.questionId === currentQuestion.id)?.selectedOptionId || ""
+                }
+                onValueChange={(value) => {
+                  const updated = [...responses];
+                  const index = updated.findIndex((r) => r.questionId === currentQuestion.id);
+                  if (index !== -1) {
+                    updated[index].selectedOptionId = value;
+                  } else {
+                    updated.push({ questionId: currentQuestion.id, selectedOptionId: value });
+                  }
+                  setResponses(updated);
+                }}
               >
                 {currentQuestion.options.map((option) => (
-                  <div key={option.id} className="flex items-center">
-                    <RadioGroupItem id={option.id} value={option.id} />
-                    <Label htmlFor={option.id} className="ml-3">
-                      {option.text}
-                    </Label>
+                  <div key={option.id} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option.id} id={option.id} />
+                    <Label htmlFor={option.id}>{option.text}</Label>
                   </div>
                 ))}
               </RadioGroup>
