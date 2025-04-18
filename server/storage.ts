@@ -692,9 +692,9 @@ export class PostgresStorage implements IStorage {
     }
     
     // Create new batch if it doesn't exist
+    // Note: createdAt has defaultNow() in the schema, so we don't need to specify it
     const result = await this.db.insert(batches).values({
-      name,
-      createdAt: new Date()
+      name
     }).returning();
     
     return result[0];
@@ -736,8 +736,8 @@ export class PostgresStorage implements IStorage {
       ...assessment,
       description: assessment.description || null,
       timeLimit: assessment.timeLimit || null,
-      questions: assessment.questions || [],
-      createdAt: new Date()
+      questions: assessment.questions || []
+      // createdAt has defaultNow() in schema, so we don't need to specify it
     }).returning();
     return result[0];
   }

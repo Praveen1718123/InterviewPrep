@@ -6,7 +6,7 @@ import { z } from "zod";
 export const batches = pgTable("batches", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
 });
 
 export const insertBatchSchema = createInsertSchema(batches).omit({
@@ -22,7 +22,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   fullName: text("full_name").notNull(),
   role: text("role", { enum: ["admin", "candidate"] }).notNull().default("candidate"),
-  batchId: integer("batch_id").references(() => batches.id),
+  batchId: integer("batchId").references(() => batches.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
